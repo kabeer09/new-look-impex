@@ -12,6 +12,7 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Collections", href: "/admin/collections", section: "Catalogue" },
   { label: "Media", href: "/admin/media", section: "Catalogue" },
   { label: "AI Product Import", href: "/admin/ai-import", section: "Catalogue" },
+  { label: "Banners", href: "/admin/banners", section: "Catalogue" },
   { label: "Product Catalogue (public)", href: "/catalogue", section: "Catalogue" },
   { label: "RFQs", href: "/admin/rfqs", section: "Orders" },
   { label: "Enquiries", href: "/admin/enquiries", section: "Orders" },

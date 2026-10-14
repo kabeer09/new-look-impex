@@ -395,6 +395,18 @@ export interface ImportResult {
 
 export type ImageRightsSource = "own" | "supplier_authorised" | "licensed" | "ai_generated";
 
+export interface Banner {
+  id: number;
+  placement: string;
+  title: string;
+  subtitle: string | null;
+  image_url: string;
+  cta_text: string | null;
+  cta_link: string | null;
+  sort_order: number | null;
+  is_active: boolean;
+}
+
 export interface AdminUser {
   id: number;
   email: string;

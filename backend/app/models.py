@@ -426,7 +426,7 @@ class MediaFile(Base):
 class ProductImport(Base):
     __tablename__ = "product_imports"
     id = Column(Integer, primary_key=True)
-    kind = Column(String(32), nullable=False)  # image | csv | url | concept
+    kind = Column(String(32), nullable=False)  # image | csv | url | concept | watch
     filename = Column(String(255), default="")
     source_url = Column(String(1024), default="")
     rights_source = Column(String(32), default="")
@@ -435,6 +435,20 @@ class ProductImport(Base):
     items_json = Column(Text, default="[]")
     error = Column(Text, default="")
     created_by = Column(String(255), default="")
+    created_at = Column(DateTime, default=_now)
+
+
+class Banner(Base):
+    __tablename__ = "banners"
+    id = Column(Integer, primary_key=True)
+    placement = Column(String(64), default="home_hero", index=True)
+    title = Column(String(255), default="")
+    subtitle = Column(String(512), default="")
+    image_url = Column(String(1024), nullable=False)
+    cta_text = Column(String(128), default="")
+    cta_link = Column(String(512), default="")
+    sort_order = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=_now)
 
 

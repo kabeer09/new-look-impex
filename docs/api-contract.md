@@ -279,6 +279,16 @@ ProductImage: { ..., source, permission, is_concept }
 `GET /api/public/products` gains `finish=` (substring match on finish) and `has_moq=true`
 (only products with a confirmed MOQ). Existing `style=` already covers finish/tags.
 
+### Site banners (admin/editor, except public list)
+```
+GET  /api/public/banners?placement=home_hero → { items: [{id, placement, title, subtitle,
+     image_url, cta_text, cta_link, sort_order, is_active}] }  (active only, ordered)
+GET  /api/banners · POST /api/banners · PUT /api/banners/{id} · DELETE /api/banners/{id}
+BannerIn = { placement?, title?, subtitle?, image_url (required on create),
+             cta_text?, cta_link?, sort_order?, is_active? }
+GET  /api/admin/watcher → { enabled, dir, interval_seconds, auto_publish, rights, last_run }
+```
+
 ### SEO metadata base
 Canonical/base URL for metadata: production `https://newlookimpex.store`
 (`PUBLIC_SITE_URL` env; backend sitemap/robots already derive from env).

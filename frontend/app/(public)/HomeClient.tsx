@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, mediaUrl, whatsappLink } from "@/lib/api";
-import type { Category, Collection, ProductCard } from "@/lib/types";
+import type { Banner, Category, Collection, ProductCard } from "@/lib/types";
 import { ProductGrid, SectionTitle } from "@/components/public/Shared";
 import { Loading, ErrorBox } from "@/components/public/States";
 
@@ -87,6 +87,8 @@ export default function HomeClient() {
   const [featured, setFeatured] = useState<ProductCard[] | null>(null);
   const [spotlight, setSpotlight] = useState<Collection | null>(null);
   const [spotlightProducts, setSpotlightProducts] = useState<ProductCard[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [bannerIdx, setBannerIdx] = useState(0);
   const [dataError, setDataError] = useState("");
 
   useEffect(() => {
@@ -111,15 +113,17 @@ export default function HomeClient() {
       api<{ items: Category[] }>("/api/public/categories"),
       api<{ items: ProductCard[] }>("/api/public/products?sort=featured&page_size=8"),
       spotlightPromise,
+      api<{ items: Banner[] }>("/api/public/banners?placement=home_hero").catch(() => ({ items: [] as Banner[] })),
     ]).then((results) => {
       if (cancelled) return;
-      const [cats, feats, spot] = results;
+      const [cats, feats, spot, bans] = results;
       if (cats.status === "fulfilled") setCategories(cats.value.items || []);
       if (feats.status === "fulfilled") setFeatured(feats.value.items || []);
       if (spot.status === "fulfilled") {
         setSpotlight(spot.value.col);
         setSpotlightProducts(spot.value.products.slice(0, 4));
       }
+      if (bans.status === "fulfilled") setBanners(bans.value.items || []);
       if (results.some((r) => r.status === "rejected")) {
         setDataError("Some sections could not be loaded — the catalogue service may be unavailable.");
       }
@@ -129,14 +133,28 @@ export default function HomeClient() {
     };
   }, []);
 
+  // Rotate hero banners (drop-folder uploads appear here automatically).
+  useEffect(() => {
+    if (banners.length < 2) return;
+    const t = window.setInterval(() => setBannerIdx((i) => (i + 1) % banners.length), 7000);
+    return () => window.clearInterval(t);
+  }, [banners.length]);
+
+  const heroBanner = banners.length > 0 ? banners[bannerIdx % banners.length] : null;
+
   const retry = () => {
     setCategories(null);
     setFeatured(null);
     setSpotlight(null);
+    setBanners([]);
+    setBannerIdx(0);
     setDataError("");
     api<{ items: Category[] }>("/api/public/categories")
       .then((d) => setCategories(d.items || []))
       .catch((e) => setDataError(String(e)));
+    api<{ items: Banner[] }>("/api/public/banners?placement=home_hero")
+      .then((d) => setBanners(d.items || []))
+      .catch(() => undefined);
     api<{ items: ProductCard[] }>("/api/public/products?sort=featured&page_size=8")
       .then((d) => setFeatured(d.items || []))
       .catch((e) => setDataError(String(e)));
@@ -194,13 +212,42 @@ export default function HomeClient() {
               </button>
             </form>
           </div>
-          <div className="lg:col-span-2 hidden lg:block" aria-hidden="true">
-            <div className="border border-brass/50 p-10 text-center">
-              <p className="font-serif text-8xl font-bold text-gold-light">N</p>
-              <p className="mt-4 text-xs uppercase tracking-widest text-ivory/60">
-                Brass · Copper · Handcrafted
-              </p>
-            </div>
+          <div className="lg:col-span-2 hidden lg:block" aria-hidden={!heroBanner}>
+            {heroBanner ? (
+              <div className="relative overflow-hidden border border-brass/50 min-h-96">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={mediaUrl(heroBanner.image_url)}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-navy/85 px-5 py-4 text-left">
+                  <p className="font-serif font-semibold text-ivory text-lg">{heroBanner.title}</p>
+                  {heroBanner.subtitle && (
+                    <p className="text-xs text-ivory/70 mt-1">{heroBanner.subtitle}</p>
+                  )}
+                  <div className="mt-2 flex items-center gap-2">
+                    {banners.length > 1 &&
+                      banners.map((b, i) => (
+                        <button
+                          key={b.id}
+                          type="button"
+                          aria-label={`Show banner ${i + 1}`}
+                          onClick={() => setBannerIdx(i)}
+                          className={`h-1.5 rounded-full transition-all ${i === bannerIdx % banners.length ? "w-6 bg-gold-light" : "w-3 bg-ivory/40"}`}
+                        />
+                      ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-brass/50 p-10 text-center">
+                <p className="font-serif text-8xl font-bold text-gold-light">N</p>
+                <p className="mt-4 text-xs uppercase tracking-widest text-ivory/60">
+                  Brass · Copper · Handcrafted
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>

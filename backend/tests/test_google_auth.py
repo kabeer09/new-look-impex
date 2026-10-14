@@ -41,6 +41,13 @@ def _disable():
      settings.ADMIN_EMAIL) = OLD
 
 
+def _force_disable():
+    """Force the disabled state regardless of the developer's live .env."""
+    settings.GOOGLE_LOGIN_ENABLED = False
+    settings.GOOGLE_CLIENT_ID = ""
+    settings.GOOGLE_CLIENT_SECRET = ""
+
+
 def _mock_google(monkeypatch, email="teammate@example.com", verified=True):
     monkeypatch.setattr(ga, "exchange_code", lambda code: {"access_token": "mock-at"})
     monkeypatch.setattr(ga, "fetch_userinfo",
@@ -56,14 +63,17 @@ def _callback(monkeypatch, **kw):
 
 
 def test_disabled_by_default():
-    _disable()
-    r = c.get("/api/auth/google/status")
-    assert r.status_code == 200
-    assert r.json()["enabled"] is False
-    assert c.get("/api/auth/google/url").status_code == 400
-    from app.main import app as _app  # noqa
-    assert c.get("/api/auth/google/callback",
-                 params={"code": "x", "state": ga.make_state()}).status_code == 400
+    _force_disable()
+    try:
+        r = c.get("/api/auth/google/status")
+        assert r.status_code == 200
+        assert r.json()["enabled"] is False
+        assert c.get("/api/auth/google/url").status_code == 400
+        from app.main import app as _app  # noqa
+        assert c.get("/api/auth/google/callback",
+                     params={"code": "x", "state": ga.make_state()}).status_code == 400
+    finally:
+        _disable()
 
 
 def test_login_url_contains_required_params():

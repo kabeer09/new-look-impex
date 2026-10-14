@@ -52,5 +52,16 @@ class Settings(BaseSettings):
     # Empty => files served via /api/media/files/...
     S3_PUBLIC_URL: str = ""
 
+    # Drop-folder auto-import (VS Code workflow): drop product photos into
+    # INCOMING_DIR/products/<optional-category-slug>/ and banner images into
+    # INCOMING_DIR/banners/ — the backend ingests them automatically.
+    # Disabled by default; enable explicitly. Products are ALWAYS created as
+    # drafts for human review unless INCOMING_AUTO_PUBLISH=true.
+    INCOMING_ENABLED: bool = False
+    INCOMING_DIR: str = "./incoming"
+    INCOMING_INTERVAL: int = 60  # seconds between scans
+    INCOMING_AUTO_PUBLISH: bool = False
+    INCOMING_RIGHTS: str = "own"  # who owns dropped files: own|supplier_authorised|licensed
+
 
 settings = Settings()

@@ -14,3 +14,12 @@ frontend/out/
 Thumbs.db
 # Exported data snapshots (re-import via admin UI, don't version them)
 product-catalogue-export.csv
+# Drop-folder contents (photos/banners) are local workflow files, not source.
+# Folder READMEs stay versioned so conventions travel with the repo.
+incoming/*
+!incoming/products/
+!incoming/banners/
+incoming/products/*
+!incoming/products/README.md
+incoming/banners/*
+!incoming/banners/README.md

@@ -27,6 +27,7 @@ from .settings_api import router as settings_router
 from .events_api import router as events_router
 from .ai_import import router as ai_import_router
 from .ai_seo import router as ai_seo_router
+from .banners import router as banners_router
 from .catalogue_pdf import build_catalogue_pdf, get_business_info
 from .media_store import file_path
 
@@ -42,6 +43,8 @@ async def lifespan(app: FastAPI):
         seed(db)
     finally:
         db.close()
+    from .watcher import start_watcher
+    start_watcher()  # no-op unless INCOMING_ENABLED=true
     yield
 
 
@@ -55,6 +58,7 @@ app.add_middleware(CORSMiddleware,
 # /api/products/imports must win over catalog's /api/products/{pid})
 app.include_router(ai_import_router)
 app.include_router(ai_seo_router)
+app.include_router(banners_router)
 app.include_router(catalog_router)
 app.include_router(rfq_router)
 app.include_router(buyers_router)
