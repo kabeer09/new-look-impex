@@ -1,0 +1,676 @@
+"""Product / category / collection APIs — public browsing + admin CRUD."""
+from __future__ import annotations
+import csv
+import io
+import json
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, UploadFile, File
+from fastapi.responses import PlainTextResponse
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+from . import models
+from .auth import current_user, require_role, rate_limit
+from .database import get_db
+from .media_store import delete_file, save_file
+from .schemas import (CategoryIn, CollectionIn, ProductIn, SpecIn, VariantIn)
+from .text import slugify
+from . import media_store
+
+router = APIRouter()
+
+NOW = lambda: datetime.now(timezone.utc).replace(tzinfo=None)  # noqa: E731
+
+
+# ---------------- helpers ----------------
+
+def _product_out(p: models.Product, db: Session, public: bool = False) -> dict:
+    cat = None
+    if p.category_id:
+        c = db.query(models.Category).filter(models.Category.id == p.category_id).first()
+        if c:
+            cat = {"id": c.id, "name": c.name, "slug": c.slug}
+    img = db.query(models.ProductImage).filter(
+        models.ProductImage.product_id == p.id).order_by(
+        models.ProductImage.is_primary.desc(), models.ProductImage.sort_order).first()
+    variants = [{"id": v.id, "name": v.name, "sku": v.sku, "price": v.price,
+                 "moq": v.moq} for v in db.query(models.ProductVariant).filter(
+        models.ProductVariant.product_id == p.id).order_by(models.ProductVariant.sort_order).all()]
+    specs = [{"key": s.key, "value": s.value} for s in db.query(models.ProductSpec).filter(
+        models.ProductSpec.product_id == p.id).all()]
+    images = [{"id": im.id, "url": im.url, "alt_text": im.alt_text,
+               "source": im.source or "", "permission": im.permission or "",
+               "is_concept": bool(im.is_concept)} for im in
+              db.query(models.ProductImage).filter(models.ProductImage.product_id == p.id)
+              .order_by(models.ProductImage.is_primary.desc(), models.ProductImage.sort_order).all()]
+    colls = [{"id": cl.id, "name": cl.name, "slug": cl.slug} for cl in
+             db.query(models.Collection).join(models.ProductCollection,
+                                              models.ProductCollection.collection_id == models.Collection.id)
+             .filter(models.ProductCollection.product_id == p.id).all()]
+    out = {
+        "id": p.id, "name": p.name, "slug": p.slug,
+        "short_description": p.short_description, "description": p.description,
+        "category": cat, "category_id": p.category_id,
+        "material": p.material, "finish": p.finish, "color": p.color,
+        "dimensions": p.dimensions, "weight": p.weight, "sku": p.sku,
+        "tags": json.loads(p.tags or "[]"),
+        "moq": p.moq, "lead_time": p.lead_time, "packaging_info": p.packaging_info,
+        "price": p.price, "currency": p.currency, "price_on_request": p.price_on_request,
+        "featured": p.featured, "sort_order": p.sort_order, "status": p.status,
+        "seo_title": p.seo_title, "seo_description": p.seo_description,
+        "variants": variants, "specifications": specs, "images": images,
+        "collections": colls,
+        "image": images[0] if images else None,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+        "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+    }
+    if public and p.status != "published":
+        out["status"] = "published"  # public detail only served for published; never leak drafts
+    return out
+
+
+# ---------------- ADMIN: categories ----------------
+
+@router.get("/api/categories")
+def list_categories(db: Session = Depends(get_db), u=Depends(current_user)):
+    rows = db.query(models.Category).order_by(models.Category.sort_order, models.Category.id).all()
+    counts = dict(db.query(models.Product.category_id, func.count(models.Product.id))
+                  .group_by(models.Product.category_id).all())
+    items = [{"id": c.id, "name": c.name, "slug": c.slug, "description": c.description,
+              "image_url": c.image_url, "parent_id": c.parent_id,
+              "seo_title": c.seo_title, "seo_description": c.seo_description,
+              "featured": c.featured, "sort_order": c.sort_order, "status": c.status,
+              "product_count": counts.get(c.id, 0)} for c in rows]
+    return {"total": len(items), "items": items}
+
+
+@router.post("/api/categories", status_code=201)
+def create_category(body: CategoryIn, db: Session = Depends(get_db),
+                    u=Depends(require_role("admin", "editor"))):
+    slug = slugify(body.slug or body.name)
+    exists = db.query(models.Category).filter(func.lower(models.Category.slug) == slug.lower()).first()
+    if exists:
+        raise HTTPException(409, "Category slug already exists")
+    c = models.Category(name=body.name.strip(), slug=slug, description=body.description,
+                        image_url=body.image_url, parent_id=body.parent_id,
+                        seo_title=body.seo_title, seo_description=body.seo_description,
+                        featured=body.featured, sort_order=body.sort_order, status=body.status)
+    db.add(c); db.commit(); db.refresh(c)
+    return {"id": c.id, "slug": c.slug}
+
+
+@router.put("/api/categories/{cid}")
+def update_category(cid: int, body: CategoryIn, db: Session = Depends(get_db),
+                    u=Depends(require_role("admin", "editor"))):
+    c = db.query(models.Category).filter(models.Category.id == cid).first()
+    if not c:
+        raise HTTPException(404, "Category not found")
+    if body.slug and slugify(body.slug) != c.slug:
+        slug = slugify(body.slug)
+        dup = db.query(models.Category).filter(
+            func.lower(models.Category.slug) == slug.lower(),
+            models.Category.id != cid).first()
+        if dup:
+            raise HTTPException(409, "Category slug already exists")
+        c.slug = slug
+    for field in ("name", "description", "image_url", "parent_id", "seo_title",
+                  "seo_description", "featured", "sort_order", "status"):
+        setattr(c, field, getattr(body, field))
+    db.commit(); db.refresh(c)
+    return {"id": c.id, "slug": c.slug}
+
+
+@router.delete("/api/categories/{cid}")
+def delete_category(cid: int, db: Session = Depends(get_db), u=Depends(require_role("admin"))):
+    c = db.query(models.Category).filter(models.Category.id == cid).first()
+    if not c:
+        raise HTTPException(404, "Category not found")
+    # products keep their data; category link is cleared
+    db.query(models.Product).filter(models.Product.category_id == cid).update(
+        {models.Product.category_id: None})
+    db.delete(c); db.commit()
+    return {"deleted": cid}
+
+
+# ---------------- ADMIN: collections ----------------
+
+@router.get("/api/collections")
+def list_collections(db: Session = Depends(get_db), u=Depends(current_user)):
+    rows = db.query(models.Collection).order_by(models.Collection.sort_order, models.Collection.id).all()
+    counts = {}
+    for pc in db.query(models.ProductCollection.collection_id, func.count(models.ProductCollection.product_id)) \
+            .group_by(models.ProductCollection.collection_id).all():
+        counts[pc[0]] = pc[1]
+    items = [{"id": c.id, "name": c.name, "slug": c.slug, "description": c.description,
+              "image_url": c.image_url, "seo_title": c.seo_title,
+              "seo_description": c.seo_description, "featured": c.featured,
+              "sort_order": c.sort_order, "status": c.status,
+              "product_count": counts.get(c.id, 0)} for c in rows]
+    return {"total": len(items), "items": items}
+
+
+@router.post("/api/collections", status_code=201)
+def create_collection(body: CollectionIn, db: Session = Depends(get_db),
+                      u=Depends(require_role("admin", "editor"))):
+    slug = slugify(body.slug or body.name)
+    if db.query(models.Collection).filter(func.lower(models.Collection.slug) == slug.lower()).first():
+        raise HTTPException(409, "Collection slug already exists")
+    c = models.Collection(name=body.name.strip(), slug=slug, description=body.description,
+                          image_url=body.image_url, seo_title=body.seo_title,
+                          seo_description=body.seo_description, featured=body.featured,
+                          sort_order=body.sort_order, status=body.status)
+    db.add(c); db.commit(); db.refresh(c)
+    return {"id": c.id, "slug": c.slug}
+
+
+@router.put("/api/collections/{colid}")
+def update_collection(colid: int, body: CollectionIn, db: Session = Depends(get_db),
+                      u=Depends(require_role("admin", "editor"))):
+    c = db.query(models.Collection).filter(models.Collection.id == colid).first()
+    if not c:
+        raise HTTPException(404, "Collection not found")
+    if body.slug and slugify(body.slug) != c.slug:
+        slug = slugify(body.slug)
+        if db.query(models.Collection).filter(func.lower(models.Collection.slug) == slug.lower(),
+                                              models.Collection.id != colid).first():
+            raise HTTPException(409, "Collection slug already exists")
+        c.slug = slug
+    for field in ("name", "description", "image_url", "seo_title", "seo_description",
+                  "featured", "sort_order", "status"):
+        setattr(c, field, getattr(body, field))
+    db.commit(); db.refresh(c)
+    return {"id": c.id, "slug": c.slug}
+
+
+@router.delete("/api/collections/{colid}")
+def delete_collection(colid: int, db: Session = Depends(get_db), u=Depends(require_role("admin"))):
+    c = db.query(models.Collection).filter(models.Collection.id == colid).first()
+    if not c:
+        raise HTTPException(404, "Collection not found")
+    db.query(models.ProductCollection).filter(models.ProductCollection.collection_id == colid).delete()
+    db.delete(c); db.commit()
+    return {"deleted": colid}
+
+
+@router.post("/api/collections/{colid}/products", status_code=201)
+def collection_add_products(colid: int, payload: dict, db: Session = Depends(get_db),
+                            u=Depends(require_role("admin", "editor"))):
+    c = db.query(models.Collection).filter(models.Collection.id == colid).first()
+    if not c:
+        raise HTTPException(404, "Collection not found")
+    ids = payload.get("product_ids", [])
+    added = 0
+    for pid in ids:
+        exists = db.query(models.ProductCollection).filter(
+            models.ProductCollection.collection_id == colid,
+            models.ProductCollection.product_id == pid).first()
+        if not exists and db.query(models.Product).filter(models.Product.id == pid).first():
+            db.add(models.ProductCollection(collection_id=colid, product_id=pid))
+            added += 1
+    db.commit()
+    return {"added": added}
+
+
+@router.delete("/api/collections/{colid}/products/{pid}")
+def collection_remove_product(colid: int, pid: int, db: Session = Depends(get_db),
+                              u=Depends(require_role("admin", "editor"))):
+    db.query(models.ProductCollection).filter(
+        models.ProductCollection.collection_id == colid,
+        models.ProductCollection.product_id == pid).delete()
+    db.commit()
+    return {"removed": pid}
+
+
+# ---------------- ADMIN: products ----------------
+
+def _save_product(p: models.Product, body: ProductIn, db: Session, is_new: bool) -> models.Product:
+    for field in ("short_description", "description", "category_id", "material", "finish",
+                  "color", "dimensions", "weight", "sku", "moq", "lead_time",
+                  "packaging_info", "price", "currency", "price_on_request", "featured",
+                  "sort_order", "status", "seo_title", "seo_description"):
+        setattr(p, field, getattr(body, field))
+    p.name = body.name.strip()
+    p.tags = json.dumps([t.strip() for t in body.tags if t.strip()])
+    if is_new or not p.slug:
+        p.slug = slugify(body.slug or body.name)
+    # Slug uniqueness — check BEFORE flush to avoid UNIQUE constraint violation.
+    # For new products p.id is None; for updates exclude self by id.
+    def _slug_taken(slug_val):
+        q = db.query(models.Product).filter(func.lower(models.Product.slug) == slug_val.lower())
+        if p.id is not None:
+            q = q.filter(models.Product.id != p.id)
+        return q.first() is not None
+    if _slug_taken(p.slug):
+        base = p.slug
+        n = 2
+        while _slug_taken(f"{base}-{n}"):
+            n += 1
+        p.slug = f"{base}-{n}"
+    # Ensure the product row exists so related rows can reference p.id
+    db.add(p)
+    db.flush()
+    # variants
+    db.query(models.ProductVariant).filter(models.ProductVariant.product_id == p.id).delete()
+    for v in body.variant_data:
+        db.add(models.ProductVariant(product_id=p.id, name=v.name.strip(), sku=v.sku,
+                                     price=v.price, moq=v.moq, sort_order=v.sort_order))
+    # specs
+    db.query(models.ProductSpec).filter(models.ProductSpec.product_id == p.id).delete()
+    for s in body.spec_data:
+        db.add(models.ProductSpec(product_id=p.id, key=s.key.strip(), value=s.value))
+    # collections
+    db.query(models.ProductCollection).filter(models.ProductCollection.product_id == p.id).delete()
+    for cid in body.collection_ids:
+        if db.query(models.Collection).filter(models.Collection.id == cid).first():
+            db.add(models.ProductCollection(product_id=p.id, collection_id=cid))
+    # image urls
+    if body.image_urls:
+        db.query(models.ProductImage).filter(models.ProductImage.product_id == p.id).delete()
+        for i, url in enumerate(body.image_urls[:20]):
+            db.add(models.ProductImage(product_id=p.id, url=url[:1024],
+                                       alt_text=f"{p.name} image {i + 1}",
+                                       is_primary=(i == 0), sort_order=i))
+    db.commit()
+    db.refresh(p)
+    # ensure exactly one primary image
+    if not db.query(models.ProductImage).filter(models.ProductImage.product_id == p.id,
+                                                models.ProductImage.is_primary == True).first():  # noqa: E712
+        first = db.query(models.ProductImage).filter(models.ProductImage.product_id == p.id) \
+            .order_by(models.ProductImage.sort_order).first()
+        if first:
+            first.is_primary = True
+            db.commit()
+    return p
+
+
+@router.get("/api/products")
+def list_products(q: str = "", status: str = "", category_id: int | None = None,
+                  featured: bool | None = None, page: int = Query(1, ge=1),
+                  page_size: int = Query(20, ge=1, le=100),
+                  db: Session = Depends(get_db), u=Depends(current_user)):
+    qry = db.query(models.Product)
+    if q:
+        like = f"%{q}%"
+        qry = qry.filter(
+            func.lower(models.Product.name).like(func.lower(like))
+            | func.lower(models.Product.sku).like(func.lower(like))
+            | func.lower(models.Product.tags).like(func.lower(like)))
+    if status:
+        qry = qry.filter(models.Product.status == status)
+    if category_id is not None:
+        qry = qry.filter(models.Product.category_id == category_id)
+    if featured is not None:
+        qry = qry.filter(models.Product.featured == featured)
+    total = qry.count()
+    rows = qry.order_by(models.Product.id.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    return {"total": total, "page": page, "page_size": page_size,
+            "items": [_product_out(p, db) for p in rows]}
+
+
+@router.post("/api/products", status_code=201)
+def create_product(body: ProductIn, db: Session = Depends(get_db),
+                   u=Depends(require_role("admin", "editor"))):
+    rate_limit(f"prod:{u.email}", 60, 60)
+    slug = slugify(body.slug or body.name)
+    p = models.Product(name=body.name.strip(), slug=slug)
+    p = _save_product(p, body, db, is_new=True)
+    return _product_out(p, db)
+
+
+PRODUCT_CSV_FIELDS = ["name", "slug", "short_description", "description", "category",
+                      "material", "finish", "color", "dimensions", "weight", "sku",
+                      "tags", "moq", "lead_time", "packaging_info", "price", "currency",
+                      "price_on_request", "featured", "status", "seo_title", "seo_description"]
+
+
+@router.post("/api/products/import", status_code=201)
+def import_products(payload: dict, db: Session = Depends(get_db),
+                    u=Depends(require_role("admin", "editor"))):
+    csv_text = payload.get("csv", "")
+    if not csv_text.strip():
+        raise HTTPException(400, "Provide {csv: '...'} content.")
+    reader = csv.DictReader(io.StringIO(csv_text))
+    created, updated, errors = 0, 0, []
+    for i, row in enumerate(reader, start=2):
+        name = (row.get("name") or "").strip()
+        if not name:
+            errors.append(f"row {i}: missing name"); continue
+        try:
+            price_raw = (row.get("price") or "").strip()
+            price = float(price_raw) if price_raw else None
+            cat_name = (row.get("category") or "").strip()
+            category_id = None
+            if cat_name:
+                cat = db.query(models.Category).filter(
+                    func.lower(models.Category.name) == cat_name.lower()).first()
+                if cat:
+                    category_id = cat.id
+            slug = slugify(row.get("slug") or name)
+            existing = db.query(models.Product).filter(
+                func.lower(models.Product.slug) == slug.lower()).first()
+            tags = [t.strip() for t in (row.get("tags") or "").split(";") if t.strip()]
+            body = ProductIn(
+                name=name, slug=slug,
+                short_description=row.get("short_description") or "",
+                description=row.get("description") or "",
+                category_id=category_id, material=row.get("material") or "",
+                finish=row.get("finish") or "", color=row.get("color") or "",
+                dimensions=row.get("dimensions") or "", weight=row.get("weight") or "",
+                sku=row.get("sku") or "", tags=tags, moq=row.get("moq") or "",
+                lead_time=row.get("lead_time") or "", packaging_info=row.get("packaging_info") or "",
+                price=price, currency=(row.get("currency") or "USD"),
+                price_on_request=(row.get("price_on_request") or "").lower() in ("", "true", "1", "yes"),
+                featured=(row.get("featured") or "").lower() in ("true", "1", "yes"),
+                status=(row.get("status") or "draft").lower(),
+                seo_title=row.get("seo_title") or "", seo_description=row.get("seo_description") or "")
+            if existing:
+                _save_product(existing, body, db, is_new=False)
+                updated += 1
+            else:
+                p = models.Product(name=name, slug=slug)
+                _save_product(p, body, db, is_new=True)
+                created += 1
+        except Exception as e:
+            errors.append(f"row {i}: {type(e).__name__}: {str(e)[:120]}")
+    return {"created": created, "updated": updated, "errors": errors}
+
+
+@router.get("/api/products/export")
+def export_products(db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=PRODUCT_CSV_FIELDS)
+    w.writeheader()
+    for p in db.query(models.Product).order_by(models.Product.id).limit(5000).all():
+        cat = ""
+        if p.category_id:
+            c = db.query(models.Category).filter(models.Category.id == p.category_id).first()
+            cat = c.name if c else ""
+        w.writerow({
+            "name": p.name, "slug": p.slug, "short_description": p.short_description,
+            "description": p.description, "category": cat, "material": p.material,
+            "finish": p.finish, "color": p.color, "dimensions": p.dimensions,
+            "weight": p.weight, "sku": p.sku, "tags": ";".join(json.loads(p.tags or "[]")),
+            "moq": p.moq, "lead_time": p.lead_time, "packaging_info": p.packaging_info,
+            "price": p.price if p.price is not None else "", "currency": p.currency,
+            "price_on_request": str(p.price_on_request).lower(),
+            "featured": str(p.featured).lower(), "status": p.status,
+            "seo_title": p.seo_title, "seo_description": p.seo_description})
+    return PlainTextResponse(buf.getvalue(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=products.csv"})
+
+
+@router.get("/api/products/{pid}")
+def get_product(pid: int, db: Session = Depends(get_db), u=Depends(current_user)):
+    p = db.query(models.Product).filter(models.Product.id == pid).first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+    return _product_out(p, db)
+
+
+@router.put("/api/products/{pid}")
+def update_product(pid: int, body: ProductIn, db: Session = Depends(get_db),
+                   u=Depends(require_role("admin", "editor"))):
+    p = db.query(models.Product).filter(models.Product.id == pid).first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+    p = _save_product(p, body, db, is_new=False)
+    return _product_out(p, db)
+
+
+@router.delete("/api/products/{pid}")
+def delete_product(pid: int, db: Session = Depends(get_db), u=Depends(require_role("admin"))):
+    p = db.query(models.Product).filter(models.Product.id == pid).first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+    if db.query(models.RFQItem).filter(models.RFQItem.product_id == pid).first():
+        raise HTTPException(409,
+                          "Product is referenced by RFQs. Archive it instead of deleting.")
+    db.query(models.ProductImage).filter(models.ProductImage.product_id == pid).delete()
+    db.query(models.ProductVariant).filter(models.ProductVariant.product_id == pid).delete()
+    db.query(models.ProductSpec).filter(models.ProductSpec.product_id == pid).delete()
+    db.query(models.ProductCollection).filter(models.ProductCollection.product_id == pid).delete()
+    db.delete(p); db.commit()
+    return {"deleted": pid}
+
+
+@router.post("/api/products/{pid}/publish")
+def publish_product(pid: int, db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    p = _get_or_404(pid, db)
+    p.status = "published"; db.commit()
+    return {"id": p.id, "status": p.status}
+
+
+@router.post("/api/products/{pid}/unpublish")
+def unpublish_product(pid: int, db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    p = _get_or_404(pid, db)
+    p.status = "draft"; db.commit()
+    return {"id": p.id, "status": p.status}
+
+
+@router.post("/api/products/{pid}/archive")
+def archive_product(pid: int, db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    p = _get_or_404(pid, db)
+    p.status = "archived"; db.commit()
+    return {"id": p.id, "status": p.status}
+
+
+def _get_or_404(pid: int, db: Session) -> models.Product:
+    p = db.query(models.Product).filter(models.Product.id == pid).first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+    return p
+
+
+# ---------------- product images (multipart upload) ----------------
+
+@router.post("/api/products/{pid}/images", status_code=201)
+async def upload_product_images(pid: int, files: list[UploadFile] = File(...),
+                                rights_source: str = Form(""),
+                                permission: str = Form(""),
+                                db: Session = Depends(get_db),
+                                u=Depends(require_role("admin", "editor"))):
+    from .media_store import public_url, validate_rights
+    try:
+        rights = validate_rights(rights_source) if rights_source else ""
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    p = _get_or_404(pid, db)
+    saved = []
+    for f in files:
+        content = await f.read()
+        try:
+            meta = save_file(f.filename or "image.jpg", content, f.content_type or "",
+                             label=p.slug)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        db.add(models.MediaFile(filename=meta["filename"],
+                                original_name=meta.get("original_name", "")[:255],
+                                content_type=meta.get("content_type", ""),
+                                size=meta.get("size", 0),
+                                has_thumb=meta.get("has_thumb", False),
+                                source=rights,
+                                permission=(permission or "")[:512]))
+        existing = db.query(models.ProductImage).filter(models.ProductImage.product_id == pid).count()
+        db.add(models.ProductImage(product_id=pid, url=public_url(meta["filename"]),
+                                   alt_text=f"{p.name}", is_primary=(existing == 0),
+                                   sort_order=existing, source=rights,
+                                   permission=(permission or "")[:512]))
+        saved.append({"url": public_url(meta["filename"]), "filename": meta["filename"]})
+    db.commit()
+    return {"images": saved}
+
+
+@router.delete("/api/products/images/{iid}")
+def delete_product_image(iid: int, db: Session = Depends(get_db),
+                         u=Depends(require_role("admin", "editor"))):
+    img = db.query(models.ProductImage).filter(models.ProductImage.id == iid).first()
+    if not img:
+        raise HTTPException(404, "Image not found")
+    fn = img.url.rsplit("/", 1)[-1]
+    db.delete(img); db.commit()
+    delete_file(fn)
+    return {"deleted": iid}
+
+
+# ---------------- PUBLIC catalogue browsing ----------------
+
+@router.get("/api/public/products")
+def public_products(q: str = "", category: str = "", material: str = "", style: str = "",
+                    finish: str = "", has_moq: bool = False,
+                    min_price: float | None = None, max_price: float | None = None,
+                    sort: str = "newest", page: int = Query(1, ge=1),
+                    page_size: int = Query(24, ge=1, le=100),
+                    db: Session = Depends(get_db)):
+    qry = db.query(models.Product).filter(models.Product.status == "published")
+    if q:
+        like = f"%{q}%"
+        qry = qry.filter(
+            func.lower(models.Product.name).like(func.lower(like))
+            | func.lower(models.Product.description).like(func.lower(like))
+            | func.lower(models.Product.material).like(func.lower(like))
+            | func.lower(models.Product.sku).like(func.lower(like))
+            | func.lower(models.Product.tags).like(func.lower(like)))
+    if category:
+        slug = category.strip().lower()
+        cat = db.query(models.Category).filter(func.lower(models.Category.slug) == slug).first()
+        if not cat:
+            cat = db.query(models.Category).filter(func.lower(models.Category.name) == slug.replace("-", " ")).first()
+        if cat:
+            qry = qry.filter(models.Product.category_id == cat.id)
+        else:
+            qry = qry.filter(models.Product.category_id == -1)  # unknown category → empty, not error
+    if material:
+        qry = qry.filter(func.lower(models.Product.material).like(f"%{material.lower()}%"))
+    if style:
+        like = f"%{style}%"
+        qry = qry.filter(
+            func.lower(models.Product.finish).like(func.lower(like))
+            | func.lower(models.Product.tags).like(func.lower(like)))
+    if finish:
+        qry = qry.filter(func.lower(models.Product.finish).like(f"%{finish.lower()}%"))
+    if has_moq:
+        qry = qry.filter(models.Product.moq != "")
+    if min_price is not None:
+        qry = qry.filter(models.Product.price >= min_price)
+    if max_price is not None:
+        qry = qry.filter(models.Product.price <= max_price)
+    if sort == "name":
+        qry = qry.order_by(models.Product.name.asc())
+    elif sort == "featured":
+        qry = qry.order_by(models.Product.featured.desc(), models.Product.sort_order.asc())
+    else:
+        qry = qry.order_by(models.Product.id.desc())
+    total = qry.count()
+    rows = qry.offset((page - 1) * page_size).limit(page_size).all()
+    has_price = [p for p in rows if p.price is not None]
+    return {"total": total, "page": page, "page_size": page_size,
+            "items": [_product_out(p, db, public=True) for p in rows],
+            "price_data_available": bool(has_price)}
+
+
+@router.get("/api/public/products/search/suggest")
+def suggest(q: str = "", db: Session = Depends(get_db)):
+    q = (q or "").strip()
+    if len(q) < 2:
+        return {"suggestions": []}
+    like = f"%{q}%"
+    names = db.query(models.Product.name).filter(
+        models.Product.status == "published",
+        func.lower(models.Product.name).like(func.lower(like))).limit(8).all()
+    mats = db.query(models.Product.material).filter(
+        models.Product.status == "published",
+        func.lower(models.Product.material).like(func.lower(like))).limit(4).all()
+    cats = db.query(models.Category.name).filter(
+        func.lower(models.Category.name).like(func.lower(like))).limit(4).all()
+    out = [n for (n,) in names] + [m for (m,) in mats if m] + [c for (c,) in cats]
+    return {"suggestions": list(dict.fromkeys(out))[:10]}
+
+
+@router.get("/api/public/products/{slug}")
+def public_product_detail(slug: str, db: Session = Depends(get_db)):
+    p = db.query(models.Product).filter(
+        func.lower(models.Product.slug) == slug.strip().lower(),
+        models.Product.status == "published").first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+    detail = _product_out(p, db, public=True)
+    # related: same category or material, published, exclude self
+    rel_q = db.query(models.Product).filter(models.Product.status == "published",
+                                            models.Product.id != p.id)
+    if p.category_id:
+        rel_q = rel_q.filter(models.Product.category_id == p.category_id)
+    elif p.material:
+        rel_q = rel_q.filter(func.lower(models.Product.material) == p.material.lower())
+    detail["related"] = [_product_out(r, db, public=True) for r in rel_q.limit(4).all()]
+    return detail
+
+
+@router.get("/api/public/categories")
+def public_categories(db: Session = Depends(get_db)):
+    rows = db.query(models.Category).filter(models.Category.status == "published") \
+        .order_by(models.Category.sort_order, models.Category.id).all()
+    items = []
+    for c in rows:
+        count = db.query(func.count(models.Product.id)).filter(
+            models.Product.category_id == c.id, models.Product.status == "published").scalar() or 0
+        items.append({"id": c.id, "name": c.name, "slug": c.slug,
+                      "description": c.description, "image_url": c.image_url,
+                      "seo_title": c.seo_title, "seo_description": c.seo_description,
+                      "product_count": count})
+    return {"total": len(items), "items": items}
+
+
+@router.get("/api/public/categories/{slug}")
+def public_category_detail(slug: str, page: int = Query(1, ge=1),
+                           page_size: int = Query(24, ge=1, le=100),
+                           db: Session = Depends(get_db)):
+    c = db.query(models.Category).filter(
+        func.lower(models.Category.slug) == slug.strip().lower(),
+        models.Category.status == "published").first()
+    if not c:
+        raise HTTPException(404, "Category not found")
+    qry = db.query(models.Product).filter(models.Product.category_id == c.id,
+                                          models.Product.status == "published")
+    total = qry.count()
+    rows = qry.order_by(models.Product.id.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    return {"id": c.id, "name": c.name, "slug": c.slug, "description": c.description,
+            "seo_title": c.seo_title, "seo_description": c.seo_description,
+            "total": total, "page": page, "page_size": page_size,
+            "items": [_product_out(p, db, public=True) for p in rows]}
+
+
+@router.get("/api/public/collections")
+def public_collections(db: Session = Depends(get_db)):
+    rows = db.query(models.Collection).filter(models.Collection.status == "published") \
+        .order_by(models.Collection.sort_order, models.Collection.id).all()
+    items = []
+    for c in rows:
+        count = db.query(func.count(models.ProductCollection.product_id)).filter(
+            models.ProductCollection.collection_id == c.id).scalar() or 0
+        items.append({"id": c.id, "name": c.name, "slug": c.slug,
+                      "description": c.description, "image_url": c.image_url,
+                      "seo_title": c.seo_title, "seo_description": c.seo_description,
+                      "product_count": count})
+    return {"total": len(items), "items": items}
+
+
+@router.get("/api/public/collections/{slug}")
+def public_collection_detail(slug: str, page: int = Query(1, ge=1),
+                             page_size: int = Query(24, ge=1, le=100),
+                             db: Session = Depends(get_db)):
+    c = db.query(models.Collection).filter(
+        func.lower(models.Collection.slug) == slug.strip().lower(),
+        models.Collection.status == "published").first()
+    if not c:
+        raise HTTPException(404, "Collection not found")
+    qry = db.query(models.Product).join(models.ProductCollection,
+                                        models.ProductCollection.product_id == models.Product.id) \
+        .filter(models.ProductCollection.collection_id == c.id,
+                models.Product.status == "published")
+    total = qry.count()
+    rows = qry.order_by(models.Product.id.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    return {"id": c.id, "name": c.name, "slug": c.slug, "description": c.description,
+            "seo_title": c.seo_title, "seo_description": c.seo_description,
+            "total": total, "page": page, "page_size": page_size,
+            "items": [_product_out(p, db, public=True) for p in rows]}

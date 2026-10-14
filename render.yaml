@@ -1,0 +1,33 @@
+# Render Blueprint — one-click backend deploy (free tier).
+# Dashboard → New → Blueprint → connect this repo. Secrets are entered in the
+# Render dashboard (never commit them). See docs/deployment.md for the full guide.
+services:
+  - type: web
+    name: new-look-impex-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false # paste Supabase pooled connection string (postgresql+psycopg2://...)
+      - key: SECRET_KEY
+        generateValue: true # Render generates a secure random value
+      - key: ADMIN_EMAIL
+        value: admin@newlookimpex.example # change to your email in the dashboard
+      - key: ADMIN_PASSWORD
+        sync: false # set a strong password in the dashboard
+      - key: CORS_ORIGINS
+        sync: false # e.g. https://new-look-impex.vercel.app
+      - key: API_BASE_URL
+        sync: false # e.g. https://new-look-impex-api.onrender.com
+      - key: PUBLIC_SITE_URL
+        sync: false # e.g. https://new-look-impex.vercel.app (or https://newlookimpex.store)
+      - key: STORAGE_BACKEND
+        value: local # switch to s3 + S3_* vars once Supabase Storage is configured
+      - key: GOOGLE_LOGIN_ENABLED
+        value: "false"
+      - key: N8N_WEBHOOK_TOKEN
+        generateValue: true
+      - key: ENQUIRY_NOTIFY_EMAIL
+        value: newlookimpex@gmail.com

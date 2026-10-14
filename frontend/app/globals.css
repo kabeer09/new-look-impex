@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-ivory text-charcoal antialiased; }
+  h1, h2, h3, h4 { @apply text-charcoal; }
+  ::selection { @apply bg-brass/30; }
+}
+
+@layer components {
+  /* Layout */
+  .container-x { @apply max-w-7xl mx-auto px-4; }
+  .section { @apply py-12 md:py-16; }
+  .page-title { @apply font-serif font-bold text-navy text-3xl md:text-4xl; }
+  .page-subtitle { @apply text-gray mt-2 max-w-2xl; }
+
+  /* Cards */
+  .card { @apply bg-white rounded-xl border border-sand shadow-sm p-5; }
+  .card-flat { @apply bg-white rounded-xl border border-sand p-5; }
+
+  /* Buttons */
+  .btn { @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-primary { @apply bg-navy text-white hover:bg-navy-dark; }
+  .btn-brass { @apply bg-brass text-white hover:bg-brass-dark; }
+  .btn-ghost { @apply border border-stone-300 text-charcoal hover:bg-sand bg-white; }
+  .btn-outline { @apply border border-navy text-navy hover:bg-navy hover:text-white bg-transparent; }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .btn-danger { @apply bg-red-700 text-white hover:bg-red-800; }
+
+  /* Badges */
+  .badge { @apply inline-block text-xs px-2 py-0.5 rounded-full bg-sand text-charcoal whitespace-nowrap; }
+  .badge-navy { @apply bg-navy text-white; }
+  .badge-brass { @apply bg-brass/15 text-brass-dark; }
+  .badge-green { @apply bg-green-100 text-green-800; }
+  .badge-red { @apply bg-red-100 text-red-800; }
+  .badge-gray { @apply bg-stone-200 text-stone-700; }
+
+  /* Forms */
+  .input { @apply border border-stone-300 rounded-lg px-3 py-2 w-full text-sm bg-white text-charcoal placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brass focus:border-brass; }
+  .label { @apply block text-xs font-medium text-charcoal mb-1; }
+  .help { @apply text-xs text-gray mt-1; }
+
+  /* Links */
+  .link { @apply text-brass underline underline-offset-4 hover:decoration-2; }
+
+  /* Data tables */
+  table.data { @apply w-full text-sm; }
+  table.data thead th { @apply text-left py-2 px-2 text-stone-500 font-medium border-b border-stone-200 uppercase text-xs tracking-wide; }
+  table.data tbody td { @apply py-2 px-2 border-b border-stone-100 align-top; }
+
+  /* Admin nav */
+  .nav-link { @apply block px-3 py-2 rounded-lg text-sm text-charcoal hover:bg-sand; }
+  .nav-link.active { @apply bg-brass/15 font-semibold text-navy; }
+
+  /* Public header */
+  .header-link { @apply text-sm text-charcoal hover:text-navy transition-colors; }
+  .header-link.active { @apply text-navy font-semibold; }
+
+  /* Product cards */
+  .product-card { @apply bg-white rounded-xl border border-sand shadow-sm overflow-hidden flex flex-col; }
+
+  .divider { @apply h-px bg-sand my-6; }
+}

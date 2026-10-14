@@ -1,0 +1,116 @@
+{
+  "name": "New Enquiry — RFQ Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nli-rfq",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-rfq",
+      "name": "RFQ Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "nli-rfq"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.token }}",
+              "rightValue": "={{$env.N8N_WEBHOOK_TOKEN}}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "verify-token",
+      "name": "Verify Token",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({error: 'Invalid webhook token'}) }}",
+        "options": {}
+      },
+      "id": "reject-unauth",
+      "name": "Reject Unauthenticated",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [690, 420]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Validate required fields\nconst d = $input.first().json;\nconst required = ['full_name','business_email','items'];\nconst missing = required.filter(k => !d[k]);\nif (missing.length) {\n  return [{ json: { error: 'Missing: ' + missing.join(', ') } }];\n}\nreturn [{ json: d }];"
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.NLI_API_URL}}/api/public/rfqs",
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "save-to-db",
+      "name": "Save to PostgreSQL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({reference_number: $json.reference_number, status: 'received'}) }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1130, 300]
+    }
+  ],
+  "connections": {
+    "RFQ Webhook": {
+      "main": [[{ "node": "Verify Token", "type": "main", "index": 0 }]]
+    },
+    "Verify Token": {
+      "main": [
+        [{ "node": "Reject Unauthenticated", "type": "main", "index": 0 }],
+        [{ "node": "Validate Input", "type": "main", "index": 0 }]
+      ]
+    },
+    "Validate Input": {
+      "main": [[{ "node": "Save to PostgreSQL", "type": "main", "index": 0 }]]
+    },
+    "Save to PostgreSQL": {
+      "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "pinData": {},
+  "versionId": "rfq-processing-v1"
+}

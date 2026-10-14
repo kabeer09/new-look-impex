@@ -1,0 +1,16 @@
+# Local-only: never commit secrets or large dev artefacts.
+.env
+backend/media/
+*.db
+*.db-journal
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+frontend/.next/
+frontend/out/
+*.log
+.DS_Store
+Thumbs.db
+# Exported data snapshots (re-import via admin UI, don't version them)
+product-catalogue-export.csv

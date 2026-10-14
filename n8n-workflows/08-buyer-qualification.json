@@ -1,0 +1,101 @@
+{
+  "name": "AI Buyer Qualification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nli-buyer-qualify",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-buyer",
+      "name": "Buyer Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "nli-buyer-qualify"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.token }}",
+              "rightValue": "={{$env.N8N_WEBHOOK_TOKEN}}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "verify-token",
+      "name": "Verify Token",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({error: 'Invalid webhook token'}) }}",
+        "options": {}
+      },
+      "id": "reject-unauth",
+      "name": "Reject Unauthenticated",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [690, 420]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.NLI_API_URL}}/api/buyers/{{$json.buyer_id}}/qualify",
+        "method": "POST",
+        "options": {}
+      },
+      "id": "qualify-buyer",
+      "name": "Qualify Buyer (AI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({buyer_id: $json.id, lead_score: $json.lead_score, qualification: $json.qualification}) }}",
+        "options": {}
+      },
+      "id": "respond-qualified",
+      "name": "Respond Qualified",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [910, 300]
+    }
+  ],
+  "connections": {
+    "Buyer Webhook": {
+      "main": [[{ "node": "Verify Token", "type": "main", "index": 0 }]]
+    },
+    "Verify Token": {
+      "main": [
+        [{ "node": "Reject Unauthenticated", "type": "main", "index": 0 }],
+        [{ "node": "Qualify Buyer (AI)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Qualify Buyer (AI)": {
+      "main": [[{ "node": "Respond Qualified", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [],
+  "pinData": {},
+  "versionId": "buyer-qualification-v1"
+}
