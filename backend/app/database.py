@@ -54,6 +54,7 @@ def ensure_schema() -> None:
                 ("source", "VARCHAR(32) DEFAULT ''"),
                 ("permission", "VARCHAR(512) DEFAULT ''"),
                 ("has_thumb", "BOOLEAN DEFAULT 0"),
+                ("has_webp", "BOOLEAN DEFAULT 0"),
             ):
                 if col not in existing_mf:
                     conn.execute(text(f"ALTER TABLE media_files ADD COLUMN {col} {ddl}"))

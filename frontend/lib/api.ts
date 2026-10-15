@@ -80,6 +80,27 @@ export function mediaUrl(url: string | null | undefined): string {
   return `${API}${url.startsWith("/") ? "" : "/api/media/files/"}${url}`;
 }
 
+/** True only for files served by our own media endpoint (safe to add ?variant=). */
+export function isLocalMedia(url: string | null | undefined): boolean {
+  if (!url) return false;
+  if (/^https?:\/\//i.test(url)) return url.startsWith(API);
+  return url.startsWith("/api/media/files/");
+}
+
+/** Derivative URL: thumb (800px JPEG) or webp (1600px). Falls back to the
+ *  original for remote images or missing derivatives (server also falls back). */
+export function variantUrl(url: string | null | undefined, variant: "thumb" | "webp"): string {
+  const base = mediaUrl(url);
+  if (!base || !isLocalMedia(url)) return base;
+  return `${base}${base.includes("?") ? "&" : "?"}variant=${variant}`;
+}
+
+/** Small srcset for cards and galleries: 800px thumb + 1600px WebP. */
+export function cardSrcSet(url: string | null | undefined): string | undefined {
+  if (!isLocalMedia(url)) return undefined;
+  return `${variantUrl(url, "thumb")} 800w, ${variantUrl(url, "webp")} 1600w`;
+}
+
 /** Analytics beacon — fire-and-forget, never blocks UI, never throws. */
 export function trackEvent(input: EventInput): void {
   try {

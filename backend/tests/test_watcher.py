@@ -50,7 +50,7 @@ def use_tmp_incoming(tmp_path, monkeypatch):
 # ---------- banners CRUD ----------
 
 def test_banner_crud_and_public():
-    assert c.get("/api/public/banners").json()["items"] == []
+    before = {b["id"] for b in c.get("/api/public/banners").json()["items"]}
     b = c.post("/api/banners", json={"title": "Test Banner",
                                      "image_url": "/api/media/files/x.png",
                                      "cta_text": "Shop", "cta_link": "/products"},
@@ -58,10 +58,10 @@ def test_banner_crud_and_public():
     assert b.status_code == 201, b.text
     bid = b.json()["id"]
     pub = c.get("/api/public/banners")
-    assert len(pub.json()["items"]) == 1
+    assert bid in {x["id"] for x in pub.json()["items"]} - before
     # deactivate hides it publicly
     c.put(f"/api/banners/{bid}", json={"is_active": False}, headers=H)
-    assert c.get("/api/public/banners").json()["items"] == []
+    assert bid not in {x["id"] for x in c.get("/api/public/banners").json()["items"]}
     assert c.delete(f"/api/banners/{bid}", headers=H).status_code == 200
 
 
@@ -142,5 +142,11 @@ def test_watch_banner_creates_record(tmp_path, monkeypatch):
     counts = wmod.scan_once()
     assert counts["banners"] == 1
     pub = c.get("/api/public/banners")
-    assert len(pub.json()["items"]) == 1
-    assert pub.json()["items"][0]["title"] == "Diwali Sale"
+    titles = [x["title"] for x in pub.json()["items"]]
+    assert "Diwali Sale" in titles
+    # cleanup so later runs stay hermetic
+    db = SessionLocal()
+    b = db.query(models.Banner).filter(models.Banner.title == "Diwali Sale").first()
+    if b:
+        db.delete(b); db.commit()
+    db.close()

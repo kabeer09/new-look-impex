@@ -747,6 +747,9 @@ def sitemap(db: Session = Depends(get_db)):
         f"{base}/buyer-resources", f"{base}/shipping-export",
         f"{base}/privacy", f"{base}/terms", f"{base}/sitemap",
     ]
+    # country buyer pages (curated, unique content each — see wholesale/[country])
+    for slug in ("usa", "uk", "uae", "australia", "canada"):
+        urls.append(f"{base}/wholesale/{slug}")
     items = "".join(f"<url><loc>{u_}</loc></url>" for u_ in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>'
 
@@ -905,16 +908,23 @@ def media_serve(filename: str, variant: str = ""):
     from fastapi.responses import Response
     from .media_store import read_file, using_s3
     from fastapi.responses import RedirectResponse
+    if variant not in ("", "thumb", "webp"):
+        raise HTTPException(400, "variant must be thumb or webp.")
     if using_s3():
-        # S3 files are addressed by key; redirect thumbs to the thumb key.
-        from .media_store import public_url, _thumb_name
+        # S3 files are addressed by key; redirect variants to their keys.
+        from .media_store import public_url, _thumb_name, _webp_name
         if settings.S3_PUBLIC_URL.strip():
-            key = _thumb_name(filename) if variant == "thumb" else filename
+            if variant == "webp":
+                key = _webp_name(filename)
+            elif variant == "thumb":
+                key = _thumb_name(filename)
+            else:
+                key = filename
             return RedirectResponse(settings.S3_PUBLIC_URL.rstrip("/") + "/" + key)
-    content, ctype = read_file(filename, variant if variant == "thumb" else "")
+    content, ctype = read_file(filename, variant)
     if content is None:
-        # Fall back to the original when a thumbnail was requested but missing.
-        if variant == "thumb":
+        # Fall back to the original when a derivative is missing (older uploads).
+        if variant in ("thumb", "webp"):
             content, ctype = read_file(filename)
         if content is None:
             raise HTTPException(404, "File not found")

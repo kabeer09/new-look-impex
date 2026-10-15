@@ -271,6 +271,17 @@ export default function ProductEditor() {
         </div>
         <div className="flex gap-2">
           <Link className="btn btn-ghost btn-sm" href="/admin/products">← Products</Link>
+          {!isNew && form.slug && (
+            <a
+              className="btn btn-ghost btn-sm"
+              href={`/products/${encodeURIComponent(form.slug)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open the live public product page in a new tab"
+            >
+              Preview ↗
+            </a>
+          )}
           <button className="btn btn-primary" onClick={save} disabled={saving}>
             {saving ? "Saving…" : isNew ? "Create product" : "Save changes"}
           </button>

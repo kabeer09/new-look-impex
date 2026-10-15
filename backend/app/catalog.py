@@ -232,8 +232,11 @@ def _save_product(p: models.Product, body: ProductIn, db: Session, is_new: bool)
         setattr(p, field, getattr(body, field))
     p.name = body.name.strip()
     p.tags = json.dumps([t.strip() for t in body.tags if t.strip()])
+    old_slug = (p.slug or "").strip().lower() or None
     if is_new or not p.slug:
         p.slug = slugify(body.slug or body.name)
+    elif (body.slug or "").strip() and slugify(body.slug) != p.slug:
+        p.slug = slugify(body.slug)
     # Slug uniqueness — check BEFORE flush to avoid UNIQUE constraint violation.
     # For new products p.id is None; for updates exclude self by id.
     def _slug_taken(slug_val):
@@ -250,6 +253,11 @@ def _save_product(p: models.Product, body: ProductIn, db: Session, is_new: bool)
     # Ensure the product row exists so related rows can reference p.id
     db.add(p)
     db.flush()
+    # Permanent redirect history when an existing product's slug changes.
+    if not is_new and old_slug and old_slug != p.slug.lower():
+        if not db.query(models.ProductSlugRedirect).filter(
+                func.lower(models.ProductSlugRedirect.old_slug) == old_slug).first():
+            db.add(models.ProductSlugRedirect(old_slug=old_slug, product_id=p.id))
     # variants
     db.query(models.ProductVariant).filter(models.ProductVariant.product_id == p.id).delete()
     for v in body.variant_data:
@@ -507,9 +515,19 @@ def delete_product_image(iid: int, db: Session = Depends(get_db),
     img = db.query(models.ProductImage).filter(models.ProductImage.id == iid).first()
     if not img:
         raise HTTPException(404, "Image not found")
-    fn = img.url.rsplit("/", 1)[-1]
-    db.delete(img); db.commit()
-    delete_file(fn)
+    # Unlink only: the stored file and its media-library record are preserved,
+    # so the image can be re-attached and originals are never lost.
+    was_primary = bool(img.is_primary)
+    pid = img.product_id
+    db.delete(img)
+    db.flush()
+    if was_primary:
+        nxt = db.query(models.ProductImage).filter(
+            models.ProductImage.product_id == pid) \
+            .order_by(models.ProductImage.sort_order).first()
+        if nxt:
+            nxt.is_primary = True
+    db.commit()
     return {"deleted": iid}
 
 
@@ -593,8 +611,20 @@ def public_product_detail(slug: str, db: Session = Depends(get_db)):
         func.lower(models.Product.slug) == slug.strip().lower(),
         models.Product.status == "published").first()
     if not p:
+        # Permanent redirect for renamed products (preserves rankings/links).
+        redir = db.query(models.ProductSlugRedirect).filter(
+            func.lower(models.ProductSlugRedirect.old_slug) == slug.strip().lower()).first()
+        if redir:
+            target = db.query(models.Product).filter(
+                models.Product.id == redir.product_id,
+                models.Product.status == "published").first()
+            if target:
+                from fastapi.responses import RedirectResponse
+                return RedirectResponse(url=f"/api/public/products/{target.slug}",
+                                        status_code=308)
         raise HTTPException(404, "Product not found")
     detail = _product_out(p, db, public=True)
+    detail["canonical_slug"] = p.slug
     # related: same category or material, published, exclude self
     rel_q = db.query(models.Product).filter(models.Product.status == "published",
                                             models.Product.id != p.id)

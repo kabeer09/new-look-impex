@@ -2,16 +2,26 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api, mediaUrl, trackEvent, whatsappLink } from "@/lib/api";
+import { api, mediaUrl, cardSrcSet, trackEvent, whatsappLink } from "@/lib/api";
 import type { ProductDetail } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
 import { Loading, ErrorBox, EmptyState, formatPrice } from "@/components/public/States";
 import { ProductGrid } from "@/components/public/Shared";
 
-function GalleryImage({ url, alt }: { url: string; alt: string }) {
+function GalleryImage({ url, alt, eager }: { url: string; alt: string; eager?: boolean }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={mediaUrl(url)} alt={alt} className="object-cover w-full h-full" loading="lazy" />
+    <img
+      src={mediaUrl(url)}
+      srcSet={cardSrcSet(url)}
+      sizes="(max-width: 768px) 100vw, 800px"
+      alt={alt}
+      width={800}
+      height={600}
+      className="object-cover w-full h-full"
+      loading={eager ? undefined : "lazy"}
+      fetchPriority={eager ? "high" : undefined}
+    />
   );
 }
 
@@ -147,7 +157,7 @@ export default function ProductClient({ slug }: { slug: string }) {
           <div>
             <div className="relative aspect-square bg-sand overflow-hidden">
               {main?.url ? (
-                <GalleryImage url={main.url} alt={main.alt_text || product.name} />
+                <GalleryImage url={main.url} alt={main.alt_text || product.name} eager />
               ) : (
                 <span
                   className="absolute inset-0 flex items-center justify-center bg-navy font-serif text-8xl font-bold text-gold-light"

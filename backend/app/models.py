@@ -327,6 +327,17 @@ class ProductCollection(Base):
     collection_id = Column(Integer, ForeignKey("collections.id", ondelete="CASCADE"), primary_key=True)
 
 
+class ProductSlugRedirect(Base):
+    """Permanent slug history: old_slug -> product. Powers 308 redirects so
+    renamed products keep their rankings and inbound links."""
+    __tablename__ = "product_slug_redirects"
+    id = Column(Integer, primary_key=True)
+    old_slug = Column(String(512), unique=True, nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    created_at = Column(DateTime, default=_now)
+
+
 # ================= RFQ =================
 
 class RFQ(Base):
@@ -420,6 +431,7 @@ class MediaFile(Base):
     source = Column(String(32), default="")
     permission = Column(String(512), default="")
     has_thumb = Column(Boolean, default=False)
+    has_webp = Column(Boolean, default=False)
     uploaded_at = Column(DateTime, default=_now)
 
 

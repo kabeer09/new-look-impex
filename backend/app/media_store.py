@@ -51,8 +51,25 @@ def _thumb_name(filename: str) -> str:
     return f"{p.stem}-thumb{p.suffix}"
 
 
+def _webp_name(filename: str) -> str:
+    return f"{Path(filename).stem}-web.webp"
+
+
+def _variant_keys(filename: str) -> list[str]:
+    return [filename, _thumb_name(filename), _webp_name(filename)]
+
+
 def make_thumbnail(content: bytes) -> bytes | None:
     """800px-max JPEG/PNG thumbnail. Returns None for non-images."""
+    return _render_variant(content, THUMB_MAX, "JPEG", 82)
+
+
+def make_webp(content: bytes, max_px: int = 1600) -> bytes | None:
+    """1600px-max WebP derivative for fast delivery. None for non-images."""
+    return _render_variant(content, max_px, "WEBP", 82)
+
+
+def _render_variant(content: bytes, max_px: int, fmt: str, quality: int) -> bytes | None:
     try:
         from PIL import Image
         im = Image.open(io.BytesIO(content))
@@ -62,9 +79,13 @@ def make_thumbnail(content: bytes) -> bytes | None:
             bg = Image.new("RGB", im.size, (248, 245, 239))
             bg.paste(im, mask=im.split()[-1] if im.mode in ("RGBA", "LA") else None)
             im = bg
-        im.thumbnail((THUMB_MAX, THUMB_MAX), Image.LANCZOS)
+        # thumbnail() preserves aspect ratio and never upscales.
+        im.thumbnail((max_px, max_px), Image.LANCZOS)
         buf = io.BytesIO()
-        im.save(buf, format="JPEG", quality=82, optimize=True)
+        if fmt == "JPEG":
+            im.save(buf, format="JPEG", quality=quality, optimize=True)
+        else:
+            im.save(buf, format="WEBP", quality=quality, method=6)
         return buf.getvalue()
     except Exception:
         return None
@@ -109,6 +130,7 @@ def save_file(original_name: str, content: bytes, content_type: str = "",
             raise ValueError("Image file is corrupt or not a valid image.")
     name = descriptive_name(original_name, label)
     thumb = make_thumbnail(content) if ext in ALLOWED_IMAGE_EXT else None
+    webp = make_webp(content) if ext in ALLOWED_IMAGE_EXT else None
     if using_s3():
         try:
             s3 = _s3_client()
@@ -118,6 +140,9 @@ def save_file(original_name: str, content: bytes, content_type: str = "",
             if thumb:
                 s3.put_object(Bucket=bucket, Key=_thumb_name(name), Body=thumb,
                               ContentType="image/jpeg")
+            if webp:
+                s3.put_object(Bucket=bucket, Key=_webp_name(name), Body=webp,
+                              ContentType="image/webp")
         except Exception as e:
             raise ValueError(f"Object storage upload failed: {type(e).__name__}")
     else:
@@ -125,14 +150,17 @@ def save_file(original_name: str, content: bytes, content_type: str = "",
         (MEDIA_DIR / name).write_bytes(content)
         if thumb:
             (MEDIA_DIR / _thumb_name(name)).write_bytes(thumb)
+        if webp:
+            (MEDIA_DIR / _webp_name(name)).write_bytes(webp)
     return {"filename": name, "original_name": original_name,
             "content_type": content_type, "size": len(content),
-            "has_thumb": bool(thumb)}
+            "has_thumb": bool(thumb), "has_webp": bool(webp)}
 
 
 def save_bytes(filename: str, content: bytes, content_type: str = "") -> dict:
     """Persist already-validated bytes (generated imagery, fetched URLs)."""
     thumb = make_thumbnail(content)
+    webp = make_webp(content)
     if using_s3():
         try:
             s3 = _s3_client()
@@ -142,6 +170,9 @@ def save_bytes(filename: str, content: bytes, content_type: str = "") -> dict:
             if thumb:
                 s3.put_object(Bucket=bucket, Key=_thumb_name(filename),
                               Body=thumb, ContentType="image/jpeg")
+            if webp:
+                s3.put_object(Bucket=bucket, Key=_webp_name(filename),
+                              Body=webp, ContentType="image/webp")
         except Exception as e:
             raise ValueError(f"Object storage upload failed: {type(e).__name__}")
     else:
@@ -149,26 +180,34 @@ def save_bytes(filename: str, content: bytes, content_type: str = "") -> dict:
         (MEDIA_DIR / filename).write_bytes(content)
         if thumb:
             (MEDIA_DIR / _thumb_name(filename)).write_bytes(thumb)
-    return {"filename": filename, "size": len(content), "has_thumb": bool(thumb)}
+        if webp:
+            (MEDIA_DIR / _webp_name(filename)).write_bytes(webp)
+    return {"filename": filename, "size": len(content), "has_thumb": bool(thumb),
+            "has_webp": bool(webp)}
 
 
 def read_file(filename: str, variant: str = "") -> tuple[bytes | None, str]:
-    """Returns (bytes_or_None, content_type). Variant 'thumb' serves the thumbnail."""
-    key = _thumb_name(filename) if variant == "thumb" else filename
+    """Returns (bytes_or_None, content_type).
+    Variants: '' (original), 'thumb' (800px JPEG), 'webp' (1600px WebP)."""
+    if variant == "webp":
+        key, ctype = _webp_name(filename), "image/webp"
+    elif variant == "thumb":
+        key, ctype = _thumb_name(filename), "image/jpeg"
+    else:
+        key, ctype = filename, ""
     if using_s3():
         try:
             s3 = _s3_client()
             obj = s3.get_object(Bucket=settings.S3_BUCKET, Key=key)
             body = obj["Body"].read()
-            ctype = obj.get("ContentType", "application/octet-stream")
-            return body, ctype
+            return body, obj.get("ContentType", ctype or "application/octet-stream")
         except Exception:
             return None, ""
     p = MEDIA_DIR / key
     if not p.exists() or not p.is_file():
         return None, ""
-    if variant == "thumb":
-        return p.read_bytes(), "image/jpeg"  # thumbnails are always JPEG
+    if ctype:
+        return p.read_bytes(), ctype
     ext = p.suffix.lower()
     ctype = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
              "webp": "image/webp", "gif": "image/gif",
@@ -180,7 +219,7 @@ def delete_file(filename: str) -> bool:
     if using_s3():
         try:
             s3 = _s3_client()
-            for key in (filename, _thumb_name(filename)):
+            for key in _variant_keys(filename):
                 try:
                     s3.delete_object(Bucket=settings.S3_BUCKET, Key=key)
                 except Exception:
@@ -189,7 +228,7 @@ def delete_file(filename: str) -> bool:
         except Exception:
             return False
     removed = False
-    for key in (filename, _thumb_name(filename)):
+    for key in _variant_keys(filename):
         p = MEDIA_DIR / key
         if p.exists() and p.is_file():
             p.unlink()

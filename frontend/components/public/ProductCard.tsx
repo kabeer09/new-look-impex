@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { mediaUrl } from "@/lib/api";
+import { mediaUrl, cardSrcSet } from "@/lib/api";
 import type { ProductCard as ProductCardType } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
 import { formatPrice } from "./States";
@@ -52,7 +52,11 @@ export function ProductCard({ product }: { product: ProductCardType }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={mediaUrl(img.url)}
+            srcSet={cardSrcSet(img.url)}
+            sizes="(max-width: 640px) 100vw, 400px"
             alt={img.alt_text || product.name}
+            width={800}
+            height={600}
             className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />

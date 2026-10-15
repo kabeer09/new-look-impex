@@ -14,18 +14,25 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     });
     if (!r.ok) return fallback;
     const p = await r.json();
+    // fetch follows 308 slug redirects — canonical/OG always use the CURRENT slug.
+    const canonicalSlug = p.canonical_slug || p.slug || params.slug;
+    const canonical = `https://newlookimpex.store/products/${canonicalSlug}`;
     const title = p.seo_title || p.name || "Product";
     const description =
       p.seo_description || p.short_description || p.description?.slice(0, 160) || fallback.description;
+    const ogImage = p.image?.url
+      ? p.image.url.startsWith("http") ? p.image.url : `${API}${p.image.url}`
+      : undefined;
     return {
       title,
       description,
-      alternates: { canonical: `https://newlookimpex.store/products/${params.slug}` },
+      alternates: { canonical },
       openGraph: {
         title,
         description,
         type: "website",
-        url: `https://newlookimpex.store/products/${params.slug}`,
+        url: canonical,
+        ...(ogImage ? { images: [{ url: ogImage, alt: p.image?.alt_text || p.name }] } : {}),
       },
     };
   } catch {

@@ -21,7 +21,7 @@ def downgrade() -> None:
               "outreach_records", "buyers", "rfq_items", "rfqs",
               "product_collections", "product_specs", "product_variants",
               "product_images", "products", "collections", "categories",
-              "product_imports", "banners"):
+              "product_imports", "banners", "product_slug_redirects"):
         try:
             op.drop_table(t)
         except Exception:

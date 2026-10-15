@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api, mediaUrl, whatsappLink } from "@/lib/api";
+import { api, mediaUrl, cardSrcSet, whatsappLink } from "@/lib/api";
 import type { Banner, Category, Collection, ProductCard as ProductCardType } from "@/lib/types";
 import { ProductGrid, SectionTitle } from "@/components/public/Shared";
 import { ProductCard } from "@/components/public/ProductCard";
@@ -291,7 +291,10 @@ export default function HomeClient() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={mediaUrl(heroBanner.image_url)}
+                  srcSet={cardSrcSet(heroBanner.image_url)}
+                  sizes="(max-width: 1024px) 100vw, 480px"
                   alt=""
+                  fetchPriority="high"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-espresso/85 px-5 py-4 text-left">
