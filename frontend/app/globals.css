@@ -23,6 +23,7 @@
   .btn { @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none; }
   .btn-primary { @apply bg-navy text-white hover:bg-navy-dark; }
   .btn-brass { @apply bg-brass text-white hover:bg-brass-dark; }
+  .btn-clay { @apply bg-clay text-white hover:bg-clay-dark; }
   .btn-ghost { @apply border border-stone-300 text-charcoal hover:bg-sand bg-white; }
   .btn-outline { @apply border border-navy text-navy hover:bg-navy hover:text-white bg-transparent; }
   .btn-sm { @apply px-3 py-1.5 text-xs; }
@@ -43,6 +44,10 @@
 
   /* Links */
   .link { @apply text-brass underline underline-offset-4 hover:decoration-2; }
+
+  /* Artisan storefront accents */
+  .font-accent { @apply font-serif italic; }
+  .eyebrow { @apply uppercase tracking-widest text-xs font-semibold; }
 
   /* Data tables */
   table.data { @apply w-full text-sm; }

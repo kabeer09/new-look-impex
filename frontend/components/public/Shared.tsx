@@ -17,7 +17,7 @@ export function ProductGrid({ products, emptyHint }: { products: ProductCardType
 
 export function PageHero({ title, subtitle, children }: { title: string; subtitle?: string; children?: React.ReactNode }) {
   return (
-    <section className="bg-sand/60 border-b border-sand">
+    <section className="bg-cream border-b border-clay/15">
       <div className="container-x py-12 md:py-16">
         <h1 className="page-title">{title}</h1>
         {subtitle && <p className="page-subtitle">{subtitle}</p>}

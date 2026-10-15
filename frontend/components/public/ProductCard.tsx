@@ -40,10 +40,10 @@ export function ProductCard({ product }: { product: ProductCardType }) {
   const showPrice = !product.price_on_request && product.price != null;
 
   return (
-    <article className="product-card">
+    <article className="product-card !rounded-none border-clay/15">
       <Link
         href={`/products/${product.slug}`}
-        className="relative block aspect-[4/3] bg-sand overflow-hidden"
+        className="relative block aspect-[4/3] bg-cream overflow-hidden"
         aria-label={product.name}
         tabIndex={-1}
       >
@@ -62,12 +62,12 @@ export function ProductCard({ product }: { product: ProductCardType }) {
         {isConcept && (
           <span className="absolute bottom-2 left-2 badge !bg-navy/90 !text-ivory">Concept imagery</span>
         )}
-        {product.featured && <span className="absolute top-2 left-2 badge badge-brass bg-white/90">Featured</span>}
+        {product.featured && <span className="absolute top-2 left-2 badge !bg-clay !text-cream">Featured</span>}
       </Link>
       <div className="p-4 flex flex-col gap-1.5 flex-1">
-        {product.sku && <p className="text-[11px] uppercase tracking-wider text-gray">SKU {product.sku}</p>}
-        <h3 className="font-serif font-semibold text-navy leading-snug">
-          <Link href={`/products/${product.slug}`} className="hover:underline underline-offset-2">
+        {product.sku && <p className="text-[11px] uppercase tracking-[0.14em] text-gray">SKU {product.sku}</p>}
+        <h3 className="font-serif font-semibold text-espresso leading-snug">
+          <Link href={`/products/${product.slug}`} className="hover:text-clay">
             {product.name}
           </Link>
         </h3>
@@ -75,15 +75,15 @@ export function ProductCard({ product }: { product: ProductCardType }) {
         {product.short_description && <p className="text-sm text-gray line-clamp-2">{product.short_description}</p>}
         <div className="mt-auto pt-2">
           {showPrice ? (
-            <p className="text-lg font-bold text-navy">{formatPrice(product.price, product.currency)}</p>
+            <p className="text-lg font-bold text-espresso">{formatPrice(product.price, product.currency)}</p>
           ) : (
-            <p className="text-xs font-semibold text-navy">Price on request</p>
+            <p className="text-xs font-semibold tracking-wide text-clay uppercase">Price on request</p>
           )}
           <div className="mt-2 flex flex-wrap gap-2">
             <Link href={`/products/${product.slug}`} className="btn btn-ghost btn-sm">
               Details
             </Link>
-            <button type="button" className="btn btn-brass btn-sm" onClick={add} disabled={added}>
+            <button type="button" className="btn btn-clay btn-sm" onClick={add} disabled={added}>
               {added ? "Added ✓" : "Request Pricing"}
             </button>
           </div>
