@@ -59,6 +59,7 @@ def _product_out(p: models.Product, db: Session, public: bool = False) -> dict:
         "price": p.price, "currency": p.currency, "price_on_request": p.price_on_request,
         "featured": p.featured, "sort_order": p.sort_order, "status": p.status,
         "seo_title": p.seo_title, "seo_description": p.seo_description,
+        "source_url": p.source_url or "",
         "variants": variants, "specifications": specs, "images": images,
         "collections": colls,
         "image": images[0] if images else None,

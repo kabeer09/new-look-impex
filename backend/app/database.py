@@ -58,3 +58,8 @@ def ensure_schema() -> None:
             ):
                 if col not in existing_mf:
                     conn.execute(text(f"ALTER TABLE media_files ADD COLUMN {col} {ddl}"))
+        # products provenance column
+        if "products" in insp.get_table_names():
+            existing_p = {c["name"] for c in insp.get_columns("products")}
+            if "source_url" not in existing_p:
+                conn.execute(text("ALTER TABLE products ADD COLUMN source_url VARCHAR(1024) DEFAULT ''"))

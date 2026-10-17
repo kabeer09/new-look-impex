@@ -22,6 +22,9 @@ No ranking/lead guarantees. No fabricated metrics, credentials, or testimonials.
 - **Drop-folder auto-import:** photos dropped into `incoming/products/` become AI-described
   draft products; `incoming/banners/` images rotate on the homepage hero. See
   `docs/auto-import.md`. Enable with `INCOMING_ENABLED=true`.
+- **Live-site migration:** `python backend/scripts/import_linker_store.py` imports the
+  merchant's own linker.store catalogue (products + gallery images) as review drafts
+  with claim-scrubbed copy and source URLs. Safe to re-run (dedupes).
 - **Public catalogue:** search, filters (category/material/style/price), sort, pagination, product detail with related products, collections.
 - **RFQ system:** buyers add products to a cart, set quantities/notes, submit consolidated RFQ → reference number → admin CRM. Duplicate protection (24h). Honest email handling (no fake "sent" claims).
 - **Buyer research / CRM:** manual entry, CSV import, AI/rule-based qualification (explainable scores), outreach drafts with human approval gate, suppression list (opt-out), send only via configured SMTP.

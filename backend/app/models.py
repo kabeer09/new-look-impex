@@ -278,6 +278,9 @@ class Product(Base):
     status = Column(String(32), default="draft")  # draft | published | archived
     seo_title = Column(String(512), default="")
     seo_description = Column(String(1024), default="")
+    # Provenance: where this record was imported from (e.g. merchant's own
+    # live site). Used for dedupe and admin review.
+    source_url = Column(String(1024), default="", index=True)
     created_at = Column(DateTime, default=_now)
     updated_at = Column(DateTime, default=_now, onupdate=_now)
     __table_args__ = (
