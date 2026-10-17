@@ -56,6 +56,8 @@ def test_category_mapping():
     assert map_category("Bedside Jar with Glass") == ("copper-bottles", "Copper")
     cat, mat = map_category("Exquisite Moroccan Lanterns")
     assert cat == "metal-lanterns" and mat == ""  # metal unstated
+    cat, mat = map_category("Decorous Stainless Steel Silver Polished Candle Lantern")
+    assert cat == "metal-lanterns" and mat == "Stainless steel"  # stated in name
 
 
 def test_finish_and_seo():

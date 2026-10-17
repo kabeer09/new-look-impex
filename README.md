@@ -25,6 +25,11 @@ No ranking/lead guarantees. No fabricated metrics, credentials, or testimonials.
 - **Live-site migration:** `python backend/scripts/import_linker_store.py` imports the
   merchant's own linker.store catalogue (products + gallery images) as review drafts
   with claim-scrubbed copy and source URLs. Safe to re-run (dedupes).
+- **Merchant-supplied product photos:** `python backend/scripts/import_merchant_ai_images.py`
+  imports a batch of merchant-provided product images as review drafts with SEO
+  titles, meta descriptions and keyword tags. AI-generated images are tagged
+  `rights_source=ai_generated` and stay drafts until a human verifies them against
+  the physical products. Safe to re-run (dedupes).
 - **Public catalogue:** search, filters (category/material/style/price), sort, pagination, product detail with related products, collections.
 - **RFQ system:** buyers add products to a cart, set quantities/notes, submit consolidated RFQ → reference number → admin CRM. Duplicate protection (24h). Honest email handling (no fake "sent" claims).
 - **Buyer research / CRM:** manual entry, CSV import, AI/rule-based qualification (explainable scores), outreach drafts with human approval gate, suppression list (opt-out), send only via configured SMTP.

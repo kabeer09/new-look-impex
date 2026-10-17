@@ -121,11 +121,12 @@ def sanitize_description(text: str) -> tuple[str, bool]:
 
 
 def map_category(name: str) -> tuple[str, str]:
-    """Returns (category_slug, material). Lanterns go to a neutral category
-    because their metal is not stated on the source site."""
+    """Returns (category_slug, material). Lanterns go to a neutral category;
+    their metal is only stated when the source name says so (never invented)."""
     n = name.lower()
     if "lantern" in n:
-        return "metal-lanterns", ""
+        material = "Stainless steel" if "stainless" in n else ""
+        return "metal-lanterns", material
     if "dispenser" in n:
         return "copper-kitchenware", "Copper"
     if "mug" in n:

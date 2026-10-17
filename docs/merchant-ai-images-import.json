@@ -1,0 +1,22 @@
+{
+  "products": [],
+  "skipped": [
+    "classic-hammered",
+    "honeycomb",
+    "fine-hammered",
+    "hammered-base",
+    "antique-engraved",
+    "bottle-glasses-set",
+    "duo-set",
+    "trio-engraved",
+    "mixed-trio",
+    "bedside-jar"
+  ],
+  "banner": {
+    "file": "Gemini_Generated_Image_djh41hdjh41hdjh4.png",
+    "image": "home-banner-e6d03cbc.jpg",
+    "active": false,
+    "note": "inactive \u2014 activate in Admin > Banners after review"
+  },
+  "errors": []
+}
