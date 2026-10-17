@@ -30,6 +30,10 @@ No ranking/lead guarantees. No fabricated metrics, credentials, or testimonials.
   titles, meta descriptions and keyword tags. AI-generated images are tagged
   `rights_source=ai_generated` and stay drafts until a human verifies them against
   the physical products. Safe to re-run (dedupes).
+- **SEO backfill:** `python backend/scripts/backfill_draft_seo.py` cleans every draft's
+  SEO — decodes HTML entities, trims unverifiable-claim phrases, repairs mid-word
+  title/meta cuts, fills missing titles/descriptions and tops keyword tags up to four
+  with category B2B keywords. Safe to re-run (idempotent).
 - **Public catalogue:** search, filters (category/material/style/price), sort, pagination, product detail with related products, collections.
 - **RFQ system:** buyers add products to a cart, set quantities/notes, submit consolidated RFQ → reference number → admin CRM. Duplicate protection (24h). Honest email handling (no fake "sent" claims).
 - **Buyer research / CRM:** manual entry, CSV import, AI/rule-based qualification (explainable scores), outreach drafts with human approval gate, suppression list (opt-out), send only via configured SMTP.

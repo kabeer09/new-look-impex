@@ -18,6 +18,8 @@ from xml.etree import ElementTree
 
 import httpx
 
+from app.merchant_ai_images import DESC_MAX, TITLE_MAX, shorten
+
 SITE = "https://newlookimpex.linker.store"
 SITEMAP_PRODUCTS = SITE + "/sitemaps/product-0.xml"
 UA = "NewLookImpex-Catalogue-Migration/1.0 (+merchant-owned site import)"
@@ -152,11 +154,15 @@ def finish_from_name(name: str) -> str:
 
 
 def seo_for(name: str, category_slug: str) -> tuple[str, str, str, list[str]]:
-    short = re.sub(r"(?i)\s+(for|with)\s+.*$", "", name).strip()[:60]
+    # Word-boundary shortening only — never a raw [:n] slice (that produced
+    # mid-word titles like "...Lantern Hand" and cut-off meta descriptions).
+    short = shorten(re.sub(r"(?i)\s+(for|with)\s+.*$", "", name).strip(),
+                    TITLE_MAX - len(" Wholesale"))
     cat_words = category_slug.replace("-", " ")
-    title = f"{short} Wholesale | New Look Impex"[:60]
-    desc = (f"Wholesale {short.lower()} from Moradabad, India for retailers, "
-            f"importers and gifting buyers. Enquire for a quotation.")[:155]
+    title = shorten(f"{short} Wholesale", TITLE_MAX)
+    desc = shorten(f"Wholesale {short.lower()} from Moradabad, India for "
+                   f"retailers, importers and gifting buyers. Enquire for a "
+                   f"quotation.", DESC_MAX)
     primary = {"copper-bottles": "copper bottles wholesale",
                "copper-kitchenware": "copper kitchenware supplier",
                "copper-mugs-tumblers": "copper drinkware wholesale",

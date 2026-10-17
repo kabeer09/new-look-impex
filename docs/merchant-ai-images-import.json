@@ -1,20 +1,185 @@
 {
-  "products": [],
-  "skipped": [
-    "classic-hammered",
-    "honeycomb",
-    "fine-hammered",
-    "hammered-base",
-    "antique-engraved",
-    "bottle-glasses-set",
-    "duo-set",
-    "trio-engraved",
-    "mixed-trio",
-    "bedside-jar"
+  "products": [
+    {
+      "key": "classic-hammered",
+      "slug": "classic-hammered-copper-water-bottle",
+      "name": "Classic Hammered Copper Water Bottle",
+      "seo_title": "Hammered Copper Water Bottle \u2014 Wholesale",
+      "seo_description": "Wholesale hammered copper water bottle for retailers, importers and gifting buyers. Enquire for pricing, MOQ and lead time.",
+      "tags": [
+        "hammered copper bottle",
+        "copper water bottle wholesale",
+        "copper bottles for retailers",
+        "copper drinkware wholesale"
+      ],
+      "images": 2,
+      "files": [
+        "Gemini_Generated_Image_4dcdqi4dcdqi4dcd.png",
+        "Gemini_Generated_Image_4tiwxh4tiwxh4tiw.png"
+      ]
+    },
+    {
+      "key": "honeycomb",
+      "slug": "honeycomb-pattern-copper-water-bottle",
+      "name": "Honeycomb Pattern Copper Water Bottle",
+      "seo_title": "Honeycomb Copper Water Bottle \u2014 Wholesale",
+      "seo_description": "Wholesale honeycomb-pattern copper water bottle for retailers and importers. Distinct textured finish. Enquire for pricing and MOQ.",
+      "tags": [
+        "honeycomb copper bottle",
+        "textured copper water bottle",
+        "copper bottle wholesale",
+        "copper drinkware supplier"
+      ],
+      "images": 1,
+      "files": [
+        "Gemini_Generated_Image_8awe7r8awe7r8awe.png"
+      ]
+    },
+    {
+      "key": "fine-hammered",
+      "slug": "fine-hammered-copper-water-bottle",
+      "name": "Fine Hammered Copper Water Bottle",
+      "seo_title": "Fine Hammered Copper Bottle \u2014 Wholesale",
+      "seo_description": "Wholesale fine-hammered copper water bottle for retailers, importers and gifting buyers. Enquire for pricing, MOQ and lead time.",
+      "tags": [
+        "fine hammered copper bottle",
+        "copper water bottle wholesale",
+        "copper bottles for retailers",
+        "copper drinkware wholesale"
+      ],
+      "images": 1,
+      "files": [
+        "Gemini_Generated_Image_b36vdqb36vdqb36v.png"
+      ]
+    },
+    {
+      "key": "hammered-base",
+      "slug": "copper-water-bottle-with-hammered-base",
+      "name": "Copper Water Bottle with Hammered Base",
+      "seo_title": "Hammered Base Copper Bottle \u2014 Wholesale",
+      "seo_description": "Wholesale copper water bottle with smooth body and hammered base. A two-texture finish for retail shelves. Enquire for MOQ.",
+      "tags": [
+        "hammered base copper bottle",
+        "copper water bottle wholesale",
+        "two-tone copper bottle",
+        "copper drinkware supplier"
+      ],
+      "images": 1,
+      "files": [
+        "Gemini_Generated_Image_n2s7jyn2s7jyn2s7.png"
+      ]
+    },
+    {
+      "key": "antique-engraved",
+      "slug": "antique-floral-engraved-copper-water-bottle",
+      "name": "Antique Floral Engraved Copper Water Bottle",
+      "seo_title": "Antique Engraved Copper Bottle \u2014 Wholesale",
+      "seo_description": "Wholesale antique-engraved copper water bottle with floral detailing for retailers and importers. Enquire for pricing, MOQ and lead time.",
+      "tags": [
+        "antique engraved copper bottle",
+        "floral copper water bottle",
+        "engraved copper bottle wholesale",
+        "copper drinkware supplier"
+      ],
+      "images": 2,
+      "files": [
+        "Gemini_Generated_Image_790ktt790ktt790k.png",
+        "Gemini_Generated_Image_fn77f1fn77f1fn77.png"
+      ]
+    },
+    {
+      "key": "bottle-glasses-set",
+      "slug": "engraved-copper-bottle-and-glasses-gift-set",
+      "name": "Engraved Copper Bottle and Glasses Gift Set",
+      "seo_title": "Engraved Copper Bottle Set \u2014 Wholesale",
+      "seo_description": "Wholesale engraved copper water bottle with matching glasses \u2014 a gift-set configuration for retailers and gifting buyers. Enquire for MOQ.",
+      "tags": [
+        "copper bottle gift set",
+        "engraved copper set",
+        "copper glasses set wholesale",
+        "copper drinkware gift set"
+      ],
+      "images": 2,
+      "files": [
+        "Gemini_Generated_Image_546m9k546m9k546m.png",
+        "Gemini_Generated_Image_lgsebulgsebulgse.png"
+      ]
+    },
+    {
+      "key": "duo-set",
+      "slug": "engraved-copper-water-bottle-duo-set",
+      "name": "Engraved Copper Water Bottle Duo Set",
+      "seo_title": "Engraved Copper Bottle Duo Set \u2014 Wholesale",
+      "seo_description": "Wholesale two-piece engraved copper bottle set in antique and bright finishes. A ready gift configuration for retailers. Enquire for MOQ.",
+      "tags": [
+        "copper bottle set of 2",
+        "engraved copper bottle duo",
+        "copper bottle gift set wholesale",
+        "copper drinkware supplier"
+      ],
+      "images": 1,
+      "files": [
+        "Gemini_Generated_Image_b7oy0lb7oy0lb7oy.png"
+      ]
+    },
+    {
+      "key": "trio-engraved",
+      "slug": "three-piece-engraved-copper-bottle-set",
+      "name": "Three-Piece Engraved Copper Bottle Set",
+      "seo_title": "3-Piece Engraved Copper Bottle Set",
+      "seo_description": "Wholesale three-piece engraved copper bottle set in dark finishes. A multi-bottle gift configuration for retailers. Enquire for MOQ.",
+      "tags": [
+        "copper bottle set of 3",
+        "engraved copper bottle set",
+        "copper bottle gift set wholesale",
+        "copper drinkware supplier"
+      ],
+      "images": 1,
+      "files": [
+        "Gemini_Generated_Image_d2pavwd2pavwd2pa.png"
+      ]
+    },
+    {
+      "key": "mixed-trio",
+      "slug": "copper-water-bottle-trio-mixed-finishes",
+      "name": "Copper Water Bottle Trio \u2014 Mixed Finishes",
+      "seo_title": "Copper Bottle Trio, Mixed Finishes \u2014 Wholesale",
+      "seo_description": "Wholesale set of copper water bottles in smooth, hammered and striped finishes. Mixed-finish display set for retailers. Enquire for MOQ.",
+      "tags": [
+        "copper bottle set of 3",
+        "mixed finish copper bottles",
+        "copper water bottle wholesale",
+        "copper drinkware supplier"
+      ],
+      "images": 1,
+      "files": [
+        "Gemini_Generated_Image_3o07x3o07x3o07x3.png"
+      ]
+    },
+    {
+      "key": "bedside-jar",
+      "slug": "antique-engraved-copper-bedside-jar",
+      "name": "Antique Engraved Copper Bedside Jar",
+      "seo_title": "Antique Engraved Copper Jar \u2014 Wholesale",
+      "seo_description": "Wholesale antique-engraved copper bedside jar with lid for retailers, importers and gifting buyers. Enquire for pricing, MOQ and lead time.",
+      "tags": [
+        "antique copper jar",
+        "engraved copper jar wholesale",
+        "copper storage jar",
+        "copper home decor wholesale"
+      ],
+      "images": 3,
+      "files": [
+        "Gemini_Generated_Image_ufjr0bufjr0bufjr.png",
+        "Gemini_Generated_Image_cuxvr9cuxvr9cuxv.png",
+        "Gemini_Generated_Image_vd9nhhvd9nhhvd9n.png"
+      ]
+    }
   ],
+  "skipped": [],
   "banner": {
     "file": "Gemini_Generated_Image_djh41hdjh41hdjh4.png",
-    "image": "home-banner-e6d03cbc.jpg",
+    "image": "home-banner-1f84ab0c.jpg",
     "active": false,
     "note": "inactive \u2014 activate in Admin > Banners after review"
   },

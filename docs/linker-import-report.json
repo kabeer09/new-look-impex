@@ -110,20 +110,14 @@
       "name": "Decorous Stainless Steel Silver Polished Candle Lantern Handcrafted - Elegant Outdoor Lighting",
       "url": "https://newlookimpex.linker.store/products/decorous-stainless-steel-silver-polished-candle-lantern-handcrafted-elegant-outdoor-lighting",
       "category": "metal-lanterns",
-      "images": 1,
-      "needs_review": [
-        "material unconfirmed (lantern metal not stated)"
-      ]
+      "images": 1
     },
     {
       "slug": "decorous-stainless-steel-silver-candle-lantern-elegant-outdoor-lighting",
       "name": "Decorous Stainless Steel Silver Candle Lantern - Elegant Outdoor Lighting",
       "url": "https://newlookimpex.linker.store/products/decorous-stainless-steel-silver-candle-lantern-elegant-outdoor-lighting",
       "category": "metal-lanterns",
-      "images": 1,
-      "needs_review": [
-        "material unconfirmed (lantern metal not stated)"
-      ]
+      "images": 1
     },
     {
       "slug": "exquisite-handcrafted-moroccan-lanterns-illuminate-your-space",
@@ -166,26 +160,6 @@
   "skipped": [],
   "errors": [],
   "needs_review": [
-    {
-      "slug": "decorous-stainless-steel-silver-polished-candle-lantern-handcrafted-elegant-outdoor-lighting",
-      "name": "Decorous Stainless Steel Silver Polished Candle Lantern Handcrafted - Elegant Outdoor Lighting",
-      "url": "https://newlookimpex.linker.store/products/decorous-stainless-steel-silver-polished-candle-lantern-handcrafted-elegant-outdoor-lighting",
-      "category": "metal-lanterns",
-      "images": 1,
-      "needs_review": [
-        "material unconfirmed (lantern metal not stated)"
-      ]
-    },
-    {
-      "slug": "decorous-stainless-steel-silver-candle-lantern-elegant-outdoor-lighting",
-      "name": "Decorous Stainless Steel Silver Candle Lantern - Elegant Outdoor Lighting",
-      "url": "https://newlookimpex.linker.store/products/decorous-stainless-steel-silver-candle-lantern-elegant-outdoor-lighting",
-      "category": "metal-lanterns",
-      "images": 1,
-      "needs_review": [
-        "material unconfirmed (lantern metal not stated)"
-      ]
-    },
     {
       "slug": "exquisite-handcrafted-moroccan-lanterns-illuminate-your-space",
       "name": "Exquisite Handcrafted Moroccan Lanterns - Illuminate Your Space",
