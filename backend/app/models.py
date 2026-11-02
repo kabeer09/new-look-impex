@@ -90,6 +90,21 @@ class WebsitePage(Base):
     last_crawled_at = Column(DateTime, nullable=True)
 
 
+class SeoPage(Base):
+    """Admin-configurable SEO metadata for a static page (homepage, /wholesale,
+    /export, regional pages, …). The frontend reads these to emit unique titles,
+    meta descriptions and canonical URLs without a code deploy."""
+    __tablename__ = "seo_pages"
+    id = Column(Integer, primary_key=True)
+    path = Column(String(512), unique=True, nullable=False, index=True)
+    title = Column(String(512), default="")
+    meta_description = Column(String(1024), default="")
+    canonical_url = Column(String(1024), default="")
+    og_image_url = Column(String(1024), default="")
+    published = Column(Boolean, default=True)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
 class SeoAudit(Base):
     __tablename__ = "seo_audits"
     id = Column(Integer, primary_key=True)
@@ -177,12 +192,18 @@ class AnalyticsDaily(Base):
 
 
 class Enquiry(Base):
+    """A buyer lead / wholesale enquiry (the spec's "Lead" entity)."""
     __tablename__ = "enquiries"
     id = Column(Integer, primary_key=True)
+    # Unique reference shown to the buyer and used for support lookups.
+    reference = Column(String(64), unique=True, index=True, nullable=True)
     name = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, index=True)
     company = Column(String(255), default="")
+    phone = Column(String(64), default="")  # WhatsApp / phone
     country = Column(String(64), default="")
+    # Optional link to the product that prompted the enquiry.
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True)
     product_interest = Column(String(255), default="")
     quantity = Column(String(64), default="")
     message = Column(Text, default="")
@@ -255,12 +276,16 @@ class Collection(Base):
 class Product(Base):
     __tablename__ = "products"
     id = Column(Integer, primary_key=True)
+    # Identifier from the source catalogue (e.g. linker.store). Preserved so the
+    # record can be re-synchronised with the upstream store on later imports.
+    external_product_id = Column(String(255), default="", index=True)
     name = Column(String(512), nullable=False)
     slug = Column(String(512), unique=True, nullable=False, index=True)
     short_description = Column(Text, default="")
     description = Column(Text, default="")
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
     material = Column(String(255), default="")
+    capacity = Column(String(128), default="")  # only when confirmed (e.g. "1000 ml")
     finish = Column(String(255), default="")
     color = Column(String(255), default="")
     dimensions = Column(String(255), default="")
@@ -273,6 +298,11 @@ class Product(Base):
     price = Column(Float, nullable=True)  # optional; null = not published
     currency = Column(String(8), default="USD")
     price_on_request = Column(Boolean, default=True)
+    # public | on_request | hidden — explicit price display control for the CSV
+    # import / storefront. Kept in sync with price_on_request on save.
+    price_visibility = Column(String(32), default="on_request")
+    # "" (unknown/not tracked) | in_stock | out_of_stock | made_to_order
+    stock_status = Column(String(32), default="")
     featured = Column(Boolean, default=False)
     sort_order = Column(Integer, default=0)
     status = Column(String(32), default="draft")  # draft | published | archived
@@ -451,6 +481,77 @@ class ProductImport(Base):
     error = Column(Text, default="")
     created_by = Column(String(255), default="")
     created_at = Column(DateTime, default=_now)
+
+
+# ================= AI CATALOGUE PIPELINE =================
+
+# Pipeline statuses for AI-managed products (spec §3). Stored on
+# ProductSeoProfile.status; "published" mirrors products.status="published".
+PIPELINE_STATUSES = ("pending", "analyzing", "ai_generated", "needs_review",
+                     "approved", "published", "failed")
+
+
+class ProductSeoProfile(Base):
+    """Full AI-generated product & SEO payload for one product (spec §5-§9).
+
+    One row per product in the AI catalogue pipeline. Holds the structured AI
+    output (descriptions, IndiaMART-style keywords, Google metadata, image SEO,
+    JSON-LD, B2B info) as JSON blobs so the admin can edit every field before
+    approving. Nothing here is public until the product is published AND the
+    profile is approved — the pipeline never auto-publishes."""
+    __tablename__ = "product_seo_profiles"
+    id = Column(Integer, primary_key=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"),
+                        nullable=False, index=True, unique=True)
+    # pending | analyzing | ai_generated | needs_review | approved | published | failed
+    status = Column(String(32), default="pending", index=True)
+    # Provenance: "ai:<model>" or "rule-based (no vision provider)".
+    source = Column(String(128), default="")
+    # Facts observed in the image vs assumptions — kept separate (spec §4/§15).
+    observed_json = Column(Text, default="{}")
+    descriptions_json = Column(Text, default="{}")   # short/detailed/b2b/manufacturer/indiamart/buyer
+    keywords_json = Column(Text, default="{}")       # primary/secondary/long_tail/… groups
+    seo_json = Column(Text, default="{}")            # title/meta/slug/focus/OG/canonical
+    image_seo_json = Column(Text, default="[]")      # per-image alt/title/caption/description
+    schema_json = Column(Text, default="{}")         # JSON-LD blocks
+    b2b_json = Column(Text, default="{}")            # manufacturer/exporter/wholesale info
+    needs_verification_json = Column(Text, default="[]")
+    error = Column(Text, default="")
+    generated_at = Column(DateTime, nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+    approved_by = Column(String(255), default="")
+    published_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+    __table_args__ = (Index("ix_seo_profile_status", "status"),)
+
+
+class ProductScanFile(Base):
+    """Hash registry for the product-photo scan folder (spec §3/§14).
+
+    One row per file ever seen in PRODUCT_SCAN_DIR. Originals are never moved
+    or deleted; re-scans skip registered paths, and sha256/phash prevent the
+    same photo (or a near-identical copy) from creating duplicate products."""
+    __tablename__ = "product_scan_files"
+    id = Column(Integer, primary_key=True)
+    # Path relative to the scan root — stable identifier across scans.
+    rel_path = Column(String(1024), unique=True, nullable=False, index=True)
+    sha256 = Column(String(64), nullable=False, index=True)
+    # Perceptual (average) hash, hex-encoded 64-bit — near-duplicate detection.
+    phash = Column(String(16), default="", index=True)
+    size = Column(Integer, default=0)
+    original_name = Column(String(255), default="")
+    # Media-store filename after ingestion (descriptive name + derivatives).
+    media_filename = Column(String(255), default="")
+    # Product this image belongs to (set once ingested/attached).
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="SET NULL"),
+                        nullable=True, index=True)
+    # new | ingested | attached | duplicate | failed
+    status = Column(String(32), default="new", index=True)
+    detail = Column(Text, default="")
+    first_seen_at = Column(DateTime, default=_now)
+    ingested_at = Column(DateTime, nullable=True)
+    __table_args__ = (Index("ix_scan_file_sha", "sha256"),)
 
 
 class Banner(Base):

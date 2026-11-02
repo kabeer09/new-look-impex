@@ -1,9 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { getToken } from "@/lib/api";
-import { logout } from "@/lib/auth";
+import { usePathname } from "next/navigation";
 
 const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Overview", href: "/admin/overview", section: "Workspace" },
@@ -12,6 +10,8 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Collections", href: "/admin/collections", section: "Catalogue" },
   { label: "Media", href: "/admin/media", section: "Catalogue" },
   { label: "AI Product Import", href: "/admin/ai-import", section: "Catalogue" },
+  { label: "AI Catalogue", href: "/admin/ai-catalogue", section: "Catalogue" },
+  { label: "CSV Import", href: "/admin/csv-import", section: "Catalogue" },
   { label: "Banners", href: "/admin/banners", section: "Catalogue" },
   { label: "Product Catalogue (public)", href: "/catalogue", section: "Catalogue" },
   { label: "RFQs", href: "/admin/rfqs", section: "Orders" },
@@ -23,6 +23,7 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "SEO Audits", href: "/admin/audits", section: "SEO" },
   { label: "Recommendations", href: "/admin/recommendations", section: "SEO" },
   { label: "Content Studio", href: "/admin/content", section: "SEO" },
+  { label: "SEO Page Metadata", href: "/admin/seo-pages", section: "SEO" },
   { label: "Publishing", href: "/admin/publishing", section: "SEO" },
   { label: "Integrations", href: "/admin/integrations", section: "SEO" },
   { label: "Analytics", href: "/admin/analytics", section: "SEO" },
@@ -35,38 +36,7 @@ const SECTIONS = ["Workspace", "Catalogue", "Orders", "SEO", "System"];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [authed, setAuthed] = useState<boolean>(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Login + OAuth callback must stay reachable without a token —
-  // otherwise logged-out users can never reach the login form.
-  const isPublicAuthPath =
-    pathname === "/admin/login" || pathname.startsWith("/admin/auth/");
-
-  useEffect(() => {
-    if (isPublicAuthPath) {
-      setAuthed(true);
-      return;
-    }
-    if (!getToken()) {
-      setAuthed(false);
-      const next = encodeURIComponent(window.location.pathname + window.location.search);
-      router.replace(`/admin/login?next=${next}`);
-    }
-  }, [router, pathname, isPublicAuthPath]);
-
-  if (!authed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-ivory">
-        <div className="card max-w-md text-center">
-          <h1 className="font-serif font-bold text-navy text-xl">Admin login required</h1>
-          <p className="text-sm text-gray mt-2">Redirecting to the admin login…</p>
-          <Link href="/admin/login" className="btn btn-primary mt-4">Go to login</Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-ivory">
@@ -97,15 +67,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/" className="block text-center text-xs text-brass-light hover:text-white border border-ivory/20 rounded-lg py-2">
             View public site ↗
           </Link>
-          <button
-            className="w-full text-center text-xs text-ivory/60 hover:text-white py-1"
-            onClick={() => {
-              logout();
-              router.replace("/admin/login");
-            }}
-          >
-            Log out
-          </button>
         </div>
       </aside>
 

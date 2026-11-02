@@ -68,9 +68,12 @@ Vercel and Render deploy straight from Git. The project is already a committed g
    `CORS_ORIGINS=https://<your-vercel-app>` (comma-separate if keeping localhost too) → Save
    (Render auto-redeploys).
 2. On the **live** site, open `/admin/login` → log in with `ADMIN_EMAIL/ADMIN_PASSWORD`.
-3. **Products:** Admin → Products → **Import CSV** → upload `product-catalogue-export.csv`
-   (a snapshot is saved next to this repo; export a fresh one anytime via Admin → Products → Export).
-   Categories auto-match by name; review drafts, then publish.
+3. **Products:** Admin → Catalogue → **CSV Import** → *Download CSV template*, fill it in, then upload.
+   You will see a **preview** of every row (validation errors, duplicate-`external_product_id`
+   detection, create vs update) before anything is written. Choose a commit mode
+   (*update existing + create new* / *create new only* / *update existing only*). Imported rows stay
+   **draft** unless you tick *Publish imported rows*. A snapshot is saved next to this repo
+   (`product-catalogue-export.csv`); export a fresh one anytime via Admin → Products → Export.
 4. **Photos:** the 8 local images don't transfer automatically — re-upload each product's
    photos once via Admin → Products → Images (with rights source), or configure Supabase
    Storage first (Step 1.3 + `STORAGE_BACKEND=s3` + `S3_*` vars on Render) so all future
@@ -85,7 +88,10 @@ Vercel and Render deploy straight from Git. The project is already a committed g
 ## Step 5 — Daily use (no code)
 
 - **Update products / upload photos:** live site → `/admin/products`
-- **New enquiries & RFQs:** `/admin/rfqs`, `/admin/enquiries`, `/admin/buyers`
+- **Bulk product import:** `/admin/csv-import` (template → preview → commit modes)
+- **New enquiries & leads:** `/admin/enquiries` (filter by country/status, search, internal notes, CSV export), plus `/admin/rfqs`, `/admin/buyers`
+- **Business info, WhatsApp number, SEO defaults:** `/admin/settings` — the WhatsApp click-to-chat number, address, social links and default SEO title/description are all editable here (no code change needed)
+- **Per-page SEO metadata:** `/admin/seo-pages`
 - **Catalogue PDF, SEO, keywords, AI import:** same sidebar as local
 - **Code updates:** edit locally → `git commit` → `git push` → Vercel/Render redeploy automatically.
 

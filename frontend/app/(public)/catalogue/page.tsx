@@ -4,6 +4,7 @@ import { PageHero } from "@/components/public/Shared";
 import { Loading, ErrorBox } from "@/components/public/States";
 import { api, trackEvent, downloadFile } from "@/lib/api";
 import type { CatalogueMeta } from "@/lib/types";
+import { WhatsAppLink } from "@/components/public/WhatsAppLink";
 
 export default function CataloguePage() {
   const [meta, setMeta] = useState<CatalogueMeta | null>(null);
@@ -115,7 +116,7 @@ export default function CataloguePage() {
               <h3 className="font-serif font-bold text-navy text-xl">Questions</h3>
               <p className="text-sm text-gray mt-2">
                 Email <a className="link" href="mailto:newlookimpex@gmail.com">newlookimpex@gmail.com</a>{" "}
-                or WhatsApp <a className="link" href="https://wa.me/918218251238" target="_blank" rel="noopener noreferrer">+91 8218251238</a>.
+                or WhatsApp <WhatsAppLink className="link">chat with us</WhatsAppLink>.
               </p>
             </div>
           </div>

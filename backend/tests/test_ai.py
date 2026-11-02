@@ -22,8 +22,7 @@ db.commit()
 db.close()
 
 c = TestClient(app)
-tok = c.post("/api/auth/login", json={"email": "admin@test.example", "password": "Secret123!"}).json()["access_token"]
-H = {"Authorization": f"Bearer {tok}"}
+H: dict = {}  # auth removed
 
 
 @pytest.fixture(autouse=True)

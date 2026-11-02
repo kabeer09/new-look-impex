@@ -94,7 +94,9 @@ class EnquiryPublicIn(_NullCoercing):
     name: str = Field(min_length=2, max_length=255)
     email: EmailStr
     company: str = ""
+    phone: str = ""  # WhatsApp / phone
     country: str = ""
+    product_id: Optional[int] = None
     product_interest: str = ""
     quantity: str = ""
     message: str = Field(min_length=5)
@@ -153,10 +155,12 @@ class SpecIn(_NullCoercing):
 class ProductIn(_NullCoercing):
     name: str = Field(min_length=1, max_length=512)
     slug: str = ""
+    external_product_id: str = ""  # source-catalogue id (preserved for re-sync)
     short_description: str = ""
     description: str = ""
     category_id: Optional[int] = None
     material: str = ""
+    capacity: str = ""
     finish: str = ""
     color: str = ""
     dimensions: str = ""
@@ -169,6 +173,9 @@ class ProductIn(_NullCoercing):
     price: Optional[float] = None
     currency: str = "USD"
     price_on_request: bool = True
+    # "" = not specified (derive from price_on_request) | public | on_request | hidden
+    price_visibility: str = ""
+    stock_status: str = ""  # "" | in_stock | out_of_stock | made_to_order
     featured: bool = False
     sort_order: int = 0
     status: str = "draft"
@@ -231,3 +238,12 @@ class EventIn(_NullCoercing):
     country: str = ""
     referrer: str = ""
     campaign: str = ""
+
+
+class SeoPageIn(_NullCoercing):
+    path: str = Field(min_length=1, max_length=512)
+    title: str = ""
+    meta_description: str = ""
+    canonical_url: str = ""
+    og_image_url: str = ""
+    published: bool = True

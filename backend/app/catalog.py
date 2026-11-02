@@ -50,13 +50,17 @@ def _product_out(p: models.Product, db: Session, public: bool = False) -> dict:
              .filter(models.ProductCollection.product_id == p.id).all()]
     out = {
         "id": p.id, "name": p.name, "slug": p.slug,
+        "external_product_id": p.external_product_id or "",
         "short_description": p.short_description, "description": p.description,
         "category": cat, "category_id": p.category_id,
-        "material": p.material, "finish": p.finish, "color": p.color,
+        "material": p.material, "capacity": p.capacity or "",
+        "finish": p.finish, "color": p.color,
         "dimensions": p.dimensions, "weight": p.weight, "sku": p.sku,
         "tags": json.loads(p.tags or "[]"),
         "moq": p.moq, "lead_time": p.lead_time, "packaging_info": p.packaging_info,
         "price": p.price, "currency": p.currency, "price_on_request": p.price_on_request,
+        "price_visibility": p.price_visibility or "on_request",
+        "stock_status": p.stock_status or "",
         "featured": p.featured, "sort_order": p.sort_order, "status": p.status,
         "seo_title": p.seo_title, "seo_description": p.seo_description,
         "source_url": p.source_url or "",
@@ -226,12 +230,23 @@ def collection_remove_product(colid: int, pid: int, db: Session = Depends(get_db
 # ---------------- ADMIN: products ----------------
 
 def _save_product(p: models.Product, body: ProductIn, db: Session, is_new: bool) -> models.Product:
-    for field in ("short_description", "description", "category_id", "material", "finish",
-                  "color", "dimensions", "weight", "sku", "moq", "lead_time",
+    for field in ("short_description", "description", "category_id", "material", "capacity",
+                  "finish", "color", "dimensions", "weight", "sku", "moq", "lead_time",
                   "packaging_info", "price", "currency", "price_on_request", "featured",
-                  "sort_order", "status", "seo_title", "seo_description"):
+                  "sort_order", "status", "seo_title", "seo_description", "stock_status"):
         setattr(p, field, getattr(body, field))
     p.name = body.name.strip()
+    # Preserve the source-catalogue identifier so the record can be re-synced.
+    p.external_product_id = (body.external_product_id or "").strip()[:255]
+    # Normalise price visibility; keep the legacy bool in sync so the storefront
+    # and old clients agree. "public" = price shown; otherwise price on request.
+    # Backward compatible: clients that only send price_on_request still work —
+    # an explicit price_on_request=False maps to public visibility.
+    vis = (body.price_visibility or "").strip().lower()
+    if vis not in ("public", "on_request", "hidden"):
+        vis = "public" if not body.price_on_request else "on_request"
+    p.price_visibility = vis
+    p.price_on_request = vis != "public"
     p.tags = json.dumps([t.strip() for t in body.tags if t.strip()])
     old_slug = (p.slug or "").strip().lower() or None
     if is_new or not p.slug:
@@ -327,10 +342,12 @@ def create_product(body: ProductIn, db: Session = Depends(get_db),
     return _product_out(p, db)
 
 
-PRODUCT_CSV_FIELDS = ["name", "slug", "short_description", "description", "category",
-                      "material", "finish", "color", "dimensions", "weight", "sku",
-                      "tags", "moq", "lead_time", "packaging_info", "price", "currency",
-                      "price_on_request", "featured", "status", "seo_title", "seo_description"]
+PRODUCT_CSV_FIELDS = ["external_product_id", "name", "slug", "short_description",
+                      "description", "category", "material", "capacity", "finish",
+                      "color", "dimensions", "weight", "sku", "tags", "moq",
+                      "lead_time", "packaging_info", "price", "currency",
+                      "price_visibility", "stock_status", "featured", "status",
+                      "seo_title", "seo_description"]
 
 
 @router.post("/api/products/import", status_code=201)
@@ -356,20 +373,37 @@ def import_products(payload: dict, db: Session = Depends(get_db),
                 if cat:
                     category_id = cat.id
             slug = slugify(row.get("slug") or name)
-            existing = db.query(models.Product).filter(
-                func.lower(models.Product.slug) == slug.lower()).first()
+            # Dedupe by preserved source identifier first (stable across renames),
+            # then fall back to slug matching.
+            ext_id = (row.get("external_product_id") or "").strip()
+            existing = None
+            if ext_id:
+                existing = db.query(models.Product).filter(
+                    models.Product.external_product_id == ext_id).first()
+            if not existing:
+                existing = db.query(models.Product).filter(
+                    func.lower(models.Product.slug) == slug.lower()).first()
             tags = [t.strip() for t in (row.get("tags") or "").split(";") if t.strip()]
+            price_visibility = (row.get("price_visibility") or "").strip().lower()
+            if price_visibility not in ("public", "on_request", "hidden"):
+                # legacy CSVs used a price_on_request boolean column
+                price_on_request = (row.get("price_on_request") or "").lower() in ("", "true", "1", "yes")
+                price_visibility = "on_request" if price_on_request else "public"
             body = ProductIn(
                 name=name, slug=slug,
+                external_product_id=(row.get("external_product_id") or "").strip(),
                 short_description=row.get("short_description") or "",
                 description=row.get("description") or "",
                 category_id=category_id, material=row.get("material") or "",
+                capacity=row.get("capacity") or "",
                 finish=row.get("finish") or "", color=row.get("color") or "",
                 dimensions=row.get("dimensions") or "", weight=row.get("weight") or "",
                 sku=row.get("sku") or "", tags=tags, moq=row.get("moq") or "",
                 lead_time=row.get("lead_time") or "", packaging_info=row.get("packaging_info") or "",
                 price=price, currency=(row.get("currency") or "USD"),
-                price_on_request=(row.get("price_on_request") or "").lower() in ("", "true", "1", "yes"),
+                price_visibility=price_visibility,
+                price_on_request=(price_visibility != "public"),
+                stock_status=(row.get("stock_status") or "").strip().lower(),
                 featured=(row.get("featured") or "").lower() in ("true", "1", "yes"),
                 status=(row.get("status") or "draft").lower(),
                 seo_title=row.get("seo_title") or "", seo_description=row.get("seo_description") or "")
@@ -385,6 +419,221 @@ def import_products(payload: dict, db: Session = Depends(get_db),
     return {"created": created, "updated": updated, "errors": errors}
 
 
+# ---------------- CSV import workflow: template / preview / commit ----------------
+
+PRODUCT_CSV_REQUIRED = ["name"]
+PRODUCT_CSV_OPTIONAL = ["external_product_id", "slug", "short_description", "description",
+                        "category", "material", "capacity", "finish", "color", "dimensions",
+                        "weight", "sku", "tags", "moq", "lead_time", "packaging_info",
+                        "price", "currency", "price_visibility", "stock_status", "featured",
+                        "status", "seo_title", "seo_description"]
+
+
+@router.get("/api/products/import/template")
+def download_csv_template(u=Depends(require_role("admin", "editor"))):
+    """Downloadable CSV template with all supported columns and one example row."""
+    import csv as _csv
+    import io as _io
+    buf = _io.StringIO()
+    w = _csv.writer(buf)
+    w.writerow(PRODUCT_CSV_FIELDS)
+    w.writerow(["LS-1001", "Hammered Copper Water Bottle", "hammered-copper-water-bottle",
+                "Pure copper bottle with hammered finish.", "A handcrafted copper water bottle.",
+                "Copper Bottles", "Copper", "1000 ml", "Hammered", "Copper", "26 cm x 8 cm",
+                "250 g", "NLI-CCB-1001", "copper;bottle;wholesale", "50 pcs", "",
+                "", "", "USD", "on_request", "in_stock", "false", "draft",
+                "Hammered Copper Bottle Wholesale | New Look Impex",
+                "Wholesale hammered copper water bottles from Moradabad, India."])
+    return PlainTextResponse(buf.getvalue(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=newlookimpex-product-template.csv"})
+
+
+def _row_to_productin(row: dict, db: Session) -> tuple[ProductIn | None, list[str]]:
+    """Convert one CSV row into a ProductIn, returning (body, errors)."""
+    errs = []
+    name = (row.get("name") or "").strip()
+    if not name:
+        # ProductIn requires a non-empty name, so return early with the error.
+        return None, ["missing required field: name"]
+    price = None
+    price_raw = (row.get("price") or "").strip()
+    if price_raw:
+        try:
+            price = float(price_raw)
+        except ValueError:
+            errs.append(f"invalid price: {price_raw!r} (must be a number)")
+    category_id = None
+    cat_name = (row.get("category") or "").strip()
+    if cat_name:
+        cat = db.query(models.Category).filter(
+            func.lower(models.Category.name) == cat_name.lower()).first()
+        if cat:
+            category_id = cat.id
+        else:
+            errs.append(f"unknown category (will be left unassigned): {cat_name!r}")
+    status = (row.get("status") or "draft").strip().lower()
+    if status not in ("draft", "published", "archived"):
+        errs.append(f"invalid status: {status!r} (use draft/published/archived)")
+        status = "draft"
+    price_visibility = (row.get("price_visibility") or "").strip().lower()
+    if price_visibility not in ("public", "on_request", "hidden", ""):
+        errs.append(f"invalid price_visibility: {price_visibility!r}")
+        price_visibility = "on_request"
+    if not price_visibility:
+        price_on_request = (row.get("price_on_request") or "").lower() in ("", "true", "1", "yes")
+        price_visibility = "on_request" if price_on_request else "public"
+    tags = [t.strip() for t in (row.get("tags") or "").split(";") if t.strip()]
+    body = ProductIn(
+        name=name, slug=(row.get("slug") or name),
+        external_product_id=(row.get("external_product_id") or "").strip(),
+        short_description=row.get("short_description") or "",
+        description=row.get("description") or "",
+        category_id=category_id, material=row.get("material") or "",
+        capacity=row.get("capacity") or "", finish=row.get("finish") or "",
+        color=row.get("color") or "", dimensions=row.get("dimensions") or "",
+        weight=row.get("weight") or "", sku=row.get("sku") or "", tags=tags,
+        moq=row.get("moq") or "", lead_time=row.get("lead_time") or "",
+        packaging_info=row.get("packaging_info") or "",
+        price=price, currency=(row.get("currency") or "USD"),
+        price_visibility=price_visibility, price_on_request=(price_visibility != "public"),
+        stock_status=(row.get("stock_status") or "").strip().lower(),
+        featured=(row.get("featured") or "").lower() in ("true", "1", "yes"),
+        status=status,
+        seo_title=row.get("seo_title") or "", seo_description=row.get("seo_description") or "")
+    return body, errs
+
+
+def _find_existing(db: Session, row: dict, body: ProductIn):
+    """Locate an existing product by external id, then slug."""
+    ext_id = (row.get("external_product_id") or "").strip()
+    if ext_id:
+        p = db.query(models.Product).filter(
+            models.Product.external_product_id == ext_id).first()
+        if p:
+            return p
+    slug = slugify(body.slug or body.name)
+    return db.query(models.Product).filter(
+        func.lower(models.Product.slug) == slug.lower()).first()
+
+
+@router.post("/api/products/import/preview")
+def preview_csv_import(payload: dict, db: Session = Depends(get_db),
+                       u=Depends(require_role("admin", "editor"))):
+    """Validate uploaded CSV rows and classify each as create / update / error.
+    Nothing is written — the admin reviews before committing."""
+    csv_text = payload.get("csv", "")
+    if not csv_text.strip():
+        raise HTTPException(400, "Provide {csv: '...'} content.")
+    reader = csv.DictReader(io.StringIO(csv_text))
+    fieldnames = reader.fieldnames or []
+    unknown = [f for f in fieldnames if f not in PRODUCT_CSV_FIELDS]
+    rows_out, counts = [], {"create": 0, "update": 0, "error": 0}
+    seen_ext_ids: dict[str, int] = {}
+    for i, row in enumerate(reader, start=2):
+        body, errs = _row_to_productin(row, db)
+        ext_id = (row.get("external_product_id") or "").strip()
+        # duplicate external ids within the file itself
+        if ext_id:
+            if ext_id in seen_ext_ids:
+                errs.append(f"duplicate external_product_id {ext_id!r} (also on row {seen_ext_ids[ext_id]})")
+            else:
+                seen_ext_ids[ext_id] = i
+        action = "error"
+        existing = None
+        if not any(e.startswith("missing required") or e.startswith("invalid ") for e in errs):
+            existing = _find_existing(db, row, body)
+            action = "update" if existing else "create"
+        # hard errors (missing name / invalid price/status) => error bucket
+        hard = any(e.startswith("missing required") or e.startswith("invalid price")
+                   or e.startswith("invalid status") or e.startswith("invalid price_visibility")
+                   or e.startswith("duplicate external") for e in errs)
+        if hard:
+            action = "error"
+            counts["error"] += 1
+        elif existing:
+            counts["update"] += 1
+        else:
+            counts["create"] += 1
+        rows_out.append({
+            "row": i, "action": action,
+            "name": (row.get("name") or "").strip(),
+            "external_product_id": ext_id,
+            "slug": slugify(body.slug or body.name) if body else "",
+            "existing_id": existing.id if existing else None,
+            "status": body.status if body else "draft",
+            "errors": errs,
+        })
+    preview_id = None
+    if rows_out:
+        imp = models.ProductImport(kind="csv", status="previewed",
+                                   items_json=json.dumps(rows_out)[:200000],
+                                   created_by=u.email)
+        db.add(imp); db.commit(); db.refresh(imp)
+        preview_id = imp.id
+    return {"preview_id": preview_id, "fieldnames": fieldnames,
+            "unknown_columns": unknown, "total_rows": len(rows_out),
+            "counts": counts, "rows": rows_out,
+            "note": "Nothing has been imported yet. Choose a mode and commit to apply."}
+
+
+@router.post("/api/products/import/commit")
+def commit_csv_import(payload: dict, db: Session = Depends(get_db),
+                      u=Depends(require_role("admin", "editor"))):
+    """Apply a reviewed CSV. Modes:
+       - update_existing (default): update matched products, create new ones.
+       - create_new_only: only create products that don't already exist.
+       - update_only: only update matched products; skip new ones.
+       auto_publish=false (default) forces imported rows to draft unless the CSV
+       explicitly marks them published AND auto_publish is true."""
+    csv_text = payload.get("csv", "")
+    mode = (payload.get("mode") or "update_existing").strip()
+    if mode not in ("update_existing", "create_new_only", "update_only"):
+        raise HTTPException(400, "mode must be update_existing, create_new_only or update_only.")
+    auto_publish = bool(payload.get("auto_publish", False))
+    if not csv_text.strip():
+        raise HTTPException(400, "Provide {csv: '...'} content.")
+    reader = csv.DictReader(io.StringIO(csv_text))
+    created, updated, skipped, errors = 0, 0, 0, []
+    for i, row in enumerate(reader, start=2):
+        body, errs = _row_to_productin(row, db)
+        hard = [e for e in errs if e.startswith("missing required") or e.startswith("invalid ")]
+        if hard or body is None:
+            errors.append(f"row {i}: {'; '.join(hard) or 'invalid row'}")
+            skipped += 1
+            continue
+        # Safety: never auto-publish unless explicitly enabled.
+        if not auto_publish and body.status == "published":
+            body.status = "draft"
+        existing = _find_existing(db, row, body)
+        try:
+            if existing:
+                if mode == "create_new_only":
+                    skipped += 1
+                    continue
+                _save_product(existing, body, db, is_new=False)
+                updated += 1
+            else:
+                if mode == "update_only":
+                    skipped += 1
+                    continue
+                p = models.Product(name=body.name.strip(), slug=slugify(body.slug or body.name))
+                _save_product(p, body, db, is_new=True)
+                created += 1
+        except Exception as e:
+            errors.append(f"row {i}: {type(e).__name__}: {str(e)[:120]}")
+            skipped += 1
+    # log the import result (§5: log import results)
+    db.add(models.ProductImport(kind="csv", status="saved" if not errors else "partial",
+                                items_json=json.dumps({"mode": mode, "auto_publish": auto_publish,
+                                                       "created": created, "updated": updated,
+                                                       "skipped": skipped})[:20000],
+                                error="; ".join(errors)[:2000],
+                                created_by=u.email))
+    db.commit()
+    return {"created": created, "updated": updated, "skipped": skipped, "errors": errors,
+            "mode": mode, "auto_publish": auto_publish}
+
+
 @router.get("/api/products/export")
 def export_products(db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
     buf = io.StringIO()
@@ -396,13 +645,16 @@ def export_products(db: Session = Depends(get_db), u=Depends(require_role("admin
             c = db.query(models.Category).filter(models.Category.id == p.category_id).first()
             cat = c.name if c else ""
         w.writerow({
+            "external_product_id": p.external_product_id or "",
             "name": p.name, "slug": p.slug, "short_description": p.short_description,
             "description": p.description, "category": cat, "material": p.material,
-            "finish": p.finish, "color": p.color, "dimensions": p.dimensions,
+            "capacity": p.capacity or "", "finish": p.finish, "color": p.color,
+            "dimensions": p.dimensions,
             "weight": p.weight, "sku": p.sku, "tags": ";".join(json.loads(p.tags or "[]")),
             "moq": p.moq, "lead_time": p.lead_time, "packaging_info": p.packaging_info,
             "price": p.price if p.price is not None else "", "currency": p.currency,
-            "price_on_request": str(p.price_on_request).lower(),
+            "price_visibility": p.price_visibility or "on_request",
+            "stock_status": p.stock_status or "",
             "featured": str(p.featured).lower(), "status": p.status,
             "seo_title": p.seo_title, "seo_description": p.seo_description})
     return PlainTextResponse(buf.getvalue(), media_type="text/csv",

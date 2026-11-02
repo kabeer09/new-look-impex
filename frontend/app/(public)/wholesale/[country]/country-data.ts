@@ -120,6 +120,28 @@ export const COUNTRIES: Record<string, CountryConfig> = {
     ],
     keywords: "copper bottles wholesale Canada, Indian home décor wholesaler Canada, corporate gifting supplier",
   },
+  europe: {
+    slug: "europe",
+    name: "Europe",
+    h1: "Wholesale Copper & Brass Homeware for European Buyers",
+    intro: [
+      "New Look Impex supplies copper drinkware and brass kitchenware to homewares, gift and hospitality buyers across Europe — from independent concept stores and department-store buying offices to hotel-group tabletop programmes. Copper bottles, tumblers and pitchers suit design-led and gifting ranges, while brass kadai and serveware fit speciality kitchen and entertaining assortments.",
+      "European orders are quoted individually in writing — product, finish, quantity, packaging, Incoterms and shipping — before anything is committed. We make no claims about EU warehousing, local stock, delivery times or country-specific partnerships; every order ships per order from Moradabad, India, with terms confirmed for your destination.",
+    ],
+    bullets: [
+      "Copper bottles, tumblers and pitchers for design-led homewares and gift ranges",
+      "Brass kadai, mortar and pestle and serveware for speciality kitchen retailers",
+      "Gift-boxed sets for Christmas, Diwali and corporate gifting programmes",
+      "Written per-order quotes with MOQ, lead time, packaging and Incoterms",
+    ],
+    categories: ["copper-bottles", "copper-mugs-tumblers", "copper-jugs-pitchers", "brass-kitchenware"],
+    faqs: [
+      ["How do wholesale orders to the EU work?", "Send an enquiry or RFQ with products, quantities and destination country. We reply with a written quote covering price, MOQ, lead time, packaging and shipping Incoterms. Your importer handles customs clearance and any duties or VAT on arrival."],
+      ["Do you hold stock in Europe?", "No. All products are made to order in Moradabad, India, and shipped per order. We do not operate European warehousing, local stock or fixed transit schedules."],
+      ["What about product compliance and documentation?", "We provide commercial documentation for the products you order (such as product descriptions and invoice values). Any CE, GS or other conformity marks, testing reports or specific documentation required for your market or product category must be confirmed per order — we do not claim certifications we have not verified for your products."],
+    ],
+    keywords: "copper bottles wholesale Europe, brass home décor supplier EU, Indian handicrafts wholesale Europe",
+  },
 };
 
 

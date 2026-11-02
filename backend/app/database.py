@@ -1,10 +1,18 @@
 """SQLAlchemy engine / session."""
+import sys
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from .config import settings
 
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(settings.DATABASE_URL, connect_args=connect_args, future=True)
+# Keep the real dev database safe when running the test suite: tests call
+# drop_all()/create_all() on whatever engine they import, so under pytest we
+# point at a throwaway scratch database instead of the populated dev DB.
+_db_url = settings.DATABASE_URL
+if "pytest" in sys.modules and _db_url.startswith("sqlite"):
+    _db_url = "sqlite:///./test_newlookimpex.db"
+
+connect_args = {"check_same_thread": False} if _db_url.startswith("sqlite") else {}
+engine = create_engine(_db_url, connect_args=connect_args, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Base = declarative_base()
 
@@ -61,5 +69,36 @@ def ensure_schema() -> None:
         # products provenance column
         if "products" in insp.get_table_names():
             existing_p = {c["name"] for c in insp.get_columns("products")}
-            if "source_url" not in existing_p:
-                conn.execute(text("ALTER TABLE products ADD COLUMN source_url VARCHAR(1024) DEFAULT ''"))
+            for col, ddl in (
+                ("source_url", "VARCHAR(1024) DEFAULT ''"),
+                ("external_product_id", "VARCHAR(255) DEFAULT ''"),
+                ("capacity", "VARCHAR(128) DEFAULT ''"),
+                ("price_visibility", "VARCHAR(32) DEFAULT 'on_request'"),
+                ("stock_status", "VARCHAR(32) DEFAULT ''"),
+            ):
+                if col not in existing_p:
+                    conn.execute(text(f"ALTER TABLE products ADD COLUMN {col} {ddl}"))
+            # index for external id lookups (product re-sync / dedupe)
+            try:
+                conn.execute(text(
+                    "CREATE INDEX IF NOT EXISTS ix_products_external_product_id "
+                    "ON products (external_product_id)"))
+            except Exception:
+                pass
+        # enquiries (leads): reference, phone, product link
+        if "enquiries" in insp.get_table_names():
+            existing_e = {c["name"] for c in insp.get_columns("enquiries")}
+            for col, ddl in (
+                ("reference", "VARCHAR(64)"),
+                ("phone", "VARCHAR(64) DEFAULT ''"),
+                ("product_id", "INTEGER"),
+            ):
+                if col not in existing_e:
+                    conn.execute(text(f"ALTER TABLE enquiries ADD COLUMN {col} {ddl}"))
+            for idx, col in (("ix_enquiries_reference", "reference"),
+                             ("ix_enquiries_product_id", "product_id")):
+                try:
+                    conn.execute(text(
+                        f"CREATE INDEX IF NOT EXISTS {idx} ON enquiries ({col})"))
+                except Exception:
+                    pass

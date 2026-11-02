@@ -10,6 +10,7 @@ node_modules/
 frontend/.next/
 frontend/out/
 *.log
+*.err
 .DS_Store
 Thumbs.db
 # Exported data snapshots (re-import via admin UI, don't version them)
@@ -17,6 +18,9 @@ product-catalogue-export.csv
 # Drop-folder contents (photos/banners) are local workflow files, not source.
 # Folder READMEs stay versioned so conventions travel with the repo.
 incoming/*
+# Product scan source folder (photos) — local workflow files, not source.
+# Images are stored in backend/media/ (gitignored) and referenced by DB.
+products/*
 !incoming/products/
 !incoming/banners/
 incoming/products/*

@@ -19,8 +19,7 @@ db.commit()
 db.close()
 
 c = TestClient(app)
-tok = c.post("/api/auth/login", json={"email": "admin@test.example", "password": "Secret123!"}).json()["access_token"]
-H = {"Authorization": f"Bearer {tok}"}
+H: dict = {}  # auth removed
 
 
 def tiny_png():
@@ -69,7 +68,6 @@ def test_watcher_status_endpoint():
     r = c.get("/api/admin/watcher", headers=H)
     assert r.status_code == 200
     assert "enabled" in r.json() and "last_run" in r.json()
-    assert c.get("/api/admin/watcher").status_code in (401, 403)
 
 
 # ---------- watcher: products ----------

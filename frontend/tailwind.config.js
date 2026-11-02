@@ -4,26 +4,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // NY NOW-inspired combination: monochrome ink + institutional blue,
-        // white surfaces. Gold is retained as the metallic brand accent
-        // (logo mark, placeholders, footer headings).
-        navy: { DEFAULT: "#141414", dark: "#000000", light: "#2E2E2E" },
+        // Premium plum/cream palette inspired by reference design.
+        navy: { DEFAULT: "#2D1B2E", dark: "#1A0F1A", light: "#4A334E" },
         ivory: "#FFFFFF",
-        brass: { DEFAULT: "#0058A9", dark: "#00417E", light: "#D7E7F5" },
-        gold: { DEFAULT: "#B08D57", dark: "#8F6F43", light: "#C9AC7C" },
-        petrol: "#184056",
-        // Warm artisan storefront (editorial cream + terracotta + olive).
-        clay: { DEFAULT: "#B0512C", dark: "#7E3B1F", light: "#F3E2D2" },
-        cream: "#FAF5EC",
-        espresso: "#2E2118",
+        brass: { DEFAULT: "#B87345", dark: "#8F5A35", light: "#E8D4C4" },
+        gold: { DEFAULT: "#C9A96E", dark: "#A68A52", light: "#E5D9B8" },
+        petrol: "#2D1B2E",
+        clay: { DEFAULT: "#B87345", dark: "#8F5A35", light: "#E8D4C4" },
+        cream: "#F8EFE8",
+        espresso: "#2D1B2E",
         olive: "#6F6E48",
-        sand: "#F0F0F0",
-        charcoal: "#1B1B1B",
+        sand: "#F0EAE2",
+        charcoal: "#1A1A1A",
         gray: "#6B7280",
       },
       fontFamily: {
-        serif: ["Georgia", "Cambria", "Times New Roman", "serif"],
-        sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Arial", "sans-serif"],
+        serif: ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
+        sans: ["var(--font-jakarta)", "Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
+        display: ["var(--font-jakarta)", "Plus Jakarta Sans", "Inter", "system-ui", "sans-serif"],
       },
       maxWidth: { "8xl": "88rem" },
     },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
+import { WhatsAppLink } from "@/components/public/WhatsAppLink";
 
 export const metadata: Metadata = {
   title: "About New Look Impex",
@@ -64,9 +65,9 @@ export default function AboutPage() {
                 <li>+91 8218251238</li>
                 <li>+91 7500441239</li>
                 <li>
-                  <a className="link" href="https://wa.me/918218251238" target="_blank" rel="noopener noreferrer">
-                    WhatsApp +91 8218251238
-                  </a>
+                  <WhatsAppLink className="link">
+                    WhatsApp us
+                  </WhatsAppLink>
                 </li>
               </ul>
               <Link href="/contact" className="btn btn-primary btn-sm mt-4">Enquiry form</Link>

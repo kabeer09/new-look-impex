@@ -12,9 +12,9 @@ from sqlalchemy import func
 from .config import settings
 from .database import Base, engine, ensure_schema, get_db
 from . import models
-from .auth import current_user, hash_pw, make_token, rate_limit, require_role, verify_pw
+from .auth import current_user, hash_pw, rate_limit, require_role
 from .schemas import (AuditRunIn, ContentGenIn, EnquiryPublicIn, EnquiryStatusIn, KeywordIn,
-                      LoginIn, SearchToPageIn)
+                      SearchToPageIn)
 from .scoring import score_keyword, classify_intent, business_relevance, commercial_score
 from .audit_engine import audit_url, fetch_and_audit
 from .recommender import add_recommendation, generate_from_keyword
@@ -28,8 +28,12 @@ from .events_api import router as events_router
 from .ai_import import router as ai_import_router
 from .ai_seo import router as ai_seo_router
 from .banners import router as banners_router
+from .seo_pages import router as seo_pages_router
+from .catalogue_api import router as catalogue_router
+from . import product_scanner
 from .catalogue_pdf import build_catalogue_pdf, get_business_info
 from .media_store import file_path
+from .email import send_email, email_configured
 
 Base.metadata.create_all(bind=engine)
 
@@ -45,6 +49,7 @@ async def lifespan(app: FastAPI):
         db.close()
     from .watcher import start_watcher
     start_watcher()  # no-op unless INCOMING_ENABLED=true
+    product_scanner.start_scanner()  # no-op unless PRODUCT_SCAN_ENABLED=true
     yield
 
 
@@ -59,11 +64,13 @@ app.add_middleware(CORSMiddleware,
 app.include_router(ai_import_router)
 app.include_router(ai_seo_router)
 app.include_router(banners_router)
+app.include_router(seo_pages_router)
 app.include_router(catalog_router)
 app.include_router(rfq_router)
 app.include_router(buyers_router)
 app.include_router(settings_router)
 app.include_router(events_router)
+app.include_router(catalogue_router)
 
 
 def audit(actor: str, action: str, entity: str = "", entity_id: str = "", detail: str = "", db: Session | None = None):
@@ -162,103 +169,6 @@ def dashboard(db: Session = Depends(get_db), u=Depends(current_user)):
         "catalogue_downloads": catalogue_downloads,
         "rfq_adds": rfq_adds, "product_views": product_views,
     }
-
-
-# ---------- auth ----------
-@app.post("/api/auth/login")
-def login(body: LoginIn, db: Session = Depends(get_db)):
-    rate_limit("login", 20, 300)
-    u = db.query(models.User).filter(models.User.email == body.email).first()
-    if not u or not verify_pw(body.password, u.password_hash):
-        raise HTTPException(401, "Invalid credentials")
-    audit(u.email, "login", "user", str(u.id), db=db)
-    return {"access_token": make_token(u.email, u.role), "token_type": "bearer", "role": u.role}
-
-
-@app.get("/api/auth/me")
-def me(u=Depends(current_user)):
-    return {"email": u.email, "role": u.role}
-
-
-# ---------- Google Sign-In (admin dashboard) ----------
-@app.get("/api/auth/google/status")
-def google_status():
-    from .google_auth import google_login_available
-    available, reason = google_login_available()
-    return {"enabled": available, "reason": reason}
-
-
-@app.get("/api/auth/google/url")
-def google_url():
-    from .google_auth import build_login_url, google_login_available
-    available, reason = google_login_available()
-    if not available:
-        raise HTTPException(400, reason)
-    rate_limit("google-url", 30, 300)
-    return {"auth_url": build_login_url()}
-
-
-@app.get("/api/auth/google/callback")
-def google_callback(code: str = "", state: str = "",
-                    request: Request = None, db: Session = Depends(get_db)):
-    """OAuth callback. On success 302-redirects to the frontend with our JWT;
-    on failure redirects with ?error=<safe_code> (except CSRF failures: 400)."""
-    from .google_auth import (allowed_emails, exchange_code, fetch_userinfo,
-                              google_login_available, verify_state)
-    import secrets as _secrets
-    rate_limit(f"google-cb:{request.client.host if request and request.client else 'x'}",
-               20, 600)
-    available, reason = google_login_available()
-    if not available:
-        raise HTTPException(400, reason)
-    if not state or not verify_state(state):
-        raise HTTPException(400, "Invalid or expired login state (CSRF protection).")
-    frontend_cb = settings.PUBLIC_SITE_URL.rstrip("/") + "/admin/auth/callback"
-
-    def _fail(err: str):
-        return RedirectResponse(f"{frontend_cb}?error={err}", status_code=302)
-
-    if not code:
-        return _fail("no_code")
-    try:
-        tokens = exchange_code(code)
-    except Exception:
-        return _fail("token_exchange_failed")
-    access_token = (tokens or {}).get("access_token", "")
-    if not access_token:
-        return _fail("token_exchange_failed")
-    try:
-        profile = fetch_userinfo(access_token)
-    except Exception:
-        return _fail("userinfo_failed")
-    email = str((profile or {}).get("email", "")).strip().lower()
-    if not email or not (profile or {}).get("email_verified"):
-        return _fail("email_unverified")
-    if email not in allowed_emails():
-        db.add(models.AuditLog(actor=email, action="google_login.denied",
-                               entity="user", detail="Email not in sign-in allow-list."))
-        db.commit()
-        return _fail("not_allowed")
-    u = db.query(models.User).filter(func.lower(models.User.email) == email).first()
-    if u:
-        if not u.is_active:
-            return _fail("account_disabled")
-        # Link Google identity; keep existing password + role (admin may have set them).
-        u.auth_provider = "google"
-        if not (u.display_name or "").strip():
-            u.display_name = str(profile.get("name", ""))[:255]
-    else:
-        role = "admin" if email == settings.ADMIN_EMAIL.strip().lower() else "editor"
-        u = models.User(email=email,
-                        password_hash="!GOOGLE-OAUTH:" + _secrets.token_hex(16),
-                        role=role, is_active=True, auth_provider="google",
-                        display_name=str(profile.get("name", ""))[:255])
-        db.add(u)
-    db.add(models.AuditLog(actor=email, action="google_login.success",
-                           entity="user", detail=f"role={u.role}"))
-    db.commit()
-    token = make_token(u.email, u.role)
-    return RedirectResponse(f"{frontend_cb}?token={token}", status_code=302)
 
 
 # ---------- user management (admin) ----------
@@ -744,12 +654,16 @@ def sitemap(db: Session = Depends(get_db)):
         f"{base}/", f"{base}/shop", f"{base}/categories",
         f"{base}/wholesale", f"{base}/customisation", f"{base}/about",
         f"{base}/catalogue", f"{base}/request-quote", f"{base}/contact",
+        f"{base}/bulk-orders", f"{base}/export", f"{base}/custom-orders",
         f"{base}/buyer-resources", f"{base}/shipping-export",
         f"{base}/privacy", f"{base}/terms", f"{base}/sitemap",
     ]
     # country buyer pages (curated, unique content each — see wholesale/[country])
-    for slug in ("usa", "uk", "uae", "australia", "canada"):
+    for slug in ("usa", "uk", "uae", "australia", "canada", "europe"):
         urls.append(f"{base}/wholesale/{slug}")
+    # top-level regional landing pages (canonical short URLs)
+    for slug in ("au", "uae", "uk", "usa", "canada", "europe"):
+        urls.append(f"{base}/{slug}")
     items = "".join(f"<url><loc>{u_}</loc></url>" for u_ in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>'
 
@@ -970,6 +884,22 @@ def _score_enquiry(e: EnquiryPublicIn) -> float:
     return round(min(s, 1.0), 2)
 
 
+def _next_enquiry_reference(db: Session) -> str:
+    """Unique, buyer-facing enquiry reference (NLI-YYYY-####)."""
+    year = datetime.now(timezone.utc).year
+    prefix = f"NLI-{year}-"
+    last = db.query(models.Enquiry).filter(
+        models.Enquiry.reference.like(prefix + "%")) \
+        .order_by(models.Enquiry.reference.desc()).first()
+    seq = 1
+    if last and last.reference:
+        try:
+            seq = int(last.reference.split("-")[-1]) + 1
+        except (ValueError, IndexError):
+            seq = 1
+    return f"{prefix}{seq:04d}"
+
+
 @app.post("/api/public/enquiries", status_code=201)
 def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depends(get_db)):
     rate_limit(f"enq:{request.client.host if request.client else 'x'}", 10, 3600)
@@ -978,36 +908,153 @@ def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depend
     import datetime as dt
     if dup and (datetime.now(timezone.utc).replace(tzinfo=None) - dup.created_at).total_seconds() < 24 * 3600:
         raise HTTPException(409, "Similar enquiry already received in the last 24h (duplicate protection).")
-    e = models.Enquiry(name=body.name.strip(), email=str(body.email), company=body.company.strip(),
-                       country=body.country.strip(), product_interest=body.product_interest.strip(),
+    # Resolve the related product name (never invent — only if it exists).
+    product_interest = body.product_interest.strip()
+    product_id = body.product_id
+    if product_id is not None:
+        prod = db.query(models.Product).filter(models.Product.id == product_id).first()
+        if prod:
+            product_interest = product_interest or prod.name
+        else:
+            product_id = None
+    e = models.Enquiry(reference=_next_enquiry_reference(db),
+                       name=body.name.strip(), email=str(body.email),
+                       company=body.company.strip(), phone=body.phone.strip(),
+                       country=body.country.strip(), product_id=product_id,
+                       product_interest=product_interest,
                        quantity=body.quantity.strip(), message=body.message.strip(), consent=body.consent,
                        landing_page=body.landing_page[:1000], referrer=body.referrer[:1000],
                        campaign=body.campaign[:500], score=_score_enquiry(body), status="new")
     db.add(e)
     db.add(models.WorkflowExecution(workflow="enquiry_received", status="success", detail=str(body.email)[:200]))
     db.commit(); db.refresh(e)
-    return {"id": e.id, "message": "Thank you — New Look Impex will respond for wholesale/export enquiries.", "score": e.score}
+
+    # Optional, non-blocking business notification (§13). The lead is already
+    # committed; email failure never rolls it back and never fakes success.
+    notified, notify_detail = False, "not attempted"
+    if email_configured():
+        ok, detail = send_email(
+            settings.ENQUIRY_NOTIFY_EMAIL,
+            f"New enquiry {e.reference} — {body.company or body.name}",
+            f"Reference: {e.reference}\n"
+            f"Name: {e.name}\nEmail: {e.email}\nPhone: {e.phone or '—'}\n"
+            f"Company: {e.company or '—'}\nCountry: {e.country or '—'}\n"
+            f"Product: {product_interest or '—'}\nQuantity: {e.quantity or '—'}\n"
+            f"Campaign: {e.campaign or '—'}\nSource page: {e.landing_page or '—'}\n\n"
+            f"Message:\n{e.message}\n\n"
+            f"Admin record: {settings.PUBLIC_SITE_URL.rstrip('/')}/admin/enquiries")
+        notified, notify_detail = ok, detail
+    db.add(models.WorkflowExecution(workflow="enquiry_email_notify",
+                                    status="success" if notified else "skipped",
+                                    detail=notify_detail[:200]))
+    db.commit()
+    return {"id": e.id, "reference": e.reference,
+            "message": "Thank you — New Look Impex will respond for wholesale/export enquiries.",
+            "score": e.score, "email_notified": notified, "email_detail": notify_detail}
 
 
 @app.get("/api/enquiries")
 def list_enq(db: Session = Depends(get_db), u=Depends(require_role("admin", "editor")),
-             status: str = "", page: int = 1, page_size: int = 20):
-    q = db.query(models.Enquiry).order_by(models.Enquiry.id.desc())
-    if status: q = q.filter(models.Enquiry.status == status)
-    total = q.count()
-    items = q.offset((page - 1) * page_size).limit(page_size).all()
-    return {"total": total, "items": [
-        {"id": e.id, "name": e.name, "email": e.email, "company": e.company, "country": e.country,
-         "product_interest": e.product_interest, "quantity": e.quantity, "message": e.message,
+             status: str = "", country: str = "", q: str = "",
+             page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=100)):
+    qry = db.query(models.Enquiry)
+    if status:
+        qry = qry.filter(models.Enquiry.status == status)
+    if country:
+        qry = qry.filter(func.lower(models.Enquiry.country) == country.strip().lower())
+    if q:
+        like = f"%{q.strip()}%"
+        qry = qry.filter(
+            func.lower(models.Enquiry.company).like(func.lower(like))
+            | func.lower(models.Enquiry.email).like(func.lower(like))
+            | func.lower(models.Enquiry.name).like(func.lower(like))
+            | func.lower(models.Enquiry.reference).like(func.lower(like)))
+    total = qry.count()
+    items = qry.order_by(models.Enquiry.id.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    return {"total": total, "page": page, "page_size": page_size, "items": [
+        {"id": e.id, "reference": e.reference, "name": e.name, "email": e.email,
+         "company": e.company, "phone": e.phone or "", "country": e.country,
+         "product_id": e.product_id, "product_interest": e.product_interest,
+         "quantity": e.quantity, "message": e.message,
          "status": e.status, "score": e.score, "landing_page": e.landing_page,
-         "created_at": e.created_at.isoformat()} for e in items]}
+         "notes": e.notes or "", "created_at": e.created_at.isoformat()} for e in items]}
+
+
+@app.get("/api/enquiries/export")
+def export_enq(db: Session = Depends(get_db), u=Depends(require_role("admin",)),
+               status: str = "", country: str = "", q: str = ""):
+    import csv as csvm, io as io2
+    qry = db.query(models.Enquiry)
+    if status:
+        qry = qry.filter(models.Enquiry.status == status)
+    if country:
+        qry = qry.filter(func.lower(models.Enquiry.country) == country.strip().lower())
+    if q:
+        like = f"%{q.strip()}%"
+        qry = qry.filter(func.lower(models.Enquiry.company).like(func.lower(like))
+                         | func.lower(models.Enquiry.email).like(func.lower(like)))
+    buf = io2.StringIO(); w = csvm.writer(buf)
+    w.writerow(["reference", "id", "name", "email", "company", "phone", "country",
+                "product", "quantity", "status", "score", "source", "campaign",
+                "landing_page", "notes", "created_at"])
+    for e in qry.order_by(models.Enquiry.id.desc()).limit(5000):
+        w.writerow([e.reference, e.id, e.name, e.email, e.company, e.phone, e.country,
+                    e.product_interest, e.quantity, e.status, e.score, e.source,
+                    e.campaign, e.landing_page, (e.notes or "").replace("\n", " "),
+                    e.created_at])
+    return PlainTextResponse(buf.getvalue(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=enquiries.csv"})
+
+
+@app.get("/api/enquiries/{eid}")
+def get_enq(eid: int, db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    e = db.query(models.Enquiry).filter(models.Enquiry.id == eid).first()
+    if not e:
+        raise HTTPException(404, "Enquiry not found")
+    prod = None
+    if e.product_id:
+        p = db.query(models.Product).filter(models.Product.id == e.product_id).first()
+        prod = {"id": p.id, "name": p.name, "slug": p.slug} if p else None
+    return {"id": e.id, "reference": e.reference, "name": e.name, "email": e.email,
+            "company": e.company, "phone": e.phone or "", "country": e.country,
+            "product_id": e.product_id, "product": prod,
+            "product_interest": e.product_interest, "quantity": e.quantity,
+            "message": e.message, "consent": e.consent, "source": e.source,
+            "landing_page": e.landing_page, "referrer": e.referrer,
+            "campaign": e.campaign, "status": e.status, "score": e.score,
+            "notes": e.notes or "",
+            "follow_up_at": e.follow_up_at.isoformat() if e.follow_up_at else None,
+            "created_at": e.created_at.isoformat()}
+
+
+ENQUIRY_STATUSES = ("new", "contacted", "qualified", "quoted", "won", "lost", "spam")
+
+
+@app.patch("/api/enquiries/{eid}")
+def patch_enq(eid: int, body: EnquiryStatusIn, db: Session = Depends(get_db),
+              u=Depends(require_role("admin", "editor"))):
+    """Update a lead's status, internal notes and follow-up date."""
+    e = db.query(models.Enquiry).filter(models.Enquiry.id == eid).first()
+    if not e:
+        raise HTTPException(404, "Enquiry not found")
+    if body.status and body.status not in ENQUIRY_STATUSES:
+        raise HTTPException(400, "Invalid status")
+    if body.status:
+        e.status = body.status
+    if body.notes is not None:
+        e.notes = body.notes[:2000]
+    if body.follow_up_at is not None:
+        e.follow_up_at = body.follow_up_at
+    db.commit()
+    audit(u.email, "enquiry.patch", "enquiry", str(eid), f"status={e.status}", db=db)
+    return {"id": eid, "status": e.status, "notes": e.notes}
 
 
 @app.post("/api/enquiries/{eid}/status")
 def set_enq(eid: int, body: EnquiryStatusIn, db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
     e = db.query(models.Enquiry).filter(models.Enquiry.id == eid).first()
     if not e: raise HTTPException(404, "Not found")
-    if body.status not in ("new", "qualified", "contacted", "quoted", "won", "lost", "spam"):
+    if body.status not in ENQUIRY_STATUSES:
         raise HTTPException(400, "Invalid status")
     e.status = body.status; e.notes = body.notes[:2000]
     if body.follow_up_at: e.follow_up_at = body.follow_up_at
@@ -1016,15 +1063,81 @@ def set_enq(eid: int, body: EnquiryStatusIn, db: Session = Depends(get_db), u=De
     return {"id": eid, "status": e.status}
 
 
-@app.get("/api/enquiries/export")
-def export_enq(db: Session = Depends(get_db), u=Depends(require_role("admin",))):
-    import csv as csvm, io as io2
-    buf = io2.StringIO(); w = csvm.writer(buf)
-    w.writerow(["id", "name", "email", "company", "country", "product", "quantity", "status", "score", "created_at"])
-    for e in db.query(models.Enquiry).order_by(models.Enquiry.id.desc()).limit(2000):
-        w.writerow([e.id, e.name, e.email, e.company, e.country, e.product_interest, e.quantity, e.status, e.score, e.created_at])
-    return PlainTextResponse(buf.getvalue(), media_type="text/csv",
-                             headers={"Content-Disposition": "attachment; filename=enquiries.csv"})
+@app.get("/api/admin/analytics")
+def admin_analytics(days: int = 90, db: Session = Depends(get_db),
+                    u=Depends(require_role("admin", "editor"))):
+    """First-party, privacy-conscious analytics: product/category views, quote +
+    WhatsApp clicks, enquiries by country/source, and conversion counts."""
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
+
+    def _ev(event_type):
+        return db.query(func.count(models.AnalyticsEvent.id)).filter(
+            models.AnalyticsEvent.event_type == event_type,
+            models.AnalyticsEvent.created_at >= since).scalar() or 0
+
+    # Most viewed products (from product_view events, joined to product names)
+    viewed = db.query(models.AnalyticsEvent.product_id,
+                      func.count(models.AnalyticsEvent.id).label("views")) \
+        .filter(models.AnalyticsEvent.event_type == "product_view",
+                models.AnalyticsEvent.product_id != None,  # noqa: E711
+                models.AnalyticsEvent.created_at >= since) \
+        .group_by(models.AnalyticsEvent.product_id) \
+        .order_by(func.count(models.AnalyticsEvent.id).desc()).limit(10).all()
+    top_products = []
+    for pid, views in viewed:
+        p = db.query(models.Product).filter(models.Product.id == pid).first()
+        top_products.append({"product_id": pid,
+                             "name": p.name if p else f"Product #{pid}",
+                             "views": views})
+
+    # Popular categories (category views counted from category_view-like events
+    # where url matches /categories/<slug> or /category/<slug>)
+    cat_views = db.query(models.AnalyticsEvent.url,
+                         func.count(models.AnalyticsEvent.id)) \
+        .filter(models.AnalyticsEvent.event_type == "product_view",
+                models.AnalyticsEvent.url.like("%categor%"),
+                models.AnalyticsEvent.created_at >= since) \
+        .group_by(models.AnalyticsEvent.url).all()
+    top_categories = [{"url": u_, "views": n} for u_, n in
+                      sorted(cat_views, key=lambda x: -x[1])[:10]]
+
+    # Enquiries by country and by source
+    by_country = db.query(models.Enquiry.country, func.count(models.Enquiry.id)) \
+        .filter(models.Enquiry.created_at >= since) \
+        .group_by(models.Enquiry.country).all()
+    by_source = db.query(models.Enquiry.source, func.count(models.Enquiry.id)) \
+        .filter(models.Enquiry.created_at >= since) \
+        .group_by(models.Enquiry.source).all()
+
+    enq_total = db.query(func.count(models.Enquiry.id)).filter(
+        models.Enquiry.created_at >= since).scalar() or 0
+    enq_converted = db.query(func.count(models.Enquiry.id)).filter(
+        models.Enquiry.created_at >= since,
+        models.Enquiry.status.in_(["won"])).scalar() or 0
+    enq_qualified = db.query(func.count(models.Enquiry.id)).filter(
+        models.Enquiry.created_at >= since,
+        models.Enquiry.status.in_(["qualified", "quoted", "won"])).scalar() or 0
+    rfq_total = db.query(func.count(models.RFQ.id)).filter(
+        models.RFQ.created_at >= since).scalar() or 0
+
+    return {
+        "days": days,
+        "product_views": _ev("product_view"),
+        "quote_button_clicks": _ev("rfq_add") + _ev("rfq_submit"),
+        "whatsapp_clicks": _ev("whatsapp_click"),
+        "contact_clicks": _ev("contact_click"),
+        "catalogue_downloads": _ev("catalogue_download"),
+        "most_viewed_products": top_products,
+        "popular_categories": top_categories,
+        "enquiries_by_country": [{"country": c or "Unknown", "count": n} for c, n in by_country],
+        "enquiries_by_source": [{"source": s or "website", "count": n} for s, n in by_source],
+        "enquiry_count": enq_total,
+        "enquiry_qualified": enq_qualified,
+        "enquiry_converted_won": enq_converted,
+        "rfq_count": rfq_total,
+        "conversion_rate": round(enq_converted / enq_total, 4) if enq_total else 0.0,
+        "note": "First-party, privacy-conscious events only. No third-party trackers inferred.",
+    }
 
 
 @app.get("/api/reports/monthly")

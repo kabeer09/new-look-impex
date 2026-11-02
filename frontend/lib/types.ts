@@ -478,3 +478,174 @@ export interface SeoGenerateResponse {
   warnings: { missing: string[]; duplicates: string[] };
   source: string;
 }
+
+// ---------------------------------------------------------------------------
+// AI Catalogue pipeline (/api/catalogue/*)
+// ---------------------------------------------------------------------------
+
+/** Pipeline status of one product's AI/SEO profile. */
+export type PipelineStatus =
+  | "pending"
+  | "analyzing"
+  | "ai_generated"
+  | "needs_review"
+  | "approved"
+  | "published"
+  | "failed"
+  | "missing";
+
+export interface CatalogueStats {
+  total_products: number;
+  pending: number;
+  analyzing: number;
+  ai_generated: number;
+  needs_review: number;
+  approved: number;
+  published_pipeline: number;
+  failed: number;
+  published_products: number;
+  seo_completion_pct: number;
+  missing_images: number;
+  missing_descriptions: number;
+  missing_metadata: number;
+  llm_configured: boolean;
+}
+
+export interface CatalogueStatus {
+  enabled: boolean;
+  scan_dir: string;
+  scan_dir_exists: boolean;
+  interval_seconds: number;
+  llm_configured: boolean;
+  last_run: { at?: string | null; scanned?: number; created?: number;
+              attached?: number; duplicates?: number; failed?: number;
+              error?: string; dir?: string } | null;
+  note: string;
+}
+
+/** Row shape from GET /api/catalogue/products. */
+export interface CatalogueItem {
+  id: number;
+  name: string;
+  slug: string;
+  status: string;
+  pipeline_status: PipelineStatus;
+  category: { id: number; name: string; slug: string } | null;
+  material: string;
+  image: { url: string; alt_text: string } | null;
+  image_count: number;
+  seo_title: string;
+  seo_description: string;
+  primary_keyword: string;
+  has_description: boolean;
+  seo_complete: boolean;
+  source: string;
+  created_at: string | null;
+}
+
+export interface CatalogueListResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  items: CatalogueItem[];
+}
+
+/** Grouped keyword sets (spec §6). */
+export interface KeywordGroups {
+  primary: string;
+  secondary: string[];
+  long_tail: string[];
+  buyer_intent: string[];
+  manufacturer: string[];
+  supplier: string[];
+  exporter: string[];
+  wholesale: string[];
+  bulk_order: string[];
+  country_specific: string[];
+}
+
+export interface SeoMetadata {
+  title: string;
+  meta_description: string;
+  slug: string;
+  focus_keyword: string;
+  secondary_focus: string[];
+  related: string[];
+  og_title: string;
+  og_description: string;
+  og_image: string;
+  canonical_url: string;
+}
+
+export interface ImageSeo {
+  filename: string;
+  alt_text: string;
+  title: string;
+  caption: string;
+  description: string;
+}
+
+/** AI profile payload as served by GET /api/catalogue/products/{id}. */
+export interface CatalogueProfile {
+  status: PipelineStatus;
+  source: string;
+  observed: Record<string, unknown>;
+  observed_facts: string[];
+  assumptions: string[];
+  descriptions: Record<string, string> & { highlights?: string[] };
+  keywords: Partial<KeywordGroups>;
+  seo: Partial<SeoMetadata>;
+  image_seo: ImageSeo[];
+  schema: Record<string, unknown>;
+  b2b: Record<string, string>;
+  needs_verification: string[];
+  error: string;
+  generated_at: string | null;
+  approved_at: string | null;
+  approved_by: string;
+  published_at: string | null;
+}
+
+export interface CatalogueProductFields {
+  name: string;
+  slug: string;
+  short_description: string;
+  description: string;
+  material: string;
+  finish: string;
+  color: string;
+  dimensions: string;
+  weight: string;
+  sku: string;
+  moq: string;
+  lead_time: string;
+  packaging_info: string;
+  seo_title: string;
+  seo_description: string;
+}
+
+export interface CatalogueDetail {
+  product: CatalogueItem;
+  profile: CatalogueProfile;
+  images: { id: number; url: string; alt_text: string; is_primary: boolean }[];
+  product_fields: Partial<CatalogueProductFields>;
+  public_url: string;
+  preview_url: string | null;
+}
+
+export interface CataloguePreview {
+  google_preview: { title: string; url: string; description: string };
+  copy_blocks: {
+    indiamart_description: string;
+    b2b_description: string;
+    seo_keywords: { primary: string; all: string[] };
+    image_alt_texts: string[];
+  };
+  json_ld: Record<string, unknown>;
+  note: string;
+}
+
+export interface CatalogueScanResult {
+  counts: Record<string, number>;
+  scan_dir: string;
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { SettingsBootstrap } from "@/components/public/SettingsBootstrap";
 
 export const metadata: Metadata = {
   title: {
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
+      <SettingsBootstrap />
       <PublicHeader />
       <main className="flex-1">{children}</main>
       <PublicFooter />

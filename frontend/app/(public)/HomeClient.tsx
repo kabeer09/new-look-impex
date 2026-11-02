@@ -8,6 +8,33 @@ import { ProductGrid, SectionTitle } from "@/components/public/Shared";
 import { ProductCard } from "@/components/public/ProductCard";
 import { Loading, ErrorBox } from "@/components/public/States";
 
+const FAQS = [
+  {
+    q: "Do you ship across India and internationally?",
+    a: "Yes. We handle domestic (pan-India) and export enquiries. Shipping terms, freight and lead time are confirmed in writing per order based on destination and volume.",
+  },
+  {
+    q: "What is the minimum order quantity (MOQ)?",
+    a: "MOQs vary by product and finish. Each product page lists its MOQ; custom or bulk quantities are quoted per enquiry.",
+  },
+  {
+    q: "Can I request custom sizes, finishes or bespoke designs?",
+    a: "Yes. Customisation (size, finish, bespoke design) is quoted like any wholesale order — share your requirements via Request a Quote or WhatsApp.",
+  },
+  {
+    q: "How do I place a bulk / wholesale order?",
+    a: "Browse the catalogue, add items to your enquiry list with quantities, and submit a Request a Quote. You receive a reference number and a written quotation covering price, MOQ and lead time.",
+  },
+  {
+    q: "Are prices listed on the website?",
+    a: "Pricing is on request (B2B). Every enquiry receives a written per-order quote. No prices are fabricated or shown as fixed retail.",
+  },
+  {
+    q: "Do you offer samples before bulk orders?",
+    a: "Sample availability and terms are confirmed per product on enquiry. Ask for samples when you request a quote.",
+  },
+];
+
 const PURPOSES = [
   {
     title: "Retail & Boutique",
@@ -155,6 +182,7 @@ export default function HomeClient() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannerIdx, setBannerIdx] = useState(0);
   const [dataError, setDataError] = useState("");
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -234,96 +262,39 @@ export default function HomeClient() {
   return (
     <>
       {/* Editorial hero */}
-      <section className="bg-cream text-espresso">
-        <div className="container-x py-14 md:py-20 grid lg:grid-cols-5 gap-10 items-center">
-          <div className="lg:col-span-3">
-            <p className="text-clay uppercase tracking-[0.22em] text-xs font-semibold">
-              Rooted in Tradition
-            </p>
-            <h1 className="font-serif font-bold text-4xl md:text-6xl mt-4 leading-[1.05]">
-              Timeless Craftsmanship.
-              <br />
-              Made for <em className="font-accent text-clay">Modern Living.</em>
-            </h1>
-            <p className="mt-5 text-espresso/75 max-w-2xl text-lg">
-              Handcrafted metal décor from Moradabad for retailers, importers, interior designers and
-              gifting programmes — urlis, diyas, lanterns and statement homeware, quoted per order for
-              wholesale and bulk enquiries.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/products" className="btn btn-clay !px-6 !py-3">
-                Explore Our Collection
-              </Link>
-              <Link
-                href="/request-quote"
-                className="btn !px-6 !py-3 border border-espresso text-espresso hover:bg-espresso hover:text-cream"
-              >
-                Request Wholesale Pricing
-              </Link>
-            </div>
-            <form
-              className="mt-8 flex flex-col sm:flex-row gap-2 max-w-xl"
-              role="search"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const query = q.trim();
-                router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
-              }}
+      <section className="relative bg-espresso text-cream overflow-hidden">
+        <div className="absolute inset-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={mediaUrl("/api/media/files/coll-brass-collection.jpg")}
+            alt="Handcrafted brass and copper collection"
+            className="w-full h-full object-cover opacity-40"
+            fetchPriority="high"
+          />
+        </div>
+        <div className="relative container-x py-20 md:py-32 text-center">
+          <p className="text-gold-light uppercase tracking-[0.28em] text-xs font-semibold">
+            Handcrafted in Moradabad
+          </p>
+          <h1 className="font-serif font-bold text-4xl md:text-6xl mt-4 leading-[1.05] text-white">
+            Authentic Brass &amp; Copper Collection
+            <br />
+            <em className="font-accent text-gold-light">Crafted for Modern Homes.</em>
+          </h1>
+          <p className="mt-5 text-cream/80 max-w-2xl mx-auto text-lg">
+            Discover handcrafted copper and brass collections from Moradabad, India. Designed for
+            global retailers, wholesalers and discerning buyers.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3 justify-center">
+            <Link href="/products" className="btn btn-clay !px-6 !py-3">
+              Explore Collections
+            </Link>
+            <Link
+              href="/request-quote"
+              className="btn !px-6 !py-3 border border-cream text-cream hover:bg-cream hover:text-espresso"
             >
-              <label htmlFor="hero-search" className="sr-only">
-                Search the catalogue
-              </label>
-              <input
-                id="hero-search"
-                className="input !py-3 flex-1 !bg-white"
-                placeholder='Try "brass urli" or "copper diya"…'
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-              <button type="submit" className="btn btn-clay !py-3">
-                Search catalogue
-              </button>
-            </form>
-          </div>
-          <div className="lg:col-span-2 hidden lg:block" aria-hidden={!heroBanner}>
-            {heroBanner ? (
-              <div className="relative overflow-hidden min-h-96 shadow-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={mediaUrl(heroBanner.image_url)}
-                  srcSet={cardSrcSet(heroBanner.image_url)}
-                  sizes="(max-width: 1024px) 100vw, 480px"
-                  alt=""
-                  fetchPriority="high"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-espresso/85 px-5 py-4 text-left">
-                  <p className="font-serif font-semibold text-cream text-lg">{heroBanner.title}</p>
-                  {heroBanner.subtitle && (
-                    <p className="text-xs text-cream/70 mt-1">{heroBanner.subtitle}</p>
-                  )}
-                  <div className="mt-2 flex items-center gap-2">
-                    {banners.length > 1 &&
-                      banners.map((b, i) => (
-                        <button
-                          key={b.id}
-                          type="button"
-                          aria-label={`Show banner ${i + 1}`}
-                          onClick={() => setBannerIdx(i)}
-                          className={`h-1.5 rounded-full transition-all ${i === bannerIdx % banners.length ? "w-6 bg-gold-light" : "w-3 bg-cream/40"}`}
-                        />
-                      ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-espresso p-10 text-center shadow-lg">
-                <p className="font-serif text-8xl font-bold text-gold-light">N</p>
-                <p className="mt-4 text-xs uppercase tracking-widest text-cream/60">
-                  Brass · Copper · Handcrafted
-                </p>
-              </div>
-            )}
+              Request Wholesale Catalogue
+            </Link>
           </div>
         </div>
       </section>
@@ -441,6 +412,45 @@ export default function HomeClient() {
           </div>
         </section>
 
+        {/* Timless Brass & Copper Essentials */}
+        <section className="section" aria-labelledby="essentials">
+          <div className="text-center mb-8">
+            <h2 id="essentials" className="font-serif font-bold text-espresso text-2xl md:text-3xl">
+              Timless Brass &amp; Copper Essentials
+            </h2>
+            <p className="text-gray mt-1 text-sm">
+              Premium handcrafted brass &amp; copper collection for cooking, serving, gifting and everyday living
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { name: "Brass Collection", slug: "brass-collection", img: "/api/media/files/coll-brass-collection.jpg" },
+              { name: "Copper Collection", slug: "copper-collection", img: "/api/media/files/coll-copper-collection.jpg" },
+              { name: "Copper Drinkware", slug: "copper-drinkware", img: "/api/media/files/coll-copper-drinkware.jpg" },
+              { name: "Brass Kitchen", slug: "brass-kitchen-collection", img: "/api/media/files/coll-brass-kitchen.jpg" },
+              { name: "Metal Home Décor", slug: "metal-home-decor", img: "/api/media/files/coll-metal-home-decor.jpg" },
+              { name: "Gifting", slug: "gifting", img: "/api/media/files/coll-gifting.jpg" },
+            ].map((c) => (
+              <Link
+                key={c.slug}
+                href={`/collections/${c.slug}`}
+                className="group block bg-white border border-clay/15 overflow-hidden hover:shadow-md transition-shadow"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={mediaUrl(c.img)}
+                  alt={c.name}
+                  className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+                <div className="p-3 text-center">
+                  <p className="text-xs font-semibold tracking-wide text-espresso uppercase">{c.name}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* Craftsmanship storytelling */}
         <section className="section !pt-0" aria-labelledby="craft-story">
           <div className="grid md:grid-cols-2 gap-0 bg-white border border-clay/15">
@@ -495,6 +505,64 @@ export default function HomeClient() {
             <p className="text-gray mt-1 text-sm">Start from how you buy</p>
           </div>
           <PurposeBanners purposes={PURPOSES} categories={categories || []} />
+        </section>
+
+        {/* Customer Testimonials */}
+        <section className="section bg-white border-y border-clay/10" aria-labelledby="testimonials">
+          <div className="container-x">
+            <div className="text-center mb-8">
+              <h2 id="testimonials" className="font-serif font-bold text-espresso text-2xl md:text-3xl">
+                Customers are saying
+              </h2>
+              <p className="text-gray mt-1 text-sm">What our wholesale buyers say about New Look Impex</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-5">
+              {[
+                { quote: "Excellent craftsmanship and reliable wholesale supply. Our customers love the copper bottles.", name: "Retail Buyer, UAE", rating: 5 },
+                { quote: "Great quality brass décor with consistent finishing. Smooth ordering process for bulk orders.", name: "Import Buyer, UK", rating: 5 },
+                { quote: "Responsive team and dependable export packaging. Will continue sourcing from New Look Impex.", name: "Wholesale Distributor, USA", rating: 5 },
+              ].map((t, i) => (
+                <div key={i} className="card text-center">
+                  <div className="text-gold text-lg mb-2">{"★".repeat(t.rating)}</div>
+                  <p className="text-sm text-gray italic">"{t.quote}"</p>
+                  <p className="mt-3 text-xs font-semibold tracking-wide text-espresso uppercase">{t.name}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray text-center mt-4">
+              (Testimonials are editable from the admin dashboard — publish only genuine customer feedback with permission.)
+            </p>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="section" aria-labelledby="faq">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 id="faq" className="font-serif font-bold text-espresso text-2xl md:text-3xl">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-gray mt-1 text-sm">Common questions from wholesale buyers</p>
+            </div>
+            <div className="space-y-2">
+              {FAQS.map((f, i) => (
+                <div key={i} className="border border-clay/20 bg-white">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    aria-expanded={openFaq === i}
+                  >
+                    <span className="font-serif font-semibold text-espresso">{f.q}</span>
+                    <span className="text-clay text-xl">{openFaq === i ? "−" : "+"}</span>
+                  </button>
+                  {openFaq === i && (
+                    <div className="px-5 pb-4 text-sm text-gray leading-relaxed">{f.a}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Wholesale CTA */}

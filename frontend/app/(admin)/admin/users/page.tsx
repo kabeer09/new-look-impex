@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { api, getToken } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { AdminUser } from "@/lib/types";
 import { Loading, ErrorBox, EmptyState } from "@/components/public/States";
 
@@ -12,11 +12,8 @@ export default function AdminUsers() {
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [savingId, setSavingId] = useState<number | null>(null);
-  const [google, setGoogle] = useState<{ enabled: boolean; reason: string } | null>(null);
-  const hasToken = typeof window !== "undefined" && Boolean(getToken());
 
   const load = useCallback(() => {
-    if (!getToken()) return; // not logged in — admin layout redirects to login
     setLoading(true);
     setErr("");
     api<{ items: AdminUser[] }>("/api/users")
@@ -26,12 +23,6 @@ export default function AdminUsers() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-
-  useEffect(() => {
-    api<{ enabled: boolean; reason: string }>("/api/auth/google/status")
-      .then(setGoogle)
-      .catch(() => setGoogle(null));
-  }, []);
 
   const update = async (u: AdminUser, patch: { role?: string; is_active?: boolean }) => {
     setSavingId(u.id);
@@ -52,33 +43,9 @@ export default function AdminUsers() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold">Users &amp; access</h1>
-        <span className={`badge ${google?.enabled ? "badge-green" : "badge-gray"}`}>
-          Google sign-in: {google == null ? "checking…" : google.enabled ? "enabled" : "disabled"}
-        </span>
-      </div>
-      {!google?.enabled && (
-        <div className="card text-sm">
-          <b>Enable Google sign-in:</b> create an OAuth client in Google Cloud console
-          (see <span className="font-mono">docs/google-setup.md §5</span>), set{" "}
-          <span className="font-mono">GOOGLE_CLIENT_ID</span>,{" "}
-          <span className="font-mono">GOOGLE_CLIENT_SECRET</span>,{" "}
-          <span className="font-mono">GOOGLE_LOGIN_ENABLED=true</span> and{" "}
-          <span className="font-mono">GOOGLE_ALLOWED_EMAILS</span> in <span className="font-mono">.env</span>,
-          register the redirect URI, and restart the backend. Allow-listed first-timers
-          arrive as <b>editor</b> — promote them below.
-        </div>
-      )}
+      <h1 className="text-2xl font-bold">Users &amp; access</h1>
       {msg && <p className="text-sm">{msg}</p>}
-      {!hasToken && (
-        <div className="card text-sm">
-          You are not logged in. <a className="link" href="/admin/login?next=%2Fadmin%2Fusers">Log in</a> first —
-          note that logins on <span className="font-mono">localhost:3000</span> and{" "}
-          <span className="font-mono">127.0.0.1:3000</span> do not share sessions, so stay on one address.
-        </div>
-      )}
-      {hasToken && loading && <Loading label="Loading users…" />}
+      {loading && <Loading label="Loading users…" />}
       {err && <ErrorBox error={err} retry={load} />}
       {!loading && !err && users.length === 0 && <EmptyState title="No users" hint="No user accounts found." />}
       {!loading && !err && users.length > 0 && (

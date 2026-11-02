@@ -63,5 +63,22 @@ class Settings(BaseSettings):
     INCOMING_AUTO_PUBLISH: bool = False
     INCOMING_RIGHTS: str = "own"  # who owns dropped files: own|supplier_authorised|licensed
 
+    # AI Catalogue pipeline: watches the merchant's product-photo folder
+    # (PRODUCT_SCAN_DIR). Empty => "./product" if it exists, else "./products".
+    # Images are NEVER moved or deleted — originals stay in place and a hash
+    # registry in the DB prevents re-processing. Products are always created
+    # as drafts with pipeline status "pending"; nothing is published without
+    # explicit admin approval.
+    PRODUCT_SCAN_DIR: str = ""
+    PRODUCT_SCAN_ENABLED: bool = False  # background thread scanning
+    PRODUCT_SCAN_INTERVAL: int = 300  # seconds between background scans
+    PRODUCT_SCAN_RIGHTS: str = "own"  # own|supplier_authorised|licensed|ai_generated
+    # Perceptual-hash Hamming distance (0-64) at which two different files are
+    # treated as the same photo and attached to the same product instead of
+    # creating a new one. 8 is strict enough to avoid merging similar products.
+    PRODUCT_SCAN_NEAR_DUP_DISTANCE: int = 8
+    # Cap per manual scan run (files already registered are skipped cheaply).
+    PRODUCT_SCAN_CAP: int = 100
+
 
 settings = Settings()

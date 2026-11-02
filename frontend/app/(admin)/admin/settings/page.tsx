@@ -1,15 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api, API } from "@/lib/api";
-import { logout } from "@/lib/auth";
 import { Loading, ErrorBox } from "@/components/public/States";
 
 export default function Settings() {
-  const [email, setEmail] = useState("admin@newlookimpex.example");
-  const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
-  const [loginMsg, setLoginMsg] = useState("");
-  const [busy, setBusy] = useState(false);
   const [settings, setSettings] = useState<Record<string, any> | null>(null);
   const [loadErr, setLoadErr] = useState("");
   const [saving, setSaving] = useState(false);
@@ -19,25 +14,6 @@ export default function Settings() {
       .then(setSettings)
       .catch((e) => setLoadErr(String(e)));
   }, []);
-
-  const login = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginMsg("");
-    setBusy(true);
-    try {
-      const r = await api<{ access_token: string; role?: string }>("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password: pw }),
-      });
-      localStorage.setItem("nli_token", r.access_token);
-      setLoginMsg(`Logged in as ${email} (${r.role}). Backend: ${API}`);
-      setPw("");
-    } catch (err: any) {
-      setLoginMsg(String(err));
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const save = async () => {
     if (!settings) return;
@@ -66,13 +42,8 @@ export default function Settings() {
       <h1 className="text-2xl font-bold">Settings</h1>
 
       <div className="card space-y-2 max-w-md">
-        <h2 className="font-semibold">Admin login</h2>
-        <input className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-        <input className="input" type="password" placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} />
-        <button className="btn btn-primary" onClick={login} disabled={busy}>{busy ? "Signing in…" : "Log in"}</button>
-        <button className="btn btn-ghost" onClick={() => { logout(); setLoginMsg("Logged out."); }}>Log out</button>
-        {loginMsg && <p className="text-sm">{loginMsg}</p>}
-        <p className="text-xs text-gray">API docs: {API}/api/docs · LLM: set LLM_API_KEY/BASE/MODEL or run rule-based. Default admin from .env ADMIN_EMAIL/ADMIN_PASSWORD.</p>
+        <h2 className="font-semibold">API</h2>
+        <p className="text-xs text-gray">API docs: {API}/api/docs · LLM: set LLM_API_KEY/BASE/MODEL or run rule-based.</p>
       </div>
 
       <div className="card">

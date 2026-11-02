@@ -14,9 +14,13 @@ router = APIRouter()
 PUBLIC_KEYS = {
     "business_name": "New Look Impex",
     "location": "Moradabad, Uttar Pradesh, India",
+    "business_address": "Moradabad, Uttar Pradesh, India",
     "business_email": "newlookimpex@gmail.com",
     "business_phones": "+91 8218251238, +91 7500441239",
     "whatsapp_number": "918218251238",
+    "social_links": "",  # JSON object, e.g. {"instagram":"https://…","linkedin":"https://…"}
+    "default_seo_title": "New Look Impex | Copper & Brass Handicrafts from Moradabad, India",
+    "default_seo_description": "Wholesale copper kitchenware, brass handicrafts and metal home décor from Moradabad, India. Browse our catalogue and request a quote for bulk and international sourcing.",
     "announcement_text": "",
     "announcement_enabled": "false",
     "default_currency": "USD",
@@ -74,9 +78,13 @@ def public_settings(db: Session = Depends(get_db)):
     return {
         "business_name": get("business_name"),
         "location": get("location"),
+        "business_address": get("business_address"),
         "email": get("business_email"),
         "phones": phones,
         "whatsapp_number": get("whatsapp_number"),
+        "social_links": get("social_links"),
+        "default_seo_title": get("default_seo_title"),
+        "default_seo_description": get("default_seo_description"),
         "announcement": announcement,
         "default_currency": get("default_currency"),
     }

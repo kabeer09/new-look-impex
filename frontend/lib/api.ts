@@ -120,6 +120,38 @@ export const BUSINESS_EMAIL = "newlookimpex@gmail.com";
 export const BUSINESS_PHONES = ["+91 8218251238", "+91 7500441239"];
 export const BUSINESS_LOCATION = "Moradabad, Uttar Pradesh, India";
 export const WHATSAPP_TEXT = "Hi New Look Impex, I would like a wholesale quotation.";
+
+// Configurable WhatsApp number (admin setting `whatsapp_number`, E.164 digits).
+// Seeded with the known default; the public layout fetches settings once and
+// updates it, and components subscribe via useWhatsappNumber() to re-render.
+export const DEFAULT_WHATSAPP_NUMBER = "918218251238";
+let _whatsappNumber = DEFAULT_WHATSAPP_NUMBER;
+const _waListeners = new Set<() => void>();
+
+export function setWhatsappNumber(n: string): void {
+  const digits = (n || "").replace(/\D/g, "");
+  if (digits && digits !== _whatsappNumber) {
+    _whatsappNumber = digits;
+    _waListeners.forEach((l) => l());
+  }
+}
+
+export function getWhatsappNumber(): string {
+  return _whatsappNumber;
+}
+
+export function subscribeWhatsapp(cb: () => void): () => void {
+  _waListeners.add(cb);
+  return () => {
+    _waListeners.delete(cb);
+  };
+}
+
+/** Click-to-chat URL for the currently configured WhatsApp number. */
+export function whatsappUrl(): string {
+  return `https://wa.me/${_whatsappNumber}`;
+}
+
 export function whatsappLink(text = WHATSAPP_TEXT): string {
-  return `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
+  return `${whatsappUrl()}?text=${encodeURIComponent(text)}`;
 }

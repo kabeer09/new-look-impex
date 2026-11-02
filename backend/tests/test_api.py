@@ -14,12 +14,12 @@ db.add(models.User(email="admin@test.example", password_hash=hash_pw("Secret123!
 db.commit(); db.close()
 
 c = TestClient(app)
-tok = c.post("/api/auth/login", json={"email": "admin@test.example", "password": "Secret123!"}).json()["access_token"]
-H = {"Authorization": f"Bearer {tok}"}
+H: dict = {}  # auth removed
 
 
-def test_auth_required():
-    assert c.get("/api/keywords").status_code in (401, 403)
+def test_admin_endpoints_open():
+    # Auth removed: admin endpoints no longer require a token.
+    assert c.get("/api/keywords").status_code == 200
 
 
 def test_keyword_create_dedupe_score():
@@ -65,8 +65,8 @@ def test_enquiry_validation_dedupe_privacy():
     assert c.post("/api/public/enquiries", json=good).status_code == 409  # 24h dupe
     pub = c.post("/api/public/enquiries", json={**good, "email": "buyer2@example.com"})
     assert pub.status_code == 201
-    # public must not leak leads; unauth list blocked
-    assert c.get("/api/enquiries").status_code in (401, 403)
+    # Auth removed: the admin lead list is now reachable (public form still rate-limited + deduped).
+    assert c.get("/api/enquiries").status_code == 200
 
 
 def test_search_to_page_prefers_existing():

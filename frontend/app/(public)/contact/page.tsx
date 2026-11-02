@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { PageHero } from "@/components/public/Shared";
-import { api, trackEvent, BUSINESS_EMAIL, BUSINESS_PHONES, WHATSAPP_URL, BUSINESS_LOCATION } from "@/lib/api";
+import { api, trackEvent, BUSINESS_EMAIL, BUSINESS_PHONES, whatsappUrl, BUSINESS_LOCATION } from "@/lib/api";
 import type { EnquiryInput, PublicSettings } from "@/lib/types";
 
 export default function ContactPage() {
@@ -38,6 +38,10 @@ export default function ContactPage() {
   const email = settings?.email || BUSINESS_EMAIL;
   const phones = settings?.phones && settings.phones.length > 0 ? settings.phones : BUSINESS_PHONES;
   const location = settings?.location || BUSINESS_LOCATION;
+  const waNumber = settings?.whatsapp_number || "";
+  const waDisplay = waNumber
+    ? `+${waNumber.slice(0, 2)} ${waNumber.slice(2, 7)} ${waNumber.slice(7)}`
+    : "WhatsApp";
 
   return (
     <>
@@ -96,8 +100,8 @@ export default function ContactPage() {
           <div className="card">
             <h2 className="font-serif font-bold text-navy text-lg">WhatsApp &amp; location</h2>
             <p className="text-sm text-gray mt-2">
-              <a className="link" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                WhatsApp +91 8218251238
+              <a className="link" href={whatsappUrl()} target="_blank" rel="noopener noreferrer">
+                {waDisplay}
               </a>
             </p>
             <p className="text-sm text-gray mt-2">{location}</p>

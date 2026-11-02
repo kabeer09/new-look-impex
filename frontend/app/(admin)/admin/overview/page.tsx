@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, API } from "@/lib/api";
-import { getToken } from "@/lib/api";
 import { Loading, ErrorBox } from "@/components/public/States";
 
 function Cell({ label, value }: { label: string; value: unknown }) {
@@ -21,10 +20,6 @@ export default function Overview() {
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    if (!getToken()) {
-      setErr("Not logged in — go to /admin/login.");
-      return;
-    }
     api<Record<string, any>>("/api/dashboard/summary")
       .then(setData)
       .catch((e) => setErr(String(e)));

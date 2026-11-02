@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
+import { WhatsAppLink } from "@/components/public/WhatsAppLink";
 
 export const metadata: Metadata = {
   title: "Shipping & Export Information",
@@ -59,7 +60,7 @@ export default function ShippingExportPage() {
               <h3 className="font-serif font-bold text-navy text-xl">Questions</h3>
               <p className="text-sm text-gray mt-2">
                 Email <a className="link" href="mailto:newlookimpex@gmail.com">newlookimpex@gmail.com</a> or WhatsApp{" "}
-                <a className="link" href="https://wa.me/918218251238" target="_blank" rel="noopener noreferrer">+91 8218251238</a>.
+                <WhatsAppLink className="link">chat with us</WhatsAppLink>.
               </p>
             </div>
           </div>

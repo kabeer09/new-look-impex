@@ -7,9 +7,21 @@ import type { Category, Collection, PublicSettings } from "@/lib/types";
 const COMPANY_LINKS: [string, string][] = [
   ["Our Craft", "/craft"],
   ["Wholesale", "/wholesale"],
+  ["Bulk Orders", "/bulk-orders"],
+  ["Export", "/export"],
+  ["Custom Orders", "/custom-orders"],
   ["Catalogue (PDF)", "/catalogue"],
   ["Request a Quote", "/request-quote"],
   ["Contact", "/contact"],
+];
+
+const REGION_LINKS: [string, string][] = [
+  ["Australia", "/au"],
+  ["United Arab Emirates", "/uae"],
+  ["United Kingdom", "/uk"],
+  ["United States", "/usa"],
+  ["Canada", "/canada"],
+  ["Europe", "/europe"],
 ];
 
 export function PublicFooter() {
@@ -57,7 +69,7 @@ export function PublicFooter() {
       </div>
 
       <div className="container-x py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
           <div>
             <h2 className="font-serif font-bold text-xl text-white">{businessName}</h2>
             <p className="text-sm text-cream/80 mt-3">{location}</p>
@@ -141,6 +153,19 @@ export function PublicFooter() {
                   Terms
                 </Link>
               </li>
+            </ul>
+          </nav>
+
+          <nav aria-label="Buy by region">
+            <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Buy by region</h3>
+            <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
+              {REGION_LINKS.map(([label, href]) => (
+                <li key={href}>
+                  <Link href={href} className="hover:text-white">
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>

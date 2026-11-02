@@ -1,19 +1,22 @@
-"""Password hashing + JWT auth + RBAC + rate limiting."""
+"""Password hashing + rate limiting.
+
+NOTE: Login/RBAC has been REMOVED — admin endpoints are fully open (no token, no
+roles). `current_user` / `require_role` remain only as thin dependency shims so
+the ~80 endpoints that reference them keep working without edits. They never
+reject a request; they return the first active admin identity so audit records
+still have an attributable actor.
+"""
 import time
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+
+from fastapi import Depends, HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from .config import settings
+
 from .database import get_db
 from .models import User
 
 pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2 = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-ALGO = "HS256"
 
 # simple in-memory rate limiter (per process)
 _hits: dict[str, list[float]] = defaultdict(list)
@@ -40,26 +43,27 @@ def verify_pw(pw: str, h: str) -> bool:
         return False
 
 
-def make_token(sub: str, role: str) -> str:
-    exp = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return jwt.encode({"sub": sub, "role": role, "exp": exp}, settings.SECRET_KEY, algorithm=ALGO)
-
-
-def current_user(token: str = Depends(oauth2), db: Session = Depends(get_db)) -> User:
-    try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGO])
-        email = payload.get("sub")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    u = db.query(User).filter(User.email == email, User.is_active == True).first()  # noqa: E712
+def current_user(db: Session = Depends(get_db)) -> User:
+    """Open access: return the first active admin for audit attribution."""
+    u = (db.query(User)
+         .filter(User.is_active == True, User.role == "admin")  # noqa: E712
+         .order_by(User.id)
+         .first())
     if not u:
-        raise HTTPException(status_code=401, detail="User not found")
-    return u
+        u = (db.query(User)
+             .filter(User.is_active == True)  # noqa: E712
+             .order_by(User.id)
+             .first())
+    if u:
+        return u
+    # No user rows yet (fresh DB) — synthetic identity, still not a gate.
+    return User(email="admin@local", role="admin", is_active=True)
 
 
 def require_role(*roles: str):
+    """Open-access shim: roles are ignored, always resolves to `current_user`."""
+
     def _dep(u: User = Depends(current_user)) -> User:
-        if u.role not in roles:
-            raise HTTPException(status_code=403, detail="Forbidden for role " + u.role)
         return u
+
     return _dep

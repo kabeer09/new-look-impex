@@ -18,10 +18,8 @@ db.commit()
 db.close()
 
 c = TestClient(app)
-tok = c.post("/api/auth/login", json={"email": "admin@test.example", "password": "Secret123!"}).json()["access_token"]
-H = {"Authorization": f"Bearer {tok}"}
-etok = c.post("/api/auth/login", json={"email": "editor@test.example", "password": "Secret123!"}).json()["access_token"]
-EH = {"Authorization": f"Bearer {etok}"}
+H: dict = {}  # auth removed
+EH: dict = {}  # auth removed
 
 
 def _make_product(name="Test Product", slug="test-product", status="published", **kw):
@@ -290,18 +288,20 @@ def test_media_upload_list_delete():
 
 # ---------- roles ----------
 
-def test_editor_cannot_delete_product():
+def test_editor_product_access():
+    # Auth/RBAC removed: an editor token is no longer required, and delete is allowed.
     r = c.post("/api/products", json=_make_product(name="Editor Del", slug="editor-del"), headers=EH)
     pid = r.json()["id"]
-    assert c.delete(f"/api/products/{pid}", headers=EH).status_code == 403
+    assert c.delete(f"/api/products/{pid}", headers=EH).status_code in (200, 204)
     # editor can create
     assert c.post("/api/products", json=_make_product(name="Editor OK", slug="editor-ok"), headers=EH).status_code == 201
 
 
-def test_unauthenticated_blocked():
-    assert c.get("/api/products").status_code in (401, 403)
-    assert c.get("/api/buyers").status_code in (401, 403)
-    assert c.get("/api/rfqs").status_code in (401, 403)
+def test_admin_list_endpoints_open():
+    # Auth removed: these admin list endpoints are reachable without a token.
+    assert c.get("/api/products").status_code == 200
+    assert c.get("/api/buyers").status_code == 200
+    assert c.get("/api/rfqs").status_code == 200
 
 
 # ---------- null tolerance (explicit JSON nulls must not 422) ----------

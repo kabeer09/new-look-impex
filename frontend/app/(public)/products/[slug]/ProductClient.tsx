@@ -102,6 +102,9 @@ export default function ProductClient({ slug }: { slug: string }) {
     "@type": "Product",
     name: product.name,
     url: canonical,
+    brand: { "@type": "Brand", name: "NLI Collections" },
+    manufacturer: { "@type": "Organization", name: "New Look Impex" },
+    countryOfOrigin: { "@type": "Country", name: "India" },
   };
   if (product.description || product.short_description) {
     jsonLd.description = product.description || product.short_description;
@@ -318,6 +321,57 @@ export default function ProductClient({ slug }: { slug: string }) {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Manufacturer / exporter section (B2B trust + SEO) */}
+        <div className="mt-16 grid md:grid-cols-2 gap-6">
+          <div className="card">
+            <h2 className="font-serif font-bold text-navy text-xl mb-2">
+              NLI Collections by New Look Impex
+            </h2>
+            <p className="text-sm text-gray space-y-2">
+              {product.name} is supplied under <b>NLI Collections</b>, the consumer brand of{" "}
+              <b>New Look Impex</b> — a manufacturer, exporter and wholesaler of Indian metal
+              handicrafts, copperware, brassware and decorative home decor based in Moradabad,
+              Uttar Pradesh, India.
+            </p>
+            <p className="text-sm text-gray mt-3">
+              Wholesale buyers, retailers, importers, buying houses and distribution businesses
+              are welcome to enquire. Specifications, packaging, pricing and lead times are
+              confirmed in writing per order — we do not publish unverified claims.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/wholesale" className="btn btn-ghost btn-sm">Wholesale programme</Link>
+              <Link href="/export" className="btn btn-ghost btn-sm">Export information</Link>
+              <Link href="/catalogue" className="btn btn-ghost btn-sm">Full catalogue</Link>
+            </div>
+          </div>
+          <div className="card">
+            <h2 className="font-serif font-bold text-navy text-xl mb-2">Bulk & container orders</h2>
+            <p className="text-sm text-gray">
+              Bulk and container-level orders for {product.name.toLowerCase()} are handled directly
+              by the New Look Impex sales desk, with written quotations covering specification,
+              quantity, packing and dispatch window. Export documentation support is available as
+              per order requirements.
+            </p>
+            <p className="text-sm text-gray mt-3">
+              Customisation (size, finish, engraving, packaging) may be possible — availability is
+              confirmed per enquiry in writing.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <a
+                className="btn btn-brass"
+                href={whatsappLink(
+                  `Hi New Look Impex, I'd like a wholesale quotation for "${product.name}" (SKU ${product.sku || "n/a"}).`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WhatsApp enquiry
+              </a>
+              <Link href="/request-quote" className="btn btn-primary">Request a quote</Link>
+            </div>
           </div>
         </div>
 
