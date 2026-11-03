@@ -85,6 +85,13 @@ def ensure_schema() -> None:
                     "ON products (external_product_id)"))
             except Exception:
                 pass
+            # index for published product lookups (public catalogue performance)
+            try:
+                conn.execute(text(
+                    "CREATE INDEX IF NOT EXISTS ix_products_status "
+                    "ON products (status)"))
+            except Exception:
+                pass
         # enquiries (leads): reference, phone, product link
         if "enquiries" in insp.get_table_names():
             existing_e = {c["name"] for c in insp.get_columns("enquiries")}

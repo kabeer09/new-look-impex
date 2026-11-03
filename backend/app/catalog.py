@@ -835,8 +835,75 @@ def public_products(q: str = "", category: str = "", material: str = "", style: 
     total = qry.count()
     rows = qry.offset((page - 1) * page_size).limit(page_size).all()
     has_price = [p for p in rows if p.price is not None]
+
+    # Batch-fetch related data to avoid N+1 queries (critical for slow DB connections)
+    if rows:
+        pids = [p.id for p in rows]
+        cat_ids = [p.category_id for p in rows if p.category_id]
+        # categories
+        cats = {c.id: c for c in db.query(models.Category).filter(models.Category.id.in_(cat_ids)).all()} if cat_ids else {}
+        # images
+        all_imgs = db.query(models.ProductImage).filter(models.ProductImage.product_id.in_(pids)).order_by(
+            models.ProductImage.is_primary.desc(), models.ProductImage.sort_order).all()
+        imgs_by_pid = {}
+        for im in all_imgs:
+            imgs_by_pid.setdefault(im.product_id, []).append(im)
+        # collections
+        coll_rows = db.query(models.ProductCollection, models.Collection).join(
+            models.Collection, models.Collection.id == models.ProductCollection.collection_id).filter(
+            models.ProductCollection.product_id.in_(pids)).all()
+        colls_by_pid = {}
+        for pc, cl in coll_rows:
+            colls_by_pid.setdefault(pc.product_id, []).append(cl)
+        # variants & specs
+        variants = db.query(models.ProductVariant).filter(models.ProductVariant.product_id.in_(pids)).all()
+        specs = db.query(models.ProductSpec).filter(models.ProductSpec.product_id.in_(pids)).all()
+        variants_by_pid = {}
+        for v in variants:
+            variants_by_pid.setdefault(v.product_id, []).append(v)
+        specs_by_pid = {}
+        for s in specs:
+            specs_by_pid.setdefault(s.product_id, []).append(s)
+
+        items = []
+        for p in rows:
+            cat = cats.get(p.category_id) if p.category_id else None
+            cat_out = {"id": cat.id, "name": cat.name, "slug": cat.slug} if cat else None
+            imgs = imgs_by_pid.get(p.id, [])
+            img_out = [{"id": im.id, "url": im.url, "alt_text": im.alt_text,
+                        "source": im.source or "", "permission": im.permission or "",
+                        "is_concept": bool(im.is_concept)} for im in imgs]
+            v_out = [{"id": v.id, "name": v.name, "sku": v.sku, "price": v.price, "moq": v.moq}
+                     for v in variants_by_pid.get(p.id, [])]
+            s_out = [{"key": s.key, "value": s.value} for s in specs_by_pid.get(p.id, [])]
+            c_out = [{"id": cl.id, "name": cl.name, "slug": cl.slug} for cl in colls_by_pid.get(p.id, [])]
+            items.append({
+                "id": p.id, "name": p.name, "slug": p.slug,
+                "external_product_id": p.external_product_id or "",
+                "short_description": p.short_description, "description": p.description,
+                "category": cat_out, "category_id": p.category_id,
+                "material": p.material, "capacity": p.capacity or "",
+                "finish": p.finish, "color": p.color,
+                "dimensions": p.dimensions, "weight": p.weight, "sku": p.sku,
+                "tags": json.loads(p.tags or "[]"),
+                "moq": p.moq, "lead_time": p.lead_time, "packaging_info": p.packaging_info,
+                "price": p.price, "currency": p.currency, "price_on_request": p.price_on_request,
+                "price_visibility": p.price_visibility or "on_request",
+                "stock_status": p.stock_status or "",
+                "featured": p.featured, "sort_order": p.sort_order, "status": p.status,
+                "seo_title": p.seo_title, "seo_description": p.seo_description,
+                "source_url": p.source_url or "",
+                "variants": v_out, "specifications": s_out, "images": img_out,
+                "collections": c_out,
+                "image": img_out[0] if img_out else None,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+                "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+            })
+    else:
+        items = []
+
     return {"total": total, "page": page, "page_size": page_size,
-            "items": [_product_out(p, db, public=True) for p in rows],
+            "items": items,
             "price_data_available": bool(has_price)}
 
 
