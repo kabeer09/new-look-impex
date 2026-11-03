@@ -188,37 +188,39 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* New Arrivals */}
+      {/* New Arrivals - Copper Cookware */}
       <section className="section" aria-labelledby="new-arrivals">
         <div className="container-x">
           <div className="flex items-end justify-between mb-6">
             <div>
               <p className="eyebrow text-clay">Latest</p>
               <h2 id="new-arrivals" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">New Arrivals</h2>
+              <p className="text-sm text-gray mt-1">Premium copper cookware — hammered copper kitchenware for healthy cooking and elegant serving</p>
             </div>
-            <Link href="/products?sort=newest" className="btn btn-outline btn-sm">View All →</Link>
+            <Link href="/categories/copper-kitchenware" className="btn btn-outline btn-sm">View All Copper Cookware →</Link>
           </div>
           {featured === null ? <Loading label="Loading new arrivals…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {featured.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              {featured.filter((p) => p.category?.slug === "copper-kitchenware" || p.material === "Copper").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
       </section>
 
-      {/* Copper Collection */}
+      {/* Copper Collection - Brass Kitchenware */}
       <section className="section bg-sand/30" aria-labelledby="copper-collection">
         <div className="container-x">
           <div className="flex items-end justify-between mb-6">
             <div>
               <p className="eyebrow text-clay">Material</p>
               <h2 id="copper-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Copper Collection</h2>
+              <p className="text-sm text-gray mt-1">Premium brass kitchenware — handcrafted brass cookware for traditional and modern kitchens</p>
             </div>
-            <Link href="/products?material=Copper" className="btn btn-outline btn-sm">View All →</Link>
+            <Link href="/categories/brass-kitchenware" className="btn btn-outline btn-sm">View All Brass Kitchenware →</Link>
           </div>
           {featured === null ? <Loading label="Loading…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {featured.filter((p) => p.material === "Copper").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              {featured.filter((p) => p.category?.slug === "brass-kitchenware" || p.material === "Brass").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
