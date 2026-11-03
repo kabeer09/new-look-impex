@@ -2,9 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api, mediaUrl, cardSrcSet, whatsappLink } from "@/lib/api";
+import { api, mediaUrl } from "@/lib/api";
 import type { Banner, Category, Collection, ProductCard as ProductCardType } from "@/lib/types";
-import { ProductGrid, SectionTitle } from "@/components/public/Shared";
 import { ProductCard } from "@/components/public/ProductCard";
 import { Loading, ErrorBox } from "@/components/public/States";
 import { useRfqCart } from "@/lib/rfq";
@@ -87,66 +86,36 @@ const FAQS = [
 
 export default function HomeClient() {
   const router = useRouter();
-  const cart = useRfqCart();
   const [q, setQ] = useState("");
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [featured, setFeatured] = useState<ProductCardType[] | null>(null);
-  const [spotlight, setSpotlight] = useState<Collection | null>(null);
-  const [spotlightProducts, setSpotlightProducts] = useState<ProductCardType[]>([]);
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [bannerIdx, setBannerIdx] = useState(0);
   const [dataError, setDataError] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setDataError("");
-    const spotlightPromise = api<Collection>("/api/public/collections/brass-collection")
-      .catch(() => api<{ items: Collection[] }>("/api/public/collections").then((d) => {
-        const items = d.items || [];
-        const first = items.find((c) => c.featured) || items[0];
-        if (!first) throw new Error("No collections available");
-        return first;
-      }))
-      .then((col) => api<Collection & { items?: ProductCardType[] }>(`/api/public/collections/${encodeURIComponent(col.slug)}`)
-        .then((full) => ({ col: full as Collection, products: full.items || [] }))
-        .catch(() => ({ col, products: [] as ProductCardType[] })));
     Promise.allSettled([
       api<{ items: Category[] }>("/api/public/categories"),
       api<{ items: ProductCardType[] }>("/api/public/products?sort=featured&page_size=8"),
-      spotlightPromise,
-      api<{ items: Banner[] }>("/api/public/banners?placement=home_hero").catch(() => ({ items: [] as Banner[] })),
     ]).then((results) => {
       if (cancelled) return;
-      const [cats, feats, spot, bans] = results;
+      const [cats, feats] = results;
       if (cats.status === "fulfilled") setCategories(cats.value.items || []);
       if (feats.status === "fulfilled") setFeatured(feats.value.items || []);
-      if (spot.status === "fulfilled") { setSpotlight(spot.value.col); setSpotlightProducts(spot.value.products.slice(0, 4)); }
-      if (bans.status === "fulfilled") setBanners(bans.value.items || []);
       if (results.some((r) => r.status === "rejected")) setDataError("Some sections could not be loaded.");
     });
     return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    if (banners.length < 2) return;
-    const t = window.setInterval(() => setBannerIdx((i) => (i + 1) % banners.length), 7000);
-    return () => window.clearInterval(t);
-  }, [banners.length]);
-
-  const heroBanner = banners.length > 0 ? banners[bannerIdx % banners.length] : null;
-
   const retry = () => {
-    setCategories(null); setFeatured(null); setSpotlight(null); setBanners([]); setBannerIdx(0); setDataError("");
+    setCategories(null); setFeatured(null); setDataError("");
     api<{ items: Category[] }>("/api/public/categories").then((d) => setCategories(d.items || [])).catch((e) => setDataError(String(e)));
-    api<{ items: Banner[] }>("/api/public/banners?placement=home_hero").then((d) => setBanners(d.items || [])).catch(() => undefined);
     api<{ items: ProductCardType[] }>("/api/public/products?sort=featured&page_size=8").then((d) => setFeatured(d.items || [])).catch((e) => setDataError(String(e)));
   };
 
   return (
     <>
-      {/* Top Navigation Bar (handled by PublicHeader) */}
-
       {/* Hero Section */}
       <section className="relative bg-navy text-white overflow-hidden">
         <div className="absolute inset-0">
@@ -185,7 +154,41 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Core Services Grid */}
+      {/* Shop by Category */}
+      <section className="section" aria-labelledby="shop-by-category">
+        <div className="container-x">
+          <div className="text-center mb-8">
+            <p className="eyebrow text-clay">Browse</p>
+            <h2 id="shop-by-category" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Shop by Category</h2>
+            <p className="text-gray mt-1 text-sm">Browse the catalogue by craft range</p>
+          </div>
+          {categories === null ? <Loading label="Loading categories…" /> : categories.length === 0 ? (
+            <p className="text-sm text-gray text-center">Categories will appear here once published.</p>
+          ) : (
+            <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+              {categories.slice(0, 8).map((c) => (
+                <Link key={c.slug} href={`/categories/${c.slug}`} className="group flex flex-col items-center text-center">
+                  <span className="relative block w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-cream ring-1 ring-clay/25 group-hover:ring-clay transition-all">
+                    {c.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.image_url.startsWith("http") ? c.image_url : `https://new-look-impex-api.onrender.com${c.image_url}`} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    ) : (
+                      <span className="absolute inset-0 flex items-center justify-center font-serif text-4xl font-bold text-clay/70" aria-hidden="true">
+                        {c.name.trim().charAt(0).toUpperCase() || "N"}
+                      </span>
+                    )}
+                  </span>
+                  <span className="block mt-3 text-[12px] font-semibold tracking-wide text-navy uppercase group-hover:text-clay">
+                    {c.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Core Services */}
       <section className="section bg-sand/40" aria-labelledby="services">
         <div className="container-x">
           <div className="text-center mb-10">
@@ -204,15 +207,19 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Featured Collections */}
-      <section className="section" aria-labelledby="collections">
+      {/* Featured Products */}
+      <section className="section" aria-labelledby="featured-products">
         <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Curated</p>
-            <h2 id="collections" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Featured Products</h2>
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="eyebrow text-clay">Handpicked</p>
+              <h2 id="featured-products" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Featured Pieces</h2>
+              <p className="text-sm text-gray mt-1">Latest collections — best sellers recommended by our buyers</p>
+            </div>
+            <Link href="/products" className="btn btn-outline btn-sm">View All →</Link>
           </div>
           {featured === null ? <Loading label="Loading products…" /> : featured.length === 0 ? (
-            <p className="text-sm text-gray text-center">No featured products published yet.</p>
+            <p className="text-sm text-gray">No featured products published yet.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               {featured.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
@@ -221,28 +228,8 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="section bg-sand/30" aria-labelledby="featured-products">
-        <div className="container-x">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="eyebrow text-clay">Handpicked</p>
-              <h2 id="featured-products" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Featured Pieces</h2>
-            </div>
-            <Link href="/products" className="btn btn-outline btn-sm">View All →</Link>
-          </div>
-          {featured === null ? <Loading label="Loading products…" /> : featured.length === 0 ? (
-            <p className="text-sm text-gray">No featured products published yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {featured.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* About Us / Corporate Vision */}
-      <section className="section" aria-labelledby="about">
+      <section className="section bg-sand/30" aria-labelledby="about">
         <div className="container-x">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
@@ -253,11 +240,13 @@ export default function HomeClient() {
               <p className="text-gray mt-4 leading-relaxed">
                 New Look Impex is a Moradabad-based manufacturer and exporter of handcrafted brass and copper handicrafts.
                 With decades of craft tradition and verified supplier networks, we deliver premium metalware to retailers,
-                importers, and distributors across 50+ countries.
+                importers, and distributors across 50+ countries. GSTIN: 09AFKPA4462R1ZW.
               </p>
               <p className="text-gray mt-3 leading-relaxed">
                 Every product is crafted with attention to material quality, finish consistency, and export-ready packaging.
-                We handle bulk orders, custom manufacturing, private labelling, and corporate gifting programmes.
+                We handle bulk orders, custom manufacturing, private labelling, and corporate gifting programmes. Our
+                products are available in copper and brass finishes — hammered, polished, matte, and antique — across
+                urlis, diyas, lanterns, bottles, kitchenware, and home décor collections.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/about" className="btn btn-clay">Learn More</Link>
@@ -276,12 +265,13 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Our Trade Process (5-Step) */}
-      <section className="section bg-sand/40" aria-labelledby="process">
+      {/* Our Trade Process */}
+      <section className="section" aria-labelledby="process">
         <div className="container-x">
           <div className="text-center mb-10">
             <p className="eyebrow text-clay">How We Work</p>
             <h2 id="process" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Our Trade Process</h2>
+            <p className="text-gray mt-1 text-sm">End-to-end B2B sourcing and export process</p>
           </div>
           <div className="grid md:grid-cols-5 gap-4">
             {PROCESS_STEPS.map((step) => (
@@ -294,78 +284,6 @@ export default function HomeClient() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Client Testimonials / Trust Badges */}
-      <section className="section" aria-labelledby="testimonials">
-        <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Trust</p>
-            <h2 id="testimonials" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Client Testimonials</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5 mb-8">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="card text-center">
-                <div className="text-gold text-lg mb-2">{"★".repeat(t.rating)}</div>
-                <p className="text-sm text-gray italic">"{t.quote}"</p>
-                <p className="mt-3 text-xs font-semibold tracking-wide text-navy uppercase">{t.name}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-wrap justify-center gap-4">
-            {["EPCH", "UP EPB", "ODOP", "GST Registered"].map((badge) => (
-              <span key={badge} className="badge badge-brass !px-4 !py-2 text-sm">{badge}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Banner */}
-      <section className="section !pt-0" aria-labelledby="cta">
-        <div className="container-x">
-          <div className="bg-navy text-white p-8 md:p-12 text-center rounded-2xl">
-            <h2 id="cta" className="font-sans font-bold text-3xl md:text-4xl">Ready to Expand Your Global Supply Chain?</h2>
-            <p className="text-white/70 mt-4 max-w-2xl mx-auto">
-              Tell us what you're sourcing — products, quantities, and destination. We'll confirm pricing, MOQ, and lead time in writing.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3 justify-center">
-              <Link href="/request-quote" className="btn btn-clay !px-6 !py-3">Request a Quote</Link>
-              <Link href="/wholesale" className="btn !px-6 !py-3 border border-white text-white hover:bg-white hover:text-navy">
-                Discuss Requirements
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* New Arrivals & Custom Line Showcase */}
-      <section className="section bg-sand/30" aria-labelledby="new-arrivals">
-        <div className="container-x">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="eyebrow text-clay">Latest</p>
-              <h2 id="new-arrivals" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">New Arrivals</h2>
-            </div>
-            <Link href="/products" className="btn btn-outline btn-sm">View All →</Link>
-          </div>
-          {/* Filter bar */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {["All", "Copper", "Brass", "Hammered", "Polished", "Matte"].map((f) => (
-              <button
-                key={f}
-                type="button"
-                className="px-4 py-1.5 text-xs font-semibold tracking-wide border border-sand rounded-full hover:bg-clay hover:text-white hover:border-clay transition-colors"
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-          {featured === null ? <Loading label="Loading new arrivals…" /> : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {(featured || []).slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
-            </div>
-          )}
         </div>
       </section>
 
@@ -391,7 +309,45 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Instagram & YouTube */}
+      {/* Client Testimonials */}
+      <section className="section" aria-labelledby="testimonials">
+        <div className="container-x">
+          <div className="text-center mb-8">
+            <p className="eyebrow text-clay">Trust</p>
+            <h2 id="testimonials" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Client Testimonials</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-5 mb-8">
+            {TESTIMONIALS.map((t, i) => (
+              <div key={i} className="card text-center">
+                <div className="text-gold text-lg mb-2">{"★".repeat(t.rating)}</div>
+                <p className="text-sm text-gray italic">"{t.quote}"</p>
+                <p className="mt-3 text-xs font-semibold tracking-wide text-navy uppercase">{t.name}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {["EPCH", "UP EPB", "ODOP", "GST Registered"].map((badge) => (
+              <span key={badge} className="badge badge-brass !px-4 !py-2 text-sm">{badge}</span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* B2B Trade Banner */}
+      <section className="section !pt-0" aria-labelledby="b2b-banner">
+        <div className="container-x">
+          <div className="bg-navy text-white p-8 md:p-12 rounded-2xl text-center">
+            <h2 id="b2b-banner" className="font-sans font-bold text-2xl md:text-3xl">Looking for Custom Designs or Private Label Manufacturing?</h2>
+            <p className="text-white/70 mt-3 max-w-2xl mx-auto">We offer bespoke manufacturing, custom finishes, private labelling, and OEM solutions for international buyers. Book a virtual showroom tour or submit an RFQ.</p>
+            <div className="mt-6 flex flex-wrap gap-3 justify-center">
+              <Link href="/request-quote" className="btn btn-clay !px-6 !py-3">Submit RFQ</Link>
+              <Link href="/customisation" className="btn !px-6 !py-3 border border-white text-white hover:bg-white hover:text-navy">Book Virtual Showroom Tour</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Follow Our Craft */}
       <section className="section" aria-labelledby="social">
         <div className="container-x">
           <div className="text-center mb-8">
@@ -411,28 +367,7 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* B2B Trade & Inquiry Banner */}
-      <section className="section !pt-0" aria-labelledby="b2b-banner">
-        <div className="container-x">
-          <div className="bg-navy text-white p-8 md:p-12 rounded-2xl text-center">
-            <h2 id="b2b-banner" className="font-sans font-bold text-2xl md:text-3xl">
-              Looking for Custom Designs or Private Label Manufacturing?
-            </h2>
-            <p className="text-white/70 mt-3 max-w-2xl mx-auto">
-              We offer bespoke manufacturing, custom finishes, private labelling, and OEM solutions for
-              international buyers. Book a virtual showroom tour or submit an RFQ.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3 justify-center">
-              <Link href="/request-quote" className="btn btn-clay !px-6 !py-3">Submit RFQ</Link>
-              <Link href="/customisation" className="btn !px-6 !py-3 border border-white text-white hover:bg-white hover:text-navy">
-                Book Virtual Showroom Tour
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Certifications & Organization Resources */}
+      {/* Certifications */}
       <section className="section bg-white border-y border-sand" aria-labelledby="certifications">
         <div className="container-x">
           <div className="text-center mb-8">
