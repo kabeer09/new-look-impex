@@ -684,7 +684,7 @@ def sitemap(db: Session = Depends(get_db)):
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
-    return f"User-agent: *\nAllow: /\nSitemap: {settings.API_BASE_URL}/sitemap.xml\n"
+    return f"User-agent: *\nAllow: /\nSitemap: {settings.PUBLIC_SITE_URL.rstrip('/')}/sitemap.xml\n"
 
 
 # ---------- product catalogue PDF ----------

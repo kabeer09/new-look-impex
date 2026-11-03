@@ -5,6 +5,10 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev",
   "regions": ["sin1"],
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://new-look-impex-api.onrender.com/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "https://new-look-impex-api.onrender.com/robots.txt" }
+  ],
   "headers": [
     {
       "source": "/_next/static/(.*)",
