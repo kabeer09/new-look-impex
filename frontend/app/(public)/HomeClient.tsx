@@ -166,19 +166,19 @@ export default function HomeClient() {
             <p className="text-sm text-gray text-center">Categories will appear here once published.</p>
           ) : (
             <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-              {categories.filter((c) => !["Brass Urlis", "Copper Urlis", "Brass Diyas"].includes(c.name)).slice(0, 8).map((c) => (
+              {categories.filter((c) => !["Brass Urlis", "Copper Urlis", "Brass Diyas", "Metal Diyas", "Brass Lanterns", "Decorative Bowls"].includes(c.name)).slice(0, 8).map((c) => (
                 <Link key={c.slug} href={`/categories/${c.slug}`} className="group flex flex-col items-center text-center">
-                  <span className="relative block w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-cream ring-1 ring-clay/25 group-hover:ring-clay transition-all">
+                  <span className="relative block w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-cream ring-2 ring-clay/25 group-hover:ring-clay transition-all">
                     {c.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={c.image_url.startsWith("http") ? c.image_url : `https://new-look-impex-api.onrender.com${c.image_url}`} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     ) : (
-                      <span className="absolute inset-0 flex items-center justify-center font-serif text-4xl font-bold text-clay/70" aria-hidden="true">
+                      <span className="absolute inset-0 flex items-center justify-center font-serif text-5xl font-bold text-clay/70" aria-hidden="true">
                         {c.name.trim().charAt(0).toUpperCase() || "N"}
                       </span>
                     )}
                   </span>
-                  <span className="block mt-3 text-[12px] font-semibold tracking-wide text-navy uppercase group-hover:text-clay">
+                  <span className="block mt-3 text-[13px] font-semibold tracking-wide text-navy uppercase group-hover:text-clay">
                     {c.name}
                   </span>
                 </Link>
