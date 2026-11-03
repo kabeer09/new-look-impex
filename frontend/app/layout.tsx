@@ -3,9 +3,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://newlookimpex.store"),
-  // Replace with your actual Google Search Console verification code
   verification: {
-    google: "REPLACE_WITH_YOUR_GSC_VERIFICATION_CODE",
+    google: "TEfYClAKNA6ckET-Smb56-eka2ydnJ1BW3s0On4X6EI",
   },
   title: "New Look Impex — Brass & Copper Handicrafts Wholesale | Moradabad, India",
   description:
