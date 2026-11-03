@@ -787,12 +787,22 @@ def delete_product_image(iid: int, db: Session = Depends(get_db),
 # ---------------- PUBLIC catalogue browsing ----------------
 
 @router.get("/api/public/products")
+import time as _time
+_PUBLIC_CACHE: dict = {}
+_CACHE_TTL = 60  # seconds
+
 def public_products(q: str = "", category: str = "", material: str = "", style: str = "",
                     finish: str = "", has_moq: bool = False,
                     min_price: float | None = None, max_price: float | None = None,
                     sort: str = "newest", page: int = Query(1, ge=1),
                     page_size: int = Query(24, ge=1, le=100),
                     db: Session = Depends(get_db)):
+    # Simple in-memory cache for repeated identical requests
+    cache_key = f"pub:{q}:{category}:{material}:{style}:{finish}:{has_moq}:{min_price}:{max_price}:{sort}:{page}:{page_size}"
+    now = _time.time()
+    cached = _PUBLIC_CACHE.get(cache_key)
+    if cached and (now - cached[0]) < _CACHE_TTL:
+        return cached[1]
     qry = db.query(models.Product).filter(models.Product.status == "published")
     if q:
         like = f"%{q}%"
@@ -902,9 +912,15 @@ def public_products(q: str = "", category: str = "", material: str = "", style: 
     else:
         items = []
 
-    return {"total": total, "page": page, "page_size": page_size,
-            "items": items,
-            "price_data_available": bool(has_price)}
+    result = {"total": total, "page": page, "page_size": page_size,
+              "items": items,
+              "price_data_available": bool(has_price)}
+    _PUBLIC_CACHE[cache_key] = (now, result)
+    # Evict old entries (keep cache small)
+    if len(_PUBLIC_CACHE) > 50:
+        oldest = min(_PUBLIC_CACHE.items(), key=lambda x: x[1][0])
+        del _PUBLIC_CACHE[oldest[0]]
+    return result
 
 
 @router.get("/api/public/products/search/suggest")
