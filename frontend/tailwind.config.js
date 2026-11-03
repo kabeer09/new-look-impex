@@ -4,17 +4,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Premium plum/cream palette inspired by reference design.
-        navy: { DEFAULT: "#2D1B2E", dark: "#1A0F1A", light: "#4A334E" },
+        // Premium burgundy/cream palette inspired by Pinterest reference.
+        navy: { DEFAULT: "#470916", dark: "#2A050D", light: "#6B1220" },
         ivory: "#FFFFFF",
         brass: { DEFAULT: "#B87345", dark: "#8F5A35", light: "#E8D4C4" },
         gold: { DEFAULT: "#C9A96E", dark: "#A68A52", light: "#E5D9B8" },
-        petrol: "#2D1B2E",
+        petrol: "#470916",
         clay: { DEFAULT: "#B87345", dark: "#8F5A35", light: "#E8D4C4" },
-        cream: "#F8EFE8",
-        espresso: "#2D1B2E",
+        cream: "#FBF6F2",
+        espresso: "#470916",
         olive: "#6F6E48",
-        sand: "#F0EAE2",
+        sand: "#F2EAE4",
         charcoal: "#1A1A1A",
         gray: "#6B7280",
       },
