@@ -166,7 +166,7 @@ export default function HomeClient() {
             <p className="text-sm text-gray text-center">Categories will appear here once published.</p>
           ) : (
             <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-              {categories.slice(0, 8).map((c) => (
+              {categories.filter((c) => !["Brass Urlis", "Copper Urlis", "Brass Diyas"].includes(c.name)).slice(0, 8).map((c) => (
                 <Link key={c.slug} href={`/categories/${c.slug}`} className="group flex flex-col items-center text-center">
                   <span className="relative block w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden bg-cream ring-1 ring-clay/25 group-hover:ring-clay transition-all">
                     {c.image_url ? (
@@ -183,6 +183,60 @@ export default function HomeClient() {
                   </span>
                 </Link>
               ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* New Arrivals */}
+      <section className="section" aria-labelledby="new-arrivals">
+        <div className="container-x">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="eyebrow text-clay">Latest</p>
+              <h2 id="new-arrivals" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">New Arrivals</h2>
+            </div>
+            <Link href="/products?sort=newest" className="btn btn-outline btn-sm">View All →</Link>
+          </div>
+          {featured === null ? <Loading label="Loading new arrivals…" /> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {featured.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Copper Collection */}
+      <section className="section bg-sand/30" aria-labelledby="copper-collection">
+        <div className="container-x">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="eyebrow text-clay">Material</p>
+              <h2 id="copper-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Copper Collection</h2>
+            </div>
+            <Link href="/products?material=Copper" className="btn btn-outline btn-sm">View All →</Link>
+          </div>
+          {featured === null ? <Loading label="Loading…" /> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {featured.filter((p) => p.material === "Copper").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Brass Collection */}
+      <section className="section" aria-labelledby="brass-collection">
+        <div className="container-x">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="eyebrow text-clay">Material</p>
+              <h2 id="brass-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Brass Collection</h2>
+            </div>
+            <Link href="/products?material=Brass" className="btn btn-outline btn-sm">View All →</Link>
+          </div>
+          {featured === null ? <Loading label="Loading…" /> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {featured.filter((p) => p.material === "Brass").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
