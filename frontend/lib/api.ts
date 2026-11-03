@@ -83,16 +83,27 @@ export function mediaUrl(url: string | null | undefined): string {
 /** True only for files served by our own media endpoint (safe to add ?variant=). */
 export function isLocalMedia(url: string | null | undefined): boolean {
   if (!url) return false;
+  if (url.includes("supabase.co/storage/")) return true;
   if (/^https?:\/\//i.test(url)) return url.startsWith(API);
   return url.startsWith("/api/media/files/");
 }
 
-/** Derivative URL: thumb (800px JPEG) or webp (1600px). Falls back to the
- *  original for remote images or missing derivatives (server also falls back). */
+/** Derivative URL: thumb (800px JPEG) or webp (1600px). For Supabase Storage
+ *  images, uses the render/image endpoint for on-the-fly resizing. */
 export function variantUrl(url: string | null | undefined, variant: "thumb" | "webp"): string {
   const base = mediaUrl(url);
-  if (!base || !isLocalMedia(url)) return base;
-  return `${base}${base.includes("?") ? "&" : "?"}variant=${variant}`;
+  if (!base) return base;
+  // Supabase Storage image transformation
+  if (base.includes("supabase.co/storage/v1/object/public/")) {
+    const renderUrl = base.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
+    const w = variant === "thumb" ? 400 : 800;
+    return `${renderUrl}?width=${w}&quality=80&format=webp`;
+  }
+  // Local media endpoint
+  if (isLocalMedia(url)) {
+    return `${base}${base.includes("?") ? "&" : "?"}variant=${variant}`;
+  }
+  return base;
 }
 
 /** Small srcset for cards and galleries: 800px thumb + 1600px WebP. */
