@@ -400,7 +400,7 @@ export default function HomeClient() {
               <p className="eyebrow text-clay">Our Craft</p>
               <h2 id="craft-story" className="font-sans font-bold text-navy text-3xl md:text-4xl mt-2">The Story Behind Every Piece</h2>
               <div className="text-gray space-y-4 mt-4">
-                <p>New Look Impex works from Moradabad, Uttar Pradesh — a city with a long-standing tradition of brass and copper metalcraft. Our catalogue centres on handcrafted home décor: urlis, diyas, lanterns, bowls, trays and statement pieces.</p>
+                <p>New Look Impex works from Moradabad, Uttar Pradesh — India's brass city, renowned worldwide for its centuries-old tradition of brass and copper metalcraft. Our catalogue centres on handcrafted home décor: urlis, diyas, lanterns, bowls, trays and statement pieces.</p>
                 <p>Each design is developed around the qualities of its material — the warmth of brass, the lustre of copper — and finished for contemporary retail, hospitality and gifting settings.</p>
               </div>
               <Link href="/craft" className="btn btn-clay mt-4">Discover Our Craft</Link>
@@ -421,10 +421,10 @@ export default function HomeClient() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
-              { value: "300+", label: "Artisan families empowered through craftsmanship" },
-              { value: "600+", label: "Meaningful livelihoods created" },
-              { value: "1,000+", label: "Lives positively impacted through our artisans" },
-              { value: "2,500+", label: "Heritage designs brought to life" },
+              { value: "30+", label: "Artisan families empowered through craftsmanship" },
+              { value: "60+", label: "Meaningful livelihoods created" },
+              { value: "100+", label: "Lives positively impacted through our artisans" },
+              { value: "250+", label: "Heritage designs brought to life" },
             ].map((s) => (
               <div key={s.label} className="card text-center">
                 <p className="font-sans font-bold text-3xl text-clay">{s.value}</p>
