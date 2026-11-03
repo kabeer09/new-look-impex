@@ -4,8 +4,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Premium burgundy/cream palette inspired by Pinterest reference.
-        navy: { DEFAULT: "#470916", dark: "#2A050D", light: "#6B1220" },
+        // Premium maroon/cream palette inspired by Pinterest reference.
+        navy: { DEFAULT: "#470916", dark: "#2D0510", light: "#6B1A2A" },
         ivory: "#FFFFFF",
         brass: { DEFAULT: "#B87345", dark: "#8F5A35", light: "#E8D4C4" },
         gold: { DEFAULT: "#C9A96E", dark: "#A68A52", light: "#E5D9B8" },
@@ -14,7 +14,7 @@ module.exports = {
         cream: "#FBF6F2",
         espresso: "#470916",
         olive: "#6F6E48",
-        sand: "#F2EAE4",
+        sand: "#F5EDE6",
         charcoal: "#1A1A1A",
         gray: "#6B7280",
       },
