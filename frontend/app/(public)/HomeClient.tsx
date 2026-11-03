@@ -61,10 +61,10 @@ const PROCESS_STEPS = [
 ];
 
 const TRUST_STATS = [
-  { value: "50+", label: "Countries Served" },
+  { value: "5+", label: "Countries Served" },
   { value: "99%", label: "On-Time Delivery" },
-  { value: "200+", label: "Verified Manufacturers" },
-  { value: "1000+", label: "Satisfied Clients" },
+  { value: "20+", label: "Verified Buyers" },
+  { value: "100+", label: "Products" },
 ];
 
 const TESTIMONIALS = [
