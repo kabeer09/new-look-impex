@@ -4,19 +4,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Premium purple/white palette inspired by Pinterest reference.
-        navy: { DEFAULT: "#2E1846", dark: "#1A0E2A", light: "#4A2E6A" },
+        // Corporate navy/amber palette for premium B2B export website.
+        navy: { DEFAULT: "#0F172A", dark: "#020617", light: "#1E293B" },
         ivory: "#FFFFFF",
-        brass: { DEFAULT: "#B87345", dark: "#8F5A35", light: "#E8D4C4" },
-        gold: { DEFAULT: "#C9A96E", dark: "#A68A52", light: "#E5D9B8" },
-        petrol: "#2E1846",
-        clay: { DEFAULT: "#B87345", dark: "#8F5A35", light: "#E8D4C4" },
-        cream: "#FBF9FC",
-        espresso: "#2E1846",
-        olive: "#6F6E48",
-        sand: "#F0ECF2",
-        charcoal: "#1A1A1A",
-        gray: "#6B7280",
+        brass: { DEFAULT: "#D97706", dark: "#B45309", light: "#FEF3C7" },
+        gold: { DEFAULT: "#D97706", dark: "#B45309", light: "#FEF3C7" },
+        petrol: "#0F172A",
+        clay: { DEFAULT: "#D97706", dark: "#B45309", light: "#FEF3C7" },
+        cream: "#F8FAFC",
+        espresso: "#0F172A",
+        olive: "#059669",
+        sand: "#F1F5F9",
+        charcoal: "#1E293B",
+        gray: "#64748B",
       },
       fontFamily: {
         serif: ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
