@@ -633,19 +633,21 @@ export default function HomeClient() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { name: "EPCH", desc: "Export Promotion Council for Handicrafts", href: "https://www.epch.in" },
-                { name: "UP EPB", desc: "Uttar Pradesh Export Promotion Bureau", href: "https://upepb.org" },
-                { name: "ODOP", desc: "One District One Product — Moradabad", href: "https://odop.gov.in" },
-                { name: "GST Registered", desc: "GSTIN: 09AFKPA4462R1ZW", href: "#" },
+                { name: "EPCH", desc: "Export Promotion Council for Handicrafts", href: "https://www.epch.in", logo: "/logo-epch.png" },
+                { name: "UP EPB", desc: "Uttar Pradesh Export Promotion Bureau", href: "https://upepb.org", logo: "/logo-up-epb.jpg" },
+                { name: "ODOP", desc: "One District One Product — Moradabad", href: "https://odop.gov.in", logo: "/logo-odop.jpg" },
+                { name: "GST Registered", desc: "GSTIN: 09AFKPA4462R1ZW", href: "#", logo: "/logo-gst.png" },
               ].map((c) => (
                 <a
                   key={c.name}
                   href={c.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="card text-center hover:shadow-md transition-shadow"
+                  className="card text-center hover:shadow-md transition-shadow flex flex-col items-center"
                 >
-                  <p className="font-serif font-bold text-espresso text-lg">{c.name}</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.logo} alt={c.name} className="h-12 w-auto object-contain mb-2" loading="lazy" />
+                  <p className="font-serif font-bold text-espresso text-sm">{c.name}</p>
                   <p className="text-xs text-gray mt-1">{c.desc}</p>
                 </a>
               ))}
