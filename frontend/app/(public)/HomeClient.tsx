@@ -11,24 +11,45 @@ import { useRfqCart } from "@/lib/rfq";
 
 const SERVICES = [
   {
-    title: "Global Sourcing & Procurement",
-    text: "Verified supplier networks across Moradabad and India. We source handcrafted copper and brass products at competitive wholesale prices.",
-    icon: "🌐",
+    title: "Handcrafted Copper & Brass Manufacturing",
+    text: "Direct from Moradabad — India's brass and copper capital. We manufacture urlis, diyas, lanterns, bottles, kitchenware, and home décor with verified artisan craftsmanship.",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+      </svg>
+    ),
   },
   {
-    title: "Quality Control & Compliance",
-    text: "Rigorous quality inspection at every stage — raw material, production, finishing, and packaging. Export-ready standards.",
-    icon: "✅",
+    title: "Wholesale & Bulk Supply",
+    text: "Competitive wholesale pricing for retailers, importers, and distributors. Bulk orders, container-level supply, and consistent quality across large volumes.",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+        <line x1="12" y1="22.08" x2="12" y2="12" />
+      </svg>
+    ),
   },
   {
-    title: "Customs Clearance & Documentation",
-    text: "Complete export documentation support: invoices, packing lists, certificates of origin, and compliance paperwork.",
-    icon: "📋",
+    title: "Custom Manufacturing & Private Label",
+    text: "Bespoke designs, custom sizes, finishes, engravings, and private labelling. OEM/ODM solutions tailored to your brand requirements.",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
+    ),
   },
   {
-    title: "End-to-End Freight Logistics",
-    text: "Door-to-port and port-to-door shipping coordination. Container loading, freight forwarding, and delivery tracking.",
-    icon: "🚢",
+    title: "Global Export & Logistics",
+    text: "Export-ready packaging, documentation support, and worldwide shipping coordination. Serving USA, UK, UAE, Australia, Canada, Europe, and Saudi Arabia.",
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    ),
   },
 ];
 
@@ -174,7 +195,7 @@ export default function HomeClient() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {SERVICES.map((s) => (
               <div key={s.title} className="card hover:shadow-lg transition-shadow">
-                <div className="text-3xl mb-3">{s.icon}</div>
+                <div className="text-clay mb-3">{s.icon}</div>
                 <h3 className="font-sans font-bold text-navy text-lg">{s.title}</h3>
                 <p className="text-sm text-gray mt-2">{s.text}</p>
               </div>
