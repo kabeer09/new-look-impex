@@ -387,14 +387,14 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Craft Story */}
+      {/* Our Craft / Helping Artisans Grow */}
       <section className="section !pt-0" aria-labelledby="craft-story">
         <div className="container-x">
           <div className="grid md:grid-cols-2 gap-0 bg-white border border-sand overflow-hidden rounded-2xl">
             <div className="relative min-h-72 bg-navy overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/craft-story-moradabad.jpg"
-                alt="Craftsmanship in Moradabad" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                alt="Artisan hand-crafting a copper vessel" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
             </div>
             <div className="p-8 md:p-12">
               <p className="eyebrow text-clay">Our Craft</p>
@@ -405,6 +405,37 @@ export default function HomeClient() {
               </div>
               <Link href="/craft" className="btn btn-clay mt-4">Discover Our Craft</Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Impact - Helping Artisans Grow */}
+      <section className="section bg-sand/40" aria-labelledby="impact">
+        <div className="container-x">
+          <div className="text-center mb-10">
+            <p className="eyebrow text-clay">Our Impact</p>
+            <h2 id="impact" className="font-sans font-bold text-navy text-3xl md:text-4xl mt-2">Helping Artisans Grow</h2>
+            <p className="text-gray mt-3 max-w-2xl mx-auto text-sm">
+              Every piece you bring home carries the hands, heritage, and hope of India's metal artisans.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {[
+              { value: "300+", label: "Artisan families empowered through craftsmanship" },
+              { value: "600+", label: "Meaningful livelihoods created" },
+              { value: "1,000+", label: "Lives positively impacted through our artisans" },
+              { value: "2,500+", label: "Heritage designs brought to life" },
+            ].map((s) => (
+              <div key={s.label} className="card text-center">
+                <p className="font-sans font-bold text-3xl text-clay">{s.value}</p>
+                <p className="text-xs text-gray mt-2">{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-gray leading-relaxed">
+              This is craftsmanship with a purpose — helping Indian art survive, and grow, in a way it never has before.
+            </p>
           </div>
         </div>
       </section>
