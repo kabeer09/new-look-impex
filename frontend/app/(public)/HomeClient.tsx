@@ -266,7 +266,7 @@ export default function HomeClient() {
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-brass-collection.jpg"
+            src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"
             alt="Handcrafted brass and copper collection"
             className="w-full h-full object-cover opacity-40"
             fetchPriority="high"
@@ -455,22 +455,13 @@ export default function HomeClient() {
         <section className="section !pt-0" aria-labelledby="craft-story">
           <div className="grid md:grid-cols-2 gap-0 bg-white border border-clay/15">
             <div className="relative min-h-72 bg-espresso overflow-hidden">
-              {storyImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={mediaUrl(storyImage)}
-                  alt="Handcrafted metal décor"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <span
-                  className="absolute inset-0 flex items-center justify-center font-serif text-8xl font-bold text-gold-light"
-                  aria-hidden="true"
-                >
-                  N
-                </span>
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/craft-story-moradabad.jpg"
+                alt="Craftsmanship in Moradabad"
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
             <div className="p-8 md:p-12">
               <p className="eyebrow text-clay">Our Craft</p>
@@ -498,11 +489,22 @@ export default function HomeClient() {
 
         {/* Shop by Purpose */}
         <section className="section" aria-labelledby="shop-by-purpose">
-          <div className="text-center mb-8">
-            <h2 id="shop-by-purpose" className="font-serif italic font-bold text-espresso text-2xl md:text-3xl">
-              Shop by Purpose
-            </h2>
-            <p className="text-gray mt-1 text-sm">Start from how you buy</p>
+          <div className="relative mb-8 overflow-hidden rounded-2xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/shop-by-purpose.jpg"
+              alt="Shop by purpose"
+              className="w-full h-48 md:h-64 object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-espresso/60 flex items-center justify-center">
+              <div className="text-center text-white">
+                <h2 id="shop-by-purpose" className="font-serif italic font-bold text-2xl md:text-3xl">
+                  Shop by Purpose
+                </h2>
+                <p className="text-white/80 mt-1 text-sm">Start from how you buy</p>
+              </div>
+            </div>
           </div>
           <PurposeBanners purposes={PURPOSES} categories={categories || []} />
         </section>

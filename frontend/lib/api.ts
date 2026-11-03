@@ -93,16 +93,11 @@ export function isLocalMedia(url: string | null | undefined): boolean {
 export function variantUrl(url: string | null | undefined, variant: "thumb" | "webp"): string {
   const base = mediaUrl(url);
   if (!base) return base;
-  // Supabase Storage image transformation
-  if (base.includes("supabase.co/storage/v1/object/public/")) {
-    const renderUrl = base.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
-    const w = variant === "thumb" ? 400 : 800;
-    return `${renderUrl}?width=${w}&quality=80&format=webp`;
-  }
-  // Local media endpoint
-  if (isLocalMedia(url)) {
+  // Local media endpoint (backend serves thumbnails)
+  if (isLocalMedia(url) && !url.includes("supabase.co")) {
     return `${base}${base.includes("?") ? "&" : "?"}variant=${variant}`;
   }
+  // Supabase Storage: return original (CDN-cached, fast enough)
   return base;
 }
 
