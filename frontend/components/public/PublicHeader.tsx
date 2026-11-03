@@ -10,14 +10,17 @@ import { RfqDrawer } from "./RfqDrawer";
 
 export const DEFAULT_ANNOUNCEMENT = "Global B2B Exporter of Handcrafted Copper & Brass Masterpieces | MOQ Applies | Worldwide Shipping";
 
-const NAV = [
+const NAV_LEFT = [
   { label: "Home", href: "/" },
   { label: "Collections", href: "/collections" },
   { label: "Copperware", href: "/copper-collection" },
   { label: "Brassware", href: "/brass-collection" },
   { label: "Home Decor", href: "/metal-home-decor" },
+];
+
+const NAV_RIGHT = [
   { label: "Gifting", href: "/gifting" },
-  { label: "Custom Manufacturing", href: "/customisation" },
+  { label: "Custom Mfg", href: "/customisation" },
   { label: "About Us", href: "/about" },
   { label: "Exhibitions", href: "/exhibitions" },
   { label: "Contact", href: "/contact" },
@@ -67,8 +70,8 @@ export function PublicHeader() {
       <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-clay/20">
         <div className="container-x">
           <div className="relative flex items-center gap-3 py-3">
-            <nav className="hidden lg:flex items-center gap-3 pr-12" aria-label="Primary">
-              {NAV.map((n) => (
+            <nav className="hidden lg:flex items-center gap-3" aria-label="Primary">
+              {NAV_LEFT.map((n) => (
                 <Link key={n.href} href={n.href} className={`text-[11px] tracking-wide text-espresso hover:text-clay transition-colors whitespace-nowrap ${isActive(n.href) ? "font-semibold text-clay" : ""}`}>
                   {n.label.toUpperCase()}
                 </Link>
@@ -77,12 +80,20 @@ export function PublicHeader() {
 
             <Link
               href="/"
-              className="lg:absolute lg:left-1/2 lg:-translate-x-1/2 flex flex-col items-center leading-none"
+              className="hidden lg:flex flex-col items-center leading-none mx-6"
               aria-label="New Look Impex home"
             >
               <span className="font-serif font-bold text-espresso text-xl tracking-wide">NEW LOOK IMPEX</span>
               <span className="text-[10px] tracking-[0.28em] text-clay mt-1">BRASS &amp; COPPER · WHOLESALE</span>
             </Link>
+
+            <nav className="hidden lg:flex items-center gap-3" aria-label="Secondary">
+              {NAV_RIGHT.map((n) => (
+                <Link key={n.href} href={n.href} className={`text-[11px] tracking-wide text-espresso hover:text-clay transition-colors whitespace-nowrap ${isActive(n.href) ? "font-semibold text-clay" : ""}`}>
+                  {n.label.toUpperCase()}
+                </Link>
+              ))}
+            </nav>
 
             <div className="flex-1 lg:hidden" />
 
@@ -153,7 +164,7 @@ export function PublicHeader() {
         {open && (
           <div className="lg:hidden border-t border-clay/20 bg-cream">
             <div className="container-x py-3 space-y-1">
-              {NAV.map((n) => (
+              {[...NAV_LEFT, ...NAV_RIGHT].map((n) => (
                 <Link
                   key={n.href}
                   href={n.href}
