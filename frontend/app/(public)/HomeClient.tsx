@@ -266,7 +266,7 @@ export default function HomeClient() {
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={mediaUrl("/api/media/files/coll-brass-collection.jpg")}
+            src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-brass-collection.jpg"
             alt="Handcrafted brass and copper collection"
             className="w-full h-full object-cover opacity-40"
             fetchPriority="high"
@@ -424,12 +424,12 @@ export default function HomeClient() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { name: "Brass Collection", slug: "brass-collection", img: "/api/media/files/coll-brass-collection.jpg" },
-              { name: "Copper Collection", slug: "copper-collection", img: "/api/media/files/coll-copper-collection.jpg" },
-              { name: "Copper Drinkware", slug: "copper-drinkware", img: "/api/media/files/coll-copper-drinkware.jpg" },
-              { name: "Brass Kitchen", slug: "brass-kitchen-collection", img: "/api/media/files/coll-brass-kitchen.jpg" },
-              { name: "Metal Home Décor", slug: "metal-home-decor", img: "/api/media/files/coll-metal-home-decor.jpg" },
-              { name: "Gifting", slug: "gifting", img: "/api/media/files/coll-gifting.jpg" },
+              { name: "Brass Collection", slug: "brass-collection", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-brass-collection.jpg" },
+              { name: "Copper Collection", slug: "copper-collection", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-copper-collection.jpg" },
+              { name: "Copper Drinkware", slug: "copper-drinkware", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-copper-drinkware.jpg" },
+              { name: "Brass Kitchen", slug: "brass-kitchen-collection", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-brass-kitchen.jpg" },
+              { name: "Metal Home Décor", slug: "metal-home-decor", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-metal-home-decor.jpg" },
+              { name: "Gifting", slug: "gifting", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-gifting.jpg" },
             ].map((c) => (
               <Link
                 key={c.slug}

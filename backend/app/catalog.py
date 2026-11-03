@@ -920,6 +920,7 @@ def public_category_detail(slug: str, page: int = Query(1, ge=1),
     return {"id": c.id, "name": c.name, "slug": c.slug, "description": c.description,
             "seo_title": c.seo_title, "seo_description": c.seo_description,
             "total": total, "page": page, "page_size": page_size,
+            "image_url": c.image_url,
             "items": [_product_out(p, db, public=True) for p in rows]}
 
 
@@ -956,4 +957,5 @@ def public_collection_detail(slug: str, page: int = Query(1, ge=1),
     return {"id": c.id, "name": c.name, "slug": c.slug, "description": c.description,
             "seo_title": c.seo_title, "seo_description": c.seo_description,
             "total": total, "page": page, "page_size": page_size,
+            "image_url": c.image_url,
             "items": [_product_out(p, db, public=True) for p in rows]}
