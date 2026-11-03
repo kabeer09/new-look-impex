@@ -637,6 +637,20 @@ def gsc_sync(payload: dict, db: Session = Depends(get_db), u=Depends(require_rol
         raise HTTPException(502, f"GSC sync failed (quota/permission/network?): {str(e)[:250]}")
 
 
+# ---------- performance: cache headers for public endpoints ----------
+@app.middleware("http")
+async def add_cache_headers(request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/api/public/products") or path.startswith("/api/public/categories") or path.startswith("/api/public/collections"):
+        response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
+    elif path.startswith("/api/media/files"):
+        response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=604800"
+    elif path == "/sitemap.xml" or path == "/robots.txt":
+        response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
+
+
 # ---------- sitemap / robots ----------
 @app.get("/sitemap.xml", response_class=PlainTextResponse)
 def sitemap(db: Session = Depends(get_db)):

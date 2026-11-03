@@ -80,6 +80,20 @@ export function mediaUrl(url: string | null | undefined): string {
   return `${API}${url.startsWith("/") ? "" : "/api/media/files/"}${url}`;
 }
 
+/** Cloudinary cloud name — set via NEXT_PUBLIC_CLOUDINARY_CLOUD in env. */
+const CLOUDINARY_CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD || "";
+
+/** Wrap a remote image URL in Cloudinary's fetch/transform URL for optimized
+ *  delivery (WebP/AVIF, responsive sizing, auto quality). Falls back to the
+ *  original URL if Cloudinary is not configured. */
+export function cloudinaryUrl(url: string | null | undefined, width?: number): string {
+  if (!url) return "";
+  if (!CLOUDINARY_CLOUD) return mediaUrl(url);
+  if (!/^https?:\/\//i.test(url)) return mediaUrl(url);
+  const transforms = width ? `w_${width},c_scale,q_auto,f_auto` : "q_auto,f_auto";
+  return `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/${transforms}/${encodeURIComponent(url)}`;
+}
+
 /** True only for files served by our own media endpoint (safe to add ?variant=). */
 export function isLocalMedia(url: string | null | undefined): boolean {
   if (!url) return false;
@@ -91,13 +105,18 @@ export function isLocalMedia(url: string | null | undefined): boolean {
 /** Derivative URL: thumb (800px JPEG) or webp (1600px). For Supabase Storage
  *  images, uses the render/image endpoint for on-the-fly resizing. */
 export function variantUrl(url: string | null | undefined, variant: "thumb" | "webp"): string {
+  if (!url) return "";
+  const w = variant === "thumb" ? 400 : 800;
+  // Cloudinary fetch transform (WebP/AVIF, auto quality)
+  if (CLOUDINARY_CLOUD && /^https?:\/\//i.test(url)) {
+    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/w_${w},c_scale,q_auto,f_auto/${encodeURIComponent(url)}`;
+  }
   const base = mediaUrl(url);
   if (!base) return base;
   // Local media endpoint (backend serves thumbnails)
-  if (url && isLocalMedia(url) && !url.includes("supabase.co")) {
+  if (isLocalMedia(url) && !url.includes("supabase.co")) {
     return `${base}${base.includes("?") ? "&" : "?"}variant=${variant}`;
   }
-  // Supabase Storage: return original (CDN-cached, fast enough)
   return base;
 }
 

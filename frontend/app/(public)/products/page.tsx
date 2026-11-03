@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 60; // ISR: revalidate every 60 seconds
+
 export default function ProductsPage() {
   return (
     <Suspense fallback={<div className="container-x section"><Loading label="Loading catalogue…" /></div>}>
