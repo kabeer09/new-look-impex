@@ -540,6 +540,123 @@ export default function HomeClient() {
           </div>
         </section>
 
+        {/* International Wholesale Enquiry */}
+        <section className="section bg-espresso text-cream" aria-labelledby="global-enquiry">
+          <div className="container-x">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <p className="text-gold-light uppercase tracking-[0.22em] text-xs font-semibold">Global Sourcing</p>
+                <h2 id="global-enquiry" className="font-serif font-bold text-3xl md:text-4xl mt-2 text-white">
+                  International Wholesale Enquiries Welcome
+                </h2>
+                <p className="text-cream/80 mt-4">
+                  New Look Impex supplies handcrafted brass and copper handicrafts to buyers across the USA, UK, UAE,
+                  Australia, Canada, Europe and Saudi Arabia. We handle bulk orders, custom manufacturing, private
+                  labelling and corporate gifting programmes.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href="/request-quote" className="btn btn-clay !px-6 !py-3">
+                    Request Wholesale Catalogue
+                  </Link>
+                  <Link href="/wholesale" className="btn !px-6 !py-3 border border-cream/40 text-cream hover:bg-cream hover:text-espresso">
+                    Wholesale Programme
+                  </Link>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {["USA", "UK", "UAE", "Australia", "Canada", "Europe"].map((c) => (
+                  <Link
+                    key={c}
+                    href={`/${c.toLowerCase().replace(" ", "-")}`}
+                    className="bg-white/10 backdrop-blur border border-cream/20 rounded-lg p-4 text-center hover:bg-white/20 transition-colors"
+                  >
+                    <span className="text-sm font-semibold tracking-wide">{c}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Instagram & YouTube Showcase */}
+        <section className="section" aria-labelledby="social">
+          <div className="container-x">
+            <div className="text-center mb-8">
+              <h2 id="social" className="font-serif font-bold text-espresso text-2xl md:text-3xl">
+                Follow Our Craft
+              </h2>
+              <p className="text-gray mt-1 text-sm">Instagram &amp; YouTube — behind the scenes of Moradabad craftsmanship</p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <a
+                href="https://www.instagram.com/nli_collections_india"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="card flex items-center gap-4 hover:shadow-md transition-shadow"
+              >
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
+                  IG
+                </div>
+                <div>
+                  <p className="font-semibold text-espresso">Instagram</p>
+                  <p className="text-xs text-gray">@nli_collections_india</p>
+                </div>
+              </a>
+              <a
+                href="https://youtube.com/@nlicollections"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="card flex items-center gap-4 hover:shadow-md transition-shadow"
+              >
+                <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-white text-xl font-bold">
+                  YT
+                </div>
+                <div>
+                  <p className="font-semibold text-espresso">YouTube</p>
+                  <p className="text-xs text-gray">@nlicollections</p>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* Certifications & Organization Resources */}
+        <section className="section bg-white border-y border-clay/10" aria-labelledby="certifications">
+          <div className="container-x">
+            <div className="text-center mb-8">
+              <h2 id="certifications" className="font-serif font-bold text-espresso text-2xl md:text-3xl">
+                Certifications &amp; Organization Resources
+              </h2>
+              <p className="text-gray mt-1 text-sm">
+                Verified business credentials and trade organization memberships
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { name: "EPCH", desc: "Export Promotion Council for Handicrafts", href: "https://www.epch.in" },
+                { name: "UP EPB", desc: "Uttar Pradesh Export Promotion Bureau", href: "https://upepb.org" },
+                { name: "ODOP", desc: "One District One Product — Moradabad", href: "https://odop.gov.in" },
+                { name: "GST Registered", desc: "GSTIN: 09AFKPA4462R1ZW", href: "#" },
+              ].map((c) => (
+                <a
+                  key={c.name}
+                  href={c.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="card text-center hover:shadow-md transition-shadow"
+                >
+                  <p className="font-serif font-bold text-espresso text-lg">{c.name}</p>
+                  <p className="text-xs text-gray mt-1">{c.desc}</p>
+                </a>
+              ))}
+            </div>
+            <p className="text-xs text-gray text-center mt-4">
+              (Official logo assets are displayed only after verification. Organization memberships are subject to
+              renewal and verification.)
+            </p>
+          </div>
+        </section>
+
         {/* FAQ */}
         <section className="section" aria-labelledby="faq">
           <div className="max-w-3xl mx-auto">
