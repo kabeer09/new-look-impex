@@ -82,7 +82,7 @@ export function PublicHeader() {
       <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-clay/20">
         <div className="container-x">
           <div className="relative flex items-center gap-3 py-3">
-            <nav className="hidden lg:flex items-center gap-4" aria-label="Primary">
+            <nav className="hidden lg:flex items-center gap-3 pr-12" aria-label="Primary">
               {NAV.map((n) => (
                 <Link key={n.href} href={n.href} className={`text-[12px] tracking-wide text-espresso hover:text-clay transition-colors whitespace-nowrap ${isActive(n.href) ? "font-semibold text-clay" : ""}`}>
                   {n.label.toUpperCase()}
