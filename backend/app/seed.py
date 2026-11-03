@@ -27,9 +27,9 @@ SEED_KEYWORDS = [
 ]
 
 SAMPLE_PAGES = [
-    ("https://newlookimpex.example/", "New Look Impex | Brass & Copper Handicrafts Manufacturer, Moradabad", "Wholesale brass & copper handicrafts from Moradabad, India."),
-    ("https://newlookimpex.example/brass-urli-wholesale", "Brass Urli Wholesale | Manufacturer India", "Bulk brass urlis for retailers & importers."),
-    ("https://newlookimpex.example/brass-diya-wholesale", "Brass Diya Wholesale Supplier India", "Metal diyas for festive & corporate gifting."),
+    ("https://new-look-impex.vercel.app/", "New Look Impex | Brass & Copper Handicrafts Manufacturer, Moradabad", "Wholesale brass & copper handicrafts from Moradabad, India."),
+    ("https://new-look-impex.vercel.app/brass-urli-wholesale", "Brass Urli Wholesale | Manufacturer India", "Bulk brass urlis for retailers & importers."),
+    ("https://new-look-impex.vercel.app/brass-diya-wholesale", "Brass Diya Wholesale Supplier India", "Metal diyas for festive & corporate gifting."),
 ]
 
 SEED_CATEGORIES = [

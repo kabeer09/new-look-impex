@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "ChangeMe123!"
     CORS_ORIGINS: str = "http://localhost:3000"
     API_BASE_URL: str = "http://localhost:8000"
-    PUBLIC_SITE_URL: str = "http://localhost:3000"
+    PUBLIC_SITE_URL: str = "https://new-look-impex.vercel.app"
     PUBLIC_SITE_DOMAIN: str = "newlookimpex.example"
 
     LLM_PROVIDER: str = "none"  # none | openai-compatible | custom
