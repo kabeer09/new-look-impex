@@ -209,24 +209,15 @@ export default function HomeClient() {
         <div className="container-x">
           <div className="text-center mb-8">
             <p className="eyebrow text-clay">Curated</p>
-            <h2 id="collections" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Featured Collections</h2>
+            <h2 id="collections" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Featured Products</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { name: "Brass Collection", slug: "brass-collection", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-brass-collection.jpg" },
-              { name: "Copper Collection", slug: "copper-collection", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-copper-collection.jpg" },
-              { name: "Copper Drinkware", slug: "copper-drinkware", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-copper-drinkware.jpg" },
-              { name: "Brass Kitchen", slug: "brass-kitchen-collection", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-brass-kitchen.jpg" },
-              { name: "Metal Home Décor", slug: "metal-home-decor", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-metal-home-decor.jpg" },
-              { name: "Gifting", slug: "gifting", img: "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/coll-gifting.jpg" },
-            ].map((c) => (
-              <Link key={c.slug} href={`/collections/${c.slug}`} className="group block bg-white border border-sand overflow-hidden hover:shadow-md transition-shadow">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={c.img} alt={c.name} className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                <div className="p-3 text-center"><p className="text-xs font-semibold tracking-wide text-navy uppercase">{c.name}</p></div>
-              </Link>
-            ))}
-          </div>
+          {featured === null ? <Loading label="Loading products…" /> : featured.length === 0 ? (
+            <p className="text-sm text-gray text-center">No featured products published yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {featured.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
         </div>
       </section>
 
