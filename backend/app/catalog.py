@@ -3,6 +3,12 @@ from __future__ import annotations
 import csv
 import io
 import json
+
+# Cache for public products (module-level)
+import time as _time
+_PUBLIC_CACHE: dict = {}
+_CACHE_TTL = 60  # seconds
+
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, UploadFile, File
@@ -926,9 +932,6 @@ def delete_product_image(iid: int, db: Session = Depends(get_db),
 # ---------------- PUBLIC catalogue browsing ----------------
 
 @router.get("/api/public/products")
-import time as _time
-_PUBLIC_CACHE: dict = {}
-_CACHE_TTL = 60  # seconds
 
 def public_products(q: str = "", category: str = "", material: str = "", style: str = "",
                     finish: str = "", has_moq: bool = False,
