@@ -94,7 +94,7 @@ export function variantUrl(url: string | null | undefined, variant: "thumb" | "w
   const base = mediaUrl(url);
   if (!base) return base;
   // Local media endpoint (backend serves thumbnails)
-  if (isLocalMedia(url) && !url.includes("supabase.co")) {
+  if (url && isLocalMedia(url) && !url.includes("supabase.co")) {
     return `${base}${base.includes("?") ? "&" : "?"}variant=${variant}`;
   }
   // Supabase Storage: return original (CDN-cached, fast enough)

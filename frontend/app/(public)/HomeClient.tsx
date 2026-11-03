@@ -270,6 +270,9 @@ export default function HomeClient() {
             alt="Handcrafted brass and copper collection"
             className="w-full h-full object-cover opacity-40"
             fetchPriority="high"
+            loading="eager"
+            width={1920}
+            height={1080}
           />
         </div>
         <div className="relative container-x py-20 md:py-32 text-center">
