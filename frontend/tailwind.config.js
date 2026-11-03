@@ -4,19 +4,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Corporate navy/amber palette for premium B2B export website.
-        navy: { DEFAULT: "#0F172A", dark: "#020617", light: "#1E293B" },
+        // Premium artisan palette: deep charcoal + warm cream + copper/brass accents.
+        navy: { DEFAULT: "#1A1A1A", dark: "#0A0A0A", light: "#2A2A2A" },
         ivory: "#FFFFFF",
-        brass: { DEFAULT: "#D97706", dark: "#B45309", light: "#FEF3C7" },
-        gold: { DEFAULT: "#D97706", dark: "#B45309", light: "#FEF3C7" },
-        petrol: "#0F172A",
-        clay: { DEFAULT: "#D97706", dark: "#B45309", light: "#FEF3C7" },
-        cream: "#F8FAFC",
-        espresso: "#0F172A",
+        brass: { DEFAULT: "#B87333", dark: "#8B5A2B", light: "#E8D4C4" },
+        gold: { DEFAULT: "#C5A059", dark: "#A07C3A", light: "#F0E6D2" },
+        petrol: "#1A1A1A",
+        clay: { DEFAULT: "#B87333", dark: "#8B5A2B", light: "#E8D4C4" },
+        cream: "#FBF9F5",
+        espresso: "#1A1A1A",
         olive: "#059669",
-        sand: "#F1F5F9",
-        charcoal: "#1E293B",
-        gray: "#64748B",
+        sand: "#F5F3F0",
+        charcoal: "#1A1A1A",
+        gray: "#6B7280",
       },
       fontFamily: {
         serif: ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],

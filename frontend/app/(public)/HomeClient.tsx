@@ -136,13 +136,14 @@ export default function HomeClient() {
         </div>
         <div className="relative container-x py-24 md:py-36">
           <div className="max-w-3xl">
-            <p className="text-gold uppercase tracking-[0.28em] text-xs font-semibold">Bridging Global Markets</p>
-            <h1 className="font-sans font-bold text-4xl md:text-6xl mt-4 leading-[1.05]">
-              Seamless Trade &amp; Sourcing Solutions
+            <p className="text-gold uppercase tracking-[0.28em] text-xs font-semibold">Timeless Heritage</p>
+            <h1 className="font-serif font-bold text-4xl md:text-6xl mt-4 leading-[1.05]">
+              Masterfully Crafted in Copper &amp; Brass
             </h1>
             <p className="mt-5 text-white/80 max-w-2xl text-lg">
-              New Look Impex — handcrafted copper and brass collections from Moradabad, India. Designed for global
-              retailers, wholesalers, and discerning buyers. End-to-end logistics, quality assurance, and export compliance.
+              New Look Impex — handcrafted copper and brass collections from Moradabad, India. Premium artisan
+              craftsmanship for global retailers, wholesalers, and discerning buyers. End-to-end manufacturing,
+              quality assurance, and export logistics.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/products" className="btn btn-clay !px-6 !py-3">Explore Our Catalog</Link>
@@ -326,6 +327,36 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* New Arrivals & Custom Line Showcase */}
+      <section className="section bg-sand/30" aria-labelledby="new-arrivals">
+        <div className="container-x">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="eyebrow text-clay">Latest</p>
+              <h2 id="new-arrivals" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">New Arrivals</h2>
+            </div>
+            <Link href="/products" className="btn btn-outline btn-sm">View All →</Link>
+          </div>
+          {/* Filter bar */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {["All", "Copper", "Brass", "Hammered", "Polished", "Matte"].map((f) => (
+              <button
+                key={f}
+                type="button"
+                className="px-4 py-1.5 text-xs font-semibold tracking-wide border border-sand rounded-full hover:bg-clay hover:text-white hover:border-clay transition-colors"
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+          {featured === null ? <Loading label="Loading new arrivals…" /> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {(featured || []).slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Craft Story */}
       <section className="section !pt-0" aria-labelledby="craft-story">
         <div className="container-x">
@@ -364,6 +395,52 @@ export default function HomeClient() {
               <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-white text-xl font-bold">YT</div>
               <div><p className="font-semibold text-navy">YouTube</p><p className="text-xs text-gray">@nlicollections</p></div>
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* B2B Trade & Inquiry Banner */}
+      <section className="section !pt-0" aria-labelledby="b2b-banner">
+        <div className="container-x">
+          <div className="bg-navy text-white p-8 md:p-12 rounded-2xl text-center">
+            <h2 id="b2b-banner" className="font-sans font-bold text-2xl md:text-3xl">
+              Looking for Custom Designs or Private Label Manufacturing?
+            </h2>
+            <p className="text-white/70 mt-3 max-w-2xl mx-auto">
+              We offer bespoke manufacturing, custom finishes, private labelling, and OEM solutions for
+              international buyers. Book a virtual showroom tour or submit an RFQ.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3 justify-center">
+              <Link href="/request-quote" className="btn btn-clay !px-6 !py-3">Submit RFQ</Link>
+              <Link href="/customisation" className="btn !px-6 !py-3 border border-white text-white hover:bg-white hover:text-navy">
+                Book Virtual Showroom Tour
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Certifications & Organization Resources */}
+      <section className="section bg-white border-y border-sand" aria-labelledby="certifications">
+        <div className="container-x">
+          <div className="text-center mb-8">
+            <p className="eyebrow text-clay">Trust</p>
+            <h2 id="certifications" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Certifications &amp; Organization Resources</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { name: "EPCH", desc: "Export Promotion Council for Handicrafts", href: "https://www.epch.in", logo: "/logo-epch.png" },
+              { name: "UP EPB", desc: "Uttar Pradesh Export Promotion Bureau", href: "https://upepb.org", logo: "/logo-up-epb.jpg" },
+              { name: "ODOP", desc: "One District One Product — Moradabad", href: "https://odop.gov.in", logo: "/logo-odop.jpg" },
+              { name: "GST Registered", desc: "GSTIN: 09AFKPA4462R1ZW", href: "#", logo: "/logo-gst.png" },
+            ].map((c) => (
+              <a key={c.name} href={c.href} target="_blank" rel="noopener noreferrer" className="card text-center hover:shadow-lg transition-shadow flex flex-col items-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.logo} alt={c.name} className="h-12 w-auto object-contain mb-2" loading="lazy" />
+                <p className="font-sans font-bold text-navy text-sm">{c.name}</p>
+                <p className="text-xs text-gray mt-1">{c.desc}</p>
+              </a>
+            ))}
           </div>
         </div>
       </section>
