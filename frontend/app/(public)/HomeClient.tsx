@@ -309,6 +309,48 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* Brand Story */}
+      <section className="section bg-sand/30" aria-labelledby="brand-story">
+        <div className="container-x">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            <div className="relative min-h-72 bg-navy overflow-hidden rounded-2xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/craft-story-moradabad.jpg"
+                alt="New Look Impex brand story"
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div>
+              <p className="eyebrow text-clay">Our Brand Story</p>
+              <h2 id="brand-story" className="font-sans font-bold text-navy text-3xl md:text-4xl mt-2">
+                Rooted in Moradabad. Crafted for the World.
+              </h2>
+              <p className="text-gray mt-4 leading-relaxed">
+                New Look Impex (NLI Collections) is a Moradabad-based manufacturer and exporter of handcrafted brass and
+                copper handicrafts. Rooted in a city renowned for its metalcraft heritage, we combine traditional artisan
+                skills with modern quality standards to serve global retailers, importers, and distributors.
+              </p>
+              <p className="text-gray mt-3 leading-relaxed">
+                Our product range spans copper bottles and drinkware, copper kitchenware, brass home décor, brass urlis,
+                diyas, lanterns, and luxury gifting collections. Every piece is crafted with attention to material
+                quality, finish consistency, and export-ready packaging.
+              </p>
+              <p className="text-gray mt-3 leading-relaxed">
+                We serve buyers across the USA, UK, UAE, Australia, Canada, Europe, and Saudi Arabia with bulk orders,
+                custom manufacturing, private labelling, and corporate gifting programmes. Each order receives a written
+                quotation with price, MOQ, lead time, and shipping terms.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href="/about" className="btn btn-clay">Learn More About Us</Link>
+                <Link href="/craft" className="btn btn-outline">Our Craft</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Client Testimonials */}
       <section className="section" aria-labelledby="testimonials">
         <div className="container-x">
