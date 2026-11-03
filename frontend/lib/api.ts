@@ -73,10 +73,16 @@ export async function downloadFile(path: string, filename: string): Promise<void
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
-/** Resolve a media/product image URL against the API base when needed. */
+/** Resolve a media/product image URL against the API base when needed.
+ *  For Supabase Storage URLs, wraps in Cloudinary fetch for optimized delivery. */
 export function mediaUrl(url: string | null | undefined): string {
   if (!url) return "";
-  if (/^https?:\/\//i.test(url) || url.startsWith("data:")) return url;
+  if (url.startsWith("data:")) return url;
+  // Cloudinary fetch transform for remote images
+  if (CLOUDINARY_CLOUD && /^https?:\/\//i.test(url) && url.includes("supabase.co")) {
+    return `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/fetch/q_auto,f_auto/${encodeURIComponent(url)}`;
+  }
+  if (/^https?:\/\//i.test(url)) return url;
   return `${API}${url.startsWith("/") ? "" : "/api/media/files/"}${url}`;
 }
 
