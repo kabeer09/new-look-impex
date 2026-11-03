@@ -509,6 +509,27 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* Newsletter / Trade Bulletin Signup */}
+      <section className="section bg-sand/40" aria-labelledby="newsletter">
+        <div className="container-x">
+          <div className="max-w-2xl mx-auto text-center">
+            <p className="eyebrow text-clay">Stay Updated</p>
+            <h2 id="newsletter" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
+              Be the First to Know
+            </h2>
+            <p className="text-gray mt-2 text-sm">
+              Receive seasonal metal décor trends, trade fair schedules, and new wholesale catalog releases directly in your business inbox.
+            </p>
+            <form className="mt-6 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={(e) => { e.preventDefault(); }}>
+              <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+              <input id="newsletter-email" type="email" className="input flex-1" placeholder="Your business email" required />
+              <button type="submit" className="btn btn-clay !px-6 !py-2.5 shrink-0">Subscribe</button>
+            </form>
+            <p className="text-xs text-gray mt-3">No spam. Unsubscribe anytime. We respect your privacy.</p>
+          </div>
+        </div>
+      </section>
+
       {/* Footer CTA */}
       <section className="section !pt-0" aria-labelledby="footer-cta">
         <div className="container-x">

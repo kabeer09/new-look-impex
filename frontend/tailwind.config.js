@@ -11,7 +11,7 @@ module.exports = {
         gold: { DEFAULT: "#C5A059", dark: "#A07C3A", light: "#F0E6D2" },
         petrol: "#1A1A1A",
         clay: { DEFAULT: "#B87333", dark: "#8B5A2B", light: "#E8D4C4" },
-        cream: "#FBF9F5",
+        cream: "#F9F6F0",
         espresso: "#1A1A1A",
         olive: "#059669",
         sand: "#F5F3F0",
