@@ -371,6 +371,38 @@ class ProductSlugRedirect(Base):
     created_at = Column(DateTime, default=_now)
 
 
+# ================= PRODUCT REVIEWS =================
+class ProductReview(Base):
+    __tablename__ = "product_reviews"
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
+    reviewer_name = Column(String(255), nullable=False)
+    reviewer_email = Column(String(255), default="")
+    rating = Column(Integer, nullable=False)  # 1-5
+    title = Column(String(512), default="")
+    body = Column(Text, default="")
+    status = Column(String(32), default="pending")  # pending | approved | rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+    approved_at = Column(DateTime, nullable=True)
+
+
+# ================= DISCOUNT CODES =================
+class DiscountCode(Base):
+    __tablename__ = "discount_codes"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(64), unique=True, nullable=False, index=True)
+    description = Column(String(512), default="")
+    discount_type = Column(String(16), default="percent")  # percent | fixed
+    discount_value = Column(Float, default=0)
+    min_order_qty = Column(Integer, default=0)
+    max_uses = Column(Integer, default=0)  # 0 = unlimited
+    used_count = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    starts_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 # ================= RFQ =================
 
 class RFQ(Base):

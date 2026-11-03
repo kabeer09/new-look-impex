@@ -4,6 +4,7 @@ import Link from "next/link";
 import { mediaUrl, cardSrcSet } from "@/lib/api";
 import type { ProductCard as ProductCardType } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
+import { useWishlist } from "@/hooks/useWishlist";
 import { formatPrice } from "./States";
 
 function Monogram({ name }: { name: string }) {
@@ -20,6 +21,7 @@ function Monogram({ name }: { name: string }) {
 
 export function ProductCard({ product }: { product: ProductCardType }) {
   const cart = useRfqCart();
+  const wishlist = useWishlist();
   const [added, setAdded] = useState(false);
   const img = product.image;
   const isConcept = Boolean(img?.is_concept);
@@ -67,6 +69,14 @@ export function ProductCard({ product }: { product: ProductCardType }) {
           <span className="absolute bottom-2 left-2 badge !bg-navy/90 !text-ivory">Concept imagery</span>
         )}
         {product.featured && <span className="absolute top-2 left-2 badge !bg-clay !text-cream">Featured</span>}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); wishlist.toggle(product.id); }}
+          aria-label={wishlist.has(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+        >
+          <span className={wishlist.has(product.id) ? "text-red-500" : "text-gray"}>♥</span>
+        </button>
       </Link>
       <div className="p-4 flex flex-col gap-1.5 flex-1">
         {product.sku && <p className="text-[11px] uppercase tracking-[0.14em] text-gray">SKU {product.sku}</p>}

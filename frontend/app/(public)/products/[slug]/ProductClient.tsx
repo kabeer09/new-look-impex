@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import { api, mediaUrl, cardSrcSet, trackEvent, whatsappLink } from "@/lib/api";
 import type { ProductDetail } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
+import { useWishlist } from "@/hooks/useWishlist";
 import { Loading, ErrorBox, EmptyState, formatPrice } from "@/components/public/States";
 import { ProductGrid } from "@/components/public/Shared";
+import { Reviews } from "@/components/public/Reviews";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 
 function GalleryImage({ url, alt, eager }: { url: string; alt: string; eager?: boolean }) {
   return (
@@ -28,6 +31,8 @@ function GalleryImage({ url, alt, eager }: { url: string; alt: string; eager?: b
 export default function ProductClient({ slug }: { slug: string }) {
   const router = useRouter();
   const cart = useRfqCart();
+  const wishlist = useWishlist();
+  const recentlyViewed = useRecentlyViewed();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [err, setErr] = useState("");
   const [notFound, setNotFound] = useState(false);
@@ -47,6 +52,7 @@ export default function ProductClient({ slug }: { slug: string }) {
         const parsed = parseInt(String(p.moq ?? ""), 10);
         setQty(Number.isFinite(parsed) && parsed > 0 ? parsed : 1);
         trackEvent({ event_type: "product_view", product_id: p.id });
+        recentlyViewed.add(p.id);
       })
       .catch((e) => {
         if (String(e).startsWith("404")) setNotFound(true);
@@ -257,6 +263,14 @@ export default function ProductClient({ slug }: { slug: string }) {
               >
                 WhatsApp
               </a>
+              <button
+                type="button"
+                onClick={() => wishlist.toggle(product.id)}
+                className="btn btn-ghost"
+                aria-label={wishlist.has(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+              >
+                {wishlist.has(product.id) ? "♥ Saved" : "♡ Save"}
+              </button>
             </div>
 
             {/* Specifications */}
@@ -373,6 +387,11 @@ export default function ProductClient({ slug }: { slug: string }) {
               <Link href="/request-quote" className="btn btn-primary">Request a quote</Link>
             </div>
           </div>
+        </div>
+
+        {/* Reviews */}
+        <div className="mt-16">
+          <Reviews slug={product.slug} />
         </div>
 
         {/* Related */}

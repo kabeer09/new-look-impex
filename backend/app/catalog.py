@@ -75,6 +75,145 @@ def _product_out(p: models.Product, db: Session, public: bool = False) -> dict:
     return out
 
 
+# ---------------- PUBLIC: product reviews ----------------
+@router.get("/api/public/products/{slug}/reviews")
+def public_reviews(slug: str, db: Session = Depends(get_db)):
+    p = db.query(models.Product).filter(func.lower(models.Product.slug) == slug.strip().lower()).first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+    rows = db.query(models.ProductReview).filter(
+        models.ProductReview.product_id == p.id,
+        models.ProductReview.status == "approved").order_by(models.ProductReview.created_at.desc()).all()
+    items = [{"id": r.id, "name": r.reviewer_name, "rating": r.rating,
+              "title": r.title, "body": r.body, "date": r.created_at.isoformat() if r.created_at else None}
+             for r in rows]
+    avg = (sum(r.rating for r in rows) / len(rows)) if rows else 0
+    return {"product_id": p.id, "count": len(rows), "average": round(avg, 1), "items": items}
+
+
+@router.post("/api/public/products/{slug}/reviews", status_code=201)
+def submit_review(slug: str, body: dict, db: Session = Depends(get_db)):
+    p = db.query(models.Product).filter(func.lower(models.Product.slug) == slug.strip().lower()).first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+    name = (body.get("name") or "").strip()
+    rating = int(body.get("rating") or 0)
+    if not name or rating < 1 or rating > 5:
+        raise HTTPException(400, "Name and rating (1-5) are required")
+    r = models.ProductReview(
+        product_id=p.id, reviewer_name=name[:255],
+        reviewer_email=(body.get("email") or "")[:255],
+        rating=rating, title=(body.get("title") or "")[:512],
+        body=(body.get("body") or "")[:2000], status="pending")
+    db.add(r); db.commit(); db.refresh(r)
+    return {"id": r.id, "status": "pending", "message": "Review submitted for moderation"}
+
+
+# ---------------- PUBLIC: discount code validation ----------------
+@router.post("/api/public/discount/validate")
+def validate_discount(body: dict, db: Session = Depends(get_db)):
+    code = (body.get("code") or "").strip().upper()
+    if not code:
+        raise HTTPException(400, "Code required")
+    d = db.query(models.DiscountCode).filter(func.upper(models.DiscountCode.code) == code).first()
+    if not d or not d.is_active:
+        raise HTTPException(404, "Invalid or inactive code")
+    from datetime import datetime
+    now = datetime.utcnow()
+    if d.starts_at and now < d.starts_at:
+        raise HTTPException(400, "Code not yet active")
+    if d.expires_at and now > d.expires_at:
+        raise HTTPException(400, "Code expired")
+    if d.max_uses and d.used_count >= d.max_uses:
+        raise HTTPException(400, "Code usage limit reached")
+    return {"code": d.code, "type": d.discount_type, "value": d.discount_value,
+            "description": d.description, "min_order_qty": d.min_order_qty}
+
+
+# ---------------- ADMIN: discount codes ----------------
+@router.get("/api/discounts")
+def list_discounts(db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    rows = db.query(models.DiscountCode).order_by(models.DiscountCode.created_at.desc()).all()
+    return {"items": [{"id": d.id, "code": d.code, "description": d.description,
+                       "type": d.discount_type, "value": d.discount_value,
+                       "min_order_qty": d.min_order_qty, "max_uses": d.max_uses,
+                       "used_count": d.used_count, "is_active": d.is_active,
+                       "starts_at": d.starts_at.isoformat() if d.starts_at else None,
+                       "expires_at": d.expires_at.isoformat() if d.expires_at else None}
+                      for d in rows]}
+
+
+@router.post("/api/discounts", status_code=201)
+def create_discount(body: dict, db: Session = Depends(get_db), u=Depends(require_role("admin"))):
+    code = (body.get("code") or "").strip().upper()
+    if not code:
+        raise HTTPException(400, "Code required")
+    if db.query(models.DiscountCode).filter(func.upper(models.DiscountCode.code) == code).first():
+        raise HTTPException(409, "Code already exists")
+    d = models.DiscountCode(
+        code=code, description=(body.get("description") or "")[:512],
+        discount_type=body.get("type") or "percent",
+        discount_value=float(body.get("value") or 0),
+        min_order_qty=int(body.get("min_order_qty") or 0),
+        max_uses=int(body.get("max_uses") or 0),
+        is_active=bool(body.get("is_active", True)))
+    db.add(d); db.commit(); db.refresh(d)
+    return {"id": d.id, "code": d.code}
+
+
+@router.delete("/api/discounts/{did}")
+def delete_discount(did: int, db: Session = Depends(get_db), u=Depends(require_role("admin"))):
+    d = db.query(models.DiscountCode).filter(models.DiscountCode.id == did).first()
+    if not d:
+        raise HTTPException(404, "Not found")
+    db.delete(d); db.commit()
+    return {"deleted": True}
+
+
+# ---------------- ADMIN: reviews ----------------
+@router.get("/api/reviews")
+def list_reviews(status: str = "", db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    qry = db.query(models.ProductReview)
+    if status:
+        qry = qry.filter(models.ProductReview.status == status)
+    rows = qry.order_by(models.ProductReview.created_at.desc()).all()
+    return {"items": [{"id": r.id, "product_id": r.product_id, "name": r.reviewer_name,
+                       "rating": r.rating, "title": r.title, "body": r.body,
+                       "status": r.status, "date": r.created_at.isoformat() if r.created_at else None}
+                      for r in rows]}
+
+
+@router.post("/api/reviews/{rid}/approve")
+def approve_review(rid: int, db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    r = db.query(models.ProductReview).filter(models.ProductReview.id == rid).first()
+    if not r:
+        raise HTTPException(404, "Not found")
+    r.status = "approved"
+    from datetime import datetime
+    r.approved_at = datetime.utcnow()
+    db.commit()
+    return {"approved": True}
+
+
+@router.post("/api/reviews/{rid}/reject")
+def reject_review(rid: int, db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    r = db.query(models.ProductReview).filter(models.ProductReview.id == rid).first()
+    if not r:
+        raise HTTPException(404, "Not found")
+    r.status = "rejected"
+    db.commit()
+    return {"rejected": True}
+
+
+@router.delete("/api/reviews/{rid}")
+def delete_review(rid: int, db: Session = Depends(get_db), u=Depends(require_role("admin"))):
+    r = db.query(models.ProductReview).filter(models.ProductReview.id == rid).first()
+    if not r:
+        raise HTTPException(404, "Not found")
+    db.delete(r); db.commit()
+    return {"deleted": True}
+
+
 # ---------------- ADMIN: categories ----------------
 
 @router.get("/api/categories")
