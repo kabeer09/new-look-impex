@@ -267,7 +267,7 @@ export default function HomeClient() {
           <div className="text-center mb-10">
             <p className="eyebrow text-clay">Healthy Living</p>
             <h2 id="choose-better" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
-              It's Time to Choose Better for Your Home
+              Latest New Arrivals
             </h2>
             <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
               Because a healthy home builds a healthy life. Discover our handcrafted copper and brass collections
@@ -307,13 +307,61 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* Gifts Handcrafted in Copper */}
+      <section className="section bg-sand/30" aria-labelledby="copper-gifts">
+        <div className="container-x">
+          <div className="text-center mb-8">
+            <p className="eyebrow text-clay">Gifts</p>
+            <h2 id="copper-gifts" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
+              Gifts Handcrafted in Copper
+            </h2>
+            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
+              Premium copper drinkware gift sets for weddings, festivals and every celebration. Thoughtful. Timeless.
+              Beautifully wrapped.
+            </p>
+          </div>
+          {featured === null ? <Loading label="Loading…" /> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {(featured || []).filter((p) => p.material === "Copper").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+          <div className="text-center mt-8">
+            <Link href="/products?material=Copper" className="btn btn-outline btn-sm">View All Copper Products →</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Brass Collection Showcase */}
+      <section className="section" aria-labelledby="brass-showcase">
+        <div className="container-x">
+          <div className="text-center mb-8">
+            <p className="eyebrow text-clay">Collection</p>
+            <h2 id="brass-showcase" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
+              Brass Collection
+            </h2>
+            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
+              Premium brass handicrafts and home décor — urlis, diyas, lanterns, vases, and decorative pieces.
+              Thoughtful. Timeless. Beautifully crafted.
+            </p>
+          </div>
+          {featured === null ? <Loading label="Loading…" /> : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {(featured || []).filter((p) => p.material === "Brass").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+          <div className="text-center mt-8">
+            <Link href="/products?material=Brass" className="btn btn-outline btn-sm">View All Brass Products →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Products */}
       <section className="section" aria-labelledby="featured-products">
         <div className="container-x">
           <div className="flex items-end justify-between mb-6">
             <div>
-              <p className="eyebrow text-clay">Handpicked</p>
-              <h2 id="featured-products" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Featured Pieces</h2>
+              <p className="eyebrow text-clay">Best Sellers</p>
+              <h2 id="featured-products" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Our Most Loved &amp; Top-Selling Products</h2>
               <p className="text-sm text-gray mt-1">Latest collections — best sellers recommended by our buyers</p>
             </div>
             <Link href="/products" className="btn btn-outline btn-sm">View All →</Link>
@@ -398,12 +446,13 @@ export default function HomeClient() {
             </div>
             <div className="p-8 md:p-12">
               <p className="eyebrow text-clay">Our Craft</p>
-              <h2 id="craft-story" className="font-sans font-bold text-navy text-3xl md:text-4xl mt-2">The Story Behind Every Piece</h2>
+              <h2 id="craft-story" className="font-sans font-bold text-navy text-3xl md:text-4xl mt-2">New Look Impex – Bringing Indian Brass &amp; Copper Craftsmanship to the World</h2>
               <div className="text-gray space-y-4 mt-4">
-                <p>New Look Impex works from Moradabad, Uttar Pradesh — India's brass city, renowned worldwide for its centuries-old tradition of brass and copper metalcraft. Our catalogue centres on handcrafted home décor: urlis, diyas, lanterns, bowls, trays and statement pieces.</p>
-                <p>Each design is developed around the qualities of its material — the warmth of brass, the lustre of copper — and finished for contemporary retail, hospitality and gifting settings.</p>
+                <p>New Look Impex (NLI Collections) is an India-based manufacturer and exporter of handcrafted brass products, copper handicrafts, traditional Indian metal crafts, home décor, festive decorations and premium gifting collections.</p>
+                <p>Based in Moradabad, Uttar Pradesh, India — a city internationally recognised for its brass and metal craftsmanship — New Look Impex combines traditional Indian artistry with contemporary product designs to serve international retailers, wholesalers, importers, distributors and gifting businesses.</p>
+                <p>Under the leadership of CEO Mr. Suhel Ahmed, New Look Impex has developed an international business perspective through extensive exposure to global trade markets, including the Canton Fair in China, Hong Kong trade fairs, and international exhibitions in Dubai.</p>
               </div>
-              <Link href="/craft" className="btn btn-clay mt-4">Discover Our Craft</Link>
+              <Link href="/about" className="btn btn-clay mt-4">Learn More About Us</Link>
             </div>
           </div>
         </div>
@@ -603,6 +652,70 @@ export default function HomeClient() {
               <button type="submit" className="btn btn-clay !px-6 !py-2.5 shrink-0">Subscribe</button>
             </form>
             <p className="text-xs text-gray mt-3">No spam. Unsubscribe anytime. We respect your privacy.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Leading Manufacturer Section */}
+      <section className="section bg-sand/40" aria-labelledby="manufacturer">
+        <div className="container-x">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <p className="eyebrow text-clay">About New Look Impex</p>
+              <h2 id="manufacturer" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
+                Leading Copper &amp; Brass Products Manufacturer in India
+              </h2>
+            </div>
+            <div className="card space-y-4">
+              <p className="text-gray leading-relaxed">
+                Founded with a vision of promoting wellness through the benefits of copper and brass, New Look Impex (NLI Collections)
+                is a leading manufacturer and exporter of traditional copper, brass, bronze, and silver-plated utensils and handicrafts.
+                Inspired by Indian heritage, we offer a rich range of handcrafted and spiritual products rooted in Indian craftsmanship.
+              </p>
+              <p className="text-gray leading-relaxed">
+                <strong className="text-navy">Our Leadership — Mr. Suhel Ahmed, CEO</strong><br />
+                Under the leadership of CEO Mr. Suhel Ahmed, New Look Impex has developed an international business perspective
+                through extensive exposure to global trade markets. His international business journey includes multiple visits to
+                major trade exhibitions and business fairs, including the Canton Fair in China, Hong Kong trade fairs and
+                international exhibitions in Dubai. His experience of living and conducting business in China and the UAE has
+                helped develop valuable international sourcing knowledge, supplier relationships and cross-border business
+                understanding.
+              </p>
+              <div className="grid md:grid-cols-2 gap-6 mt-4">
+                <div>
+                  <h3 className="font-sans font-bold text-navy text-lg mb-2">Our Product Collections — NLI Collections</h3>
+                  <ul className="text-sm text-gray space-y-1">
+                    <li>• Brass decorative products</li>
+                    <li>• Copper home décor</li>
+                    <li>• Handcrafted brass diyas</li>
+                    <li>• Decorative lanterns</li>
+                    <li>• Traditional brass urlis</li>
+                    <li>• Brass and copper candle holders</li>
+                    <li>• Metal decorative accessories</li>
+                    <li>• Indian festive decorations</li>
+                    <li>• Home décor collections</li>
+                    <li>• Corporate and promotional gifting products</li>
+                    <li>• Traditional Indian handicrafts</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-sans font-bold text-navy text-lg mb-2">Our Mission</h3>
+                  <p className="text-sm text-gray leading-relaxed">
+                    Our mission is to bring authentic Indian craftsmanship to international markets through quality products,
+                    innovative designs, dependable service and long-term business relationships. We aim to connect Indian
+                    artisans, manufacturers and international buyers through a professional and reliable export business.
+                  </p>
+                  <h3 className="font-sans font-bold text-navy text-lg mb-2 mt-4">Our Vision</h3>
+                  <p className="text-sm text-gray leading-relaxed">
+                    To establish New Look Impex and NLI Collections as recognised names in the global brass handicrafts,
+                    copper décor, Indian home décor and metal gifting industries.
+                  </p>
+                </div>
+              </div>
+              <p className="text-center text-gray font-semibold mt-4">
+                New Look Impex – Indian Craftsmanship. Global Connections. Timeless Collections.
+              </p>
+            </div>
           </div>
         </div>
       </section>
