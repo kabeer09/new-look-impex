@@ -17,10 +17,17 @@ const NAV = [
   { label: "Brassware", href: "/brass-collection" },
   { label: "Home Decor", href: "/metal-home-decor" },
   { label: "Gifting", href: "/gifting" },
+];
+
+const NAV_MORE = [
   { label: "Custom Manufacturing", href: "/customisation" },
   { label: "About Us", href: "/about" },
   { label: "Exhibitions", href: "/exhibitions" },
   { label: "Contact", href: "/contact" },
+  { label: "Shop All Products", href: "/products" },
+  { label: "Wholesale", href: "/wholesale" },
+  { label: "Catalogue (PDF)", href: "/catalogue" },
+  { label: "Buying Guides", href: "/blog" },
 ];
 
 /** Older routes kept working and linked where sensible. */
@@ -75,12 +82,24 @@ export function PublicHeader() {
       <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-clay/20">
         <div className="container-x">
           <div className="relative flex items-center gap-3 py-3">
-            <nav className="hidden lg:flex items-center gap-5" aria-label="Primary">
+            <nav className="hidden lg:flex items-center gap-4" aria-label="Primary">
               {NAV.map((n) => (
-                <Link key={n.href} href={n.href} className={`text-[13px] tracking-wide text-espresso hover:text-clay transition-colors ${isActive(n.href) ? "font-semibold text-clay" : ""}`}>
+                <Link key={n.href} href={n.href} className={`text-[12px] tracking-wide text-espresso hover:text-clay transition-colors whitespace-nowrap ${isActive(n.href) ? "font-semibold text-clay" : ""}`}>
                   {n.label.toUpperCase()}
                 </Link>
               ))}
+              <div className="relative group">
+                <button className="text-[12px] tracking-wide text-espresso hover:text-clay transition-colors whitespace-nowrap" aria-haspopup="true">
+                  MORE ▾
+                </button>
+                <div className="absolute top-full right-0 mt-2 bg-white border border-clay/20 shadow-lg rounded-lg py-2 min-w-[180px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  {NAV_MORE.map((n) => (
+                    <Link key={n.href} href={n.href} className="block px-4 py-2 text-sm text-espresso hover:bg-cream hover:text-clay transition-colors">
+                      {n.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </nav>
 
             <Link
@@ -171,17 +190,17 @@ export function PublicHeader() {
                   {n.label.toUpperCase()}
                 </Link>
               ))}
-              <Link href="/request-quote" className="btn btn-clay btn-sm mt-2" onClick={() => setOpen(false)}>
-                Request a Quote
-              </Link>
               <div className="pt-2 mt-2 border-t border-clay/20">
                 <p className="text-[11px] uppercase tracking-widest text-gray mb-1">More</p>
-                {MORE_LINKS.map((n) => (
+                {NAV_MORE.map((n) => (
                   <Link key={n.href} href={n.href} className="block py-1 text-sm text-espresso" onClick={() => setOpen(false)}>
                     {n.label}
                   </Link>
                 ))}
               </div>
+              <Link href="/request-quote" className="btn btn-clay btn-sm mt-2" onClick={() => setOpen(false)}>
+                Request a Quote
+              </Link>
             </div>
           </div>
         )}
