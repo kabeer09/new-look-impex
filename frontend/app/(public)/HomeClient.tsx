@@ -138,12 +138,12 @@ export default function HomeClient() {
           <div className="max-w-3xl">
             <p className="text-gold uppercase tracking-[0.28em] text-xs font-semibold">Timeless Heritage</p>
             <h1 className="font-serif font-bold text-4xl md:text-6xl mt-4 leading-[1.05]">
-              Masterfully Crafted in Copper &amp; Brass
+              Elevate Every Interior. Timeless Copper &amp; Brass Masterpieces.
             </h1>
             <p className="mt-5 text-white/80 max-w-2xl text-lg">
-              New Look Impex — handcrafted copper and brass collections from Moradabad, India. Premium artisan
-              craftsmanship for global retailers, wholesalers, and discerning buyers. End-to-end manufacturing,
-              quality assurance, and export logistics.
+              New Look Impex — artisan copper and brass collections from Moradabad, India. Premium craftsmanship
+              for global retailers, wholesalers, interior designers, and corporate importers. End-to-end
+              manufacturing, quality assurance, and export logistics.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/products" className="btn btn-clay !px-6 !py-3">Explore Our Catalog</Link>

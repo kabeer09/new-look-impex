@@ -8,7 +8,7 @@ import type { PublicSettings } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
 import { RfqDrawer } from "./RfqDrawer";
 
-export const DEFAULT_ANNOUNCEMENT = "Handcrafted in Moradabad | Wholesale & Global Export Enquiries Welcome";
+export const DEFAULT_ANNOUNCEMENT = "Global B2B Exporter of Handcrafted Copper & Brass Masterpieces | MOQ Applies | Worldwide Shipping";
 
 const NAV = [
   { label: "Home", href: "/" },
