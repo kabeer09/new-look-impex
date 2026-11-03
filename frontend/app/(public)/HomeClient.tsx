@@ -261,6 +261,52 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* Choose Better for Your Home */}
+      <section className="section bg-cream" aria-labelledby="choose-better">
+        <div className="container-x">
+          <div className="text-center mb-10">
+            <p className="eyebrow text-clay">Healthy Living</p>
+            <h2 id="choose-better" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
+              It's Time to Choose Better for Your Home
+            </h2>
+            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
+              Because a healthy home builds a healthy life. Discover our handcrafted copper and brass collections
+              that bring wellness, elegance, and tradition to your everyday living.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {featured === null ? <Loading label="Loading products…" /> : (
+              (featured || []).slice(0, 8).map((p) => (
+                <Link key={p.id} href={`/products/${p.slug}`} className="group block bg-white rounded-2xl overflow-hidden border border-sand shadow-sm hover:shadow-lg transition-shadow">
+                  <div className="relative aspect-square bg-cream overflow-hidden">
+                    {p.image?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={p.image.url.startsWith("http") ? p.image.url : `https://new-look-impex-api.onrender.com${p.image.url}`}
+                        alt={p.image.alt_text || p.name}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="absolute inset-0 flex items-center justify-center font-serif text-5xl font-bold text-clay/40">
+                        {p.name.charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-sans font-semibold text-navy text-sm leading-snug">{p.name}</h3>
+                    <p className="text-xs text-gray mt-1">{[p.material, p.finish].filter(Boolean).join(" · ")}</p>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+          <div className="text-center mt-8">
+            <Link href="/products" className="btn btn-clay !px-6 !py-3">Explore All Products</Link>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Products */}
       <section className="section" aria-labelledby="featured-products">
         <div className="container-x">
