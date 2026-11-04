@@ -275,8 +275,8 @@ export default function HomeClient() {
             </span>
           </div>
 
-          {/* Image slideshow */}
-          <div className="relative rounded-2xl overflow-hidden h-[340px] md:h-[520px] group" aria-roledescription="carousel">
+          {/* Image slideshow — aspect ratio matches image (16:9) so nothing is cropped */}
+          <div className="relative rounded-2xl overflow-hidden w-full aspect-[16/9] group" aria-roledescription="carousel">
             {SHOWCASE_SLIDES.map((s, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img key={s.src} src={s.src} alt={s.caption}
