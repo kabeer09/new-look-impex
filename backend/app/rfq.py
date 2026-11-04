@@ -114,14 +114,28 @@ def submit_rfq(body: RFQIn, request: Request, db: Session = Depends(get_db)):
     email_sent = False
     email_detail = "SMTP not configured"
     if body.consent:
+        from .campaigns import active_campaign
+        camp = active_campaign()
+        season = (f"This season: {camp['emoji']} {camp['name']} — {camp['percent']}% OFF storewide "
+                  f"with code {camp['code']} (valid till {camp['ends_label']}).\n"
+                  if camp["ends_label"] != "always on" else "")
         ok, detail = send_email(
             str(body.business_email),
             f"RFQ {rfq.reference_number} — New Look Impex (acknowledgement)",
-            f"Dear {body.full_name},\n\nThank you for your wholesale enquiry "
-            f"{rfq.reference_number} to New Look Impex (Moradabad, India). "
-            f"We will respond with a quotation shortly.\n\n"
-            f"Items: {len(body.items)}\n\n"
-            f"New Look Impex — newlookimpex130@gmail.com — +91 8218251238")
+            f"Dear {body.full_name},\n\n"
+            f"Thank you for your wholesale enquiry {rfq.reference_number} to "
+            f"New Look Impex (Moradabad, India).\n\n"
+            f"Selected items: {len(body.items)}\n\n"
+            "WHAT HAPPENS NEXT\n"
+            "  1. Our export team prepares your quotation (within one business day)\n"
+            "  2. We reply with pricing, MOQ, samples and shipping options\n"
+            "  3. Need it faster? WhatsApp us: +91 8218251238\n\n"
+            f"{season}"
+            "A real person reads every reply — just write back to this email.\n\n"
+            "Warm regards,\n"
+            "Team New Look Impex\n"
+            "Brass & Copper Manufacturer & Exporter — Moradabad, India\n"
+            "newlookimpex130@gmail.com — +91 8218251238")
         email_sent, email_detail = ok, detail
         # Admin notification (best effort, honest) — includes every item so the
         # owner understands exactly what was selected in the RFQ.

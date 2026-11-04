@@ -33,7 +33,7 @@ from .catalogue_api import router as catalogue_router
 from . import product_scanner
 from .catalogue_pdf import build_catalogue_pdf, get_business_info
 from .media_store import file_path
-from .email import send_email, email_configured
+from .email import send_email, email_configured, send_customer_ack, send_newsletter_welcome
 
 Base.metadata.create_all(bind=engine)
 
@@ -962,9 +962,25 @@ def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depend
                                     status="success" if notified else "skipped",
                                     detail=notify_detail[:200]))
     db.commit()
+
+    # Customer-facing welcome / acknowledgment email (also non-blocking).
+    # Newsletter subscribe -> welcome email; contact form -> acknowledgment.
+    acked, ack_detail = False, "not attempted"
+    if email_configured() and body.email:
+        if product_interest.strip().lower() == "newsletter subscription":
+            acked, ack_detail = send_newsletter_welcome(body.email, body.name)
+            flow = "newsletter_welcome_email"
+        else:
+            acked, ack_detail = send_customer_ack(body.email, body.name, e.reference, product_interest)
+            flow = "customer_ack_email"
+        db.add(models.WorkflowExecution(workflow=flow,
+                                        status="success" if acked else "skipped",
+                                        detail=ack_detail[:200]))
+        db.commit()
     return {"id": e.id, "reference": e.reference,
             "message": "Thank you — New Look Impex will respond for wholesale/export enquiries.",
-            "score": e.score, "email_notified": notified, "email_detail": notify_detail}
+            "score": e.score, "email_notified": notified, "email_detail": notify_detail,
+            "customer_email_sent": acked}
 
 
 @app.get("/api/enquiries")
