@@ -330,16 +330,55 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* New Arrivals - Copper Cookware */}
-      <section className="section" aria-labelledby="new-arrivals">
+      {/* New Arrivals - Copper Cookware (lookbook card header, Halloween-card style) */}
+      <section className="section !pb-0" aria-labelledby="new-arrivals">
         <div className="container-x">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="eyebrow text-clay">Latest</p>
-              <h2 id="new-arrivals" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">New Arrivals</h2>
-              <p className="text-sm text-gray mt-1">Premium copper cookware — hammered copper kitchenware for healthy cooking and elegant serving</p>
+          <div className="relative rounded-3xl overflow-hidden shadow-xl mb-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-clay-dark" aria-hidden="true" />
+            <div className="relative grid md:grid-cols-[1.15fr_0.85fr] items-center gap-6 p-6 md:p-10">
+              <div>
+                <p className="text-gold uppercase tracking-[0.25em] text-xs font-semibold">✨ Latest</p>
+                <h2 id="new-arrivals" className="font-serif font-bold text-3xl md:text-4xl text-cream mt-2">
+                  New Arrivals
+                </h2>
+                <p className="text-cream/80 mt-3 max-w-lg text-sm leading-relaxed">
+                  Fresh from the artisan bench — premium copper cookware, hand-hammered kitchenware
+                  for healthy cooking and elegant serving.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link href="/categories/copper-kitchenware" className="btn bg-gold text-navy hover:bg-cream">
+                    Shop Copper Cookware
+                  </Link>
+                  <Link href="/products?sort=newest" className="btn border border-cream/40 text-cream hover:bg-cream/10">
+                    View All New Arrivals →
+                  </Link>
+                </div>
+              </div>
+
+              {/* Polaroid-tilt product frames (Pinterest lookbook style) */}
+              {copperAll[0] && (
+                <div className="relative h-44 md:h-56 hidden md:block" aria-hidden="true">
+                  <div className="absolute right-24 top-2 w-32 md:w-36 -rotate-6 rounded-2xl overflow-hidden ring-4 ring-cream/90 shadow-2xl bg-cream">
+                    {copperAll[0].image?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={copperAll[0].image.url.startsWith("http") ? copperAll[0].image.url : `https://new-look-impex-api.onrender.com${copperAll[0].image.url}`} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+                    ) : (
+                      <div className="w-full aspect-square bg-cream/20" />
+                    )}
+                  </div>
+                  <div className="absolute right-0 bottom-0 w-36 md:w-44 rotate-3 rounded-2xl overflow-hidden ring-4 ring-gold/60 shadow-2xl bg-cream">
+                    {copperAll[1]?.image?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={copperAll[1].image.url.startsWith("http") ? copperAll[1].image.url : `https://new-look-impex-api.onrender.com${copperAll[1].image.url}`} alt="" className="w-full aspect-[4/5] object-cover" loading="lazy" />
+                    ) : (
+                      <div className="w-full aspect-[4/5] bg-cream/20" />
+                    )}
+                    <span className="absolute top-2 left-2 bg-gold text-navy text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">🆕 Just Landed</span>
+                  </div>
+                  <span className="absolute left-0 bottom-4 -rotate-3 font-serif italic text-gold/90 text-lg select-none">moradabad craft ✧</span>
+                </div>
+              )}
             </div>
-            <Link href="/categories/copper-kitchenware" className="btn btn-outline btn-sm">View All Copper Cookware →</Link>
           </div>
           {featured === null ? <Loading label="Loading new arrivals…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
