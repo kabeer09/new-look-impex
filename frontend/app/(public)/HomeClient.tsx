@@ -96,9 +96,9 @@ const OFFER_MESSAGES = [
 
 /** Image slideshow below the Copper Collection section */
 const SHOWCASE_SLIDES = [
-  { src: "/slideshow-1.jpg", tag: "Autumn Edit", caption: "Hand-Hammered Copper Pitchers — Autumn Styling" },
-  { src: "/slideshow-2.jpg", tag: "Wellness", caption: "Copper Drinkware — Hydration, Designed Beautifully" },
-  { src: "/slideshow-3.jpg", tag: "Artisanal Brass", caption: "The Artisanal Brass Collection — Handcrafted Heritage" },
+  { src: "/slideshow-1.jpg", tag: "Autumn Edit", caption: "Hand-Hammered Copper Pitchers — Autumn Styling", alt: "Hand-hammered copper pitcher with autumn flowers — copper jug manufacturer and wholesale exporter Moradabad India" },
+  { src: "/slideshow-2.jpg", tag: "Wellness", caption: "Copper Drinkware — Hydration, Designed Beautifully", alt: "Copper jug, glasses and bottles set — copper drinkware manufacturer and bulk supplier Moradabad India" },
+  { src: "/slideshow-3.jpg", tag: "Artisanal Brass", caption: "The Artisanal Brass Collection — Handcrafted Heritage", alt: "Engraved brass canisters, spice box and tea strainer — brass kitchenware manufacturer and exporter Moradabad India" },
 ];
 
 export default function HomeClient() {
@@ -218,10 +218,28 @@ export default function HomeClient() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/hero-brass-kitchen.jpg"
               onError={(e) => { const t = e.currentTarget; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"; } }}
-              alt="Hand-hammered brass and copper cookware styled in a golden kitchen" className="absolute inset-0 w-full h-full object-cover"
+              alt="Hand-hammered brass cookware set — The Hadai Collection by New Look Impex, brass kitchenware manufacturer and exporter in Moradabad, India" className="absolute inset-0 w-full h-full object-cover"
               fetchPriority="high" loading="eager" width={1024} height={1024} />
             <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-cream via-transparent to-transparent w-1/4" aria-hidden="true" />
           </div>
+        </div>
+      </section>
+
+      {/* B2B trust strip — manufacturer / exporter / wholesaler keyword band */}
+      <section aria-label="B2B manufacturer credentials" className="border-y border-sand bg-cream">
+        <div className="container-x py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center">
+          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-clay" aria-hidden="true" /> Brass &amp; Copper Manufacturer — Moradabad, India
+          </span>
+          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-gold" aria-hidden="true" /> Wholesale &amp; Export Supplier — GSTIN 09AFKPA4462R1ZW
+          </span>
+          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-navy" aria-hidden="true" /> OEM / Private Label — B2B Bulk Orders
+          </span>
+          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-clay-dark" aria-hidden="true" /> Trusted Since 2012 — Global B2B Buyers
+          </span>
         </div>
       </section>
 
@@ -242,7 +260,7 @@ export default function HomeClient() {
                   <span className="relative block w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-cream ring-2 ring-clay/25 group-hover:ring-clay transition-all">
                     {c.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.image_url.startsWith("http") ? c.image_url : `https://new-look-impex-api.onrender.com${c.image_url}`} alt={c.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                      <img src={c.image_url.startsWith("http") ? c.image_url : `https://new-look-impex-api.onrender.com${c.image_url}`} alt={`${c.name} — wholesale handcrafted by New Look Impex, brass & copper products manufacturer and exporter in Moradabad, India`} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     ) : (
                       <span className="absolute inset-0 flex items-center justify-center font-serif text-5xl font-bold text-clay/70" aria-hidden="true">
                         {c.name.trim().charAt(0).toUpperCase() || "N"}
@@ -313,7 +331,7 @@ export default function HomeClient() {
           <div className="relative rounded-2xl overflow-hidden w-full aspect-[16/9] group" aria-roledescription="carousel">
             {SHOWCASE_SLIDES.map((s, i) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={s.src} src={s.src} alt={s.caption}
+              <img key={s.src} src={s.src} alt={s.alt}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${i === slide ? "opacity-100" : "opacity-0"}`}
                 loading={i === 0 ? "eager" : "lazy"} width={800} height={640} />
             ))}
@@ -393,7 +411,7 @@ export default function HomeClient() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={p.image.url.startsWith("http") ? p.image.url : `https://new-look-impex-api.onrender.com${p.image.url}`}
-                        alt={p.image.alt_text || p.name}
+                        alt={`${p.name} — handcrafted ${p.material || "brass"} product wholesale from New Look Impex, Moradabad`}
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />

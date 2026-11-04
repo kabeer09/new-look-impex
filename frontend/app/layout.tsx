@@ -6,26 +6,48 @@ export const metadata: Metadata = {
   verification: {
     google: "TEfYClAKNA6ckET-Smb56-eka2ydnJ1BW3s0On4X6EI",
   },
-  title: "New Look Impex — Brass & Copper Handicrafts Wholesale | Moradabad, India",
+  title: "New Look Impex — Brass & Copper Products Manufacturer, Exporter & Wholesale B2B Supplier | Moradabad, India",
   description:
-    "New Look Impex is a Moradabad, Uttar Pradesh based manufacturer and exporter of handcrafted brass and copper handicrafts — urlis, diyas, lanterns, bottles, cookware and metal home décor. Wholesale and bulk orders with written quotations.",
-  keywords:
-    "brass handicrafts wholesale, copper handicrafts, Moradabad exporter, brass urli wholesale, copper bottle wholesale, diyas bulk, metal home decor wholesale, gifting India, brass cookware",
+    "New Look Impex (NLI Collections) is a brass and copper products manufacturer, exporter and wholesale B2B supplier based in Moradabad, Uttar Pradesh, India. Brass utensils & kitchenware, copper cookware & bottles, handcrafted urlis, diyas, lanterns, decorative home accents and festival gifting at factory-direct bulk prices. Trusted by global retailers, importers, distributors, hardline/HORECA buyers. GSTIN 09AFKPA4462R1ZW — request your written quotation.",
+  keywords: [
+    "brass products manufacturer in Moradabad",
+    "copper products manufacturer in India",
+    "brass utensils manufacturer Moradabad",
+    "copper utensils exporter India",
+    "brass kitchenware wholesale supplier",
+    "copper cookware exporter India",
+    "brass handicrafts exporter Moradabad Uttar Pradesh",
+    "B2B metal handicrafts supplier India",
+    "wholesale brass home decor manufacturer",
+    "copper bottle manufacturer India bulk",
+    "brass diya wholesale supplier",
+    "brass urli manufacturer exporter",
+    "brass lantern bulk exporter",
+    "OEM brass products manufacturer India",
+    "private label copper kitchenware",
+    "Indian brass handicrafts for importers",
+    "copper jug pitcher wholesale manufacturer",
+    "brass planter exporter Moradabad",
+    "festive gifting metal products wholesale",
+    "New Look Impex NLI Collections",
+  ].join(", "),
   openGraph: {
-    title: "New Look Impex — Brass & Copper Handicrafts Wholesale",
+    title: "New Look Impex — Brass & Copper Manufacturer, Exporter & Wholesale B2B Supplier",
     description:
-      "Handcrafted brass & copper décor from Moradabad for retailers, importers, interior designers and gifting programmes. Request a wholesale quote.",
+      "Factory-direct brass & copper products from Moradabad, India — utensils, kitchenware, cookware, décor and festive gifting for global B2B buyers. Manufacturer, exporter and wholesale supplier with written quotations and export logistics.",
     type: "website",
     url: "https://newlookimpex.store",
     siteName: "New Look Impex",
   },
   twitter: {
     card: "summary_large_image",
-    title: "New Look Impex — Brass & Copper Handicrafts Wholesale",
+    title: "New Look Impex — Brass & Copper Manufacturer & Exporter",
     description:
-      "Handcrafted brass & copper décor from Moradabad. Wholesale quotes for bulk orders.",
+      "Moradabad-based brass & copper products manufacturer, exporter and wholesale B2B supplier. Bulk quotes for retailers, importers and distributors.",
   },
-  robots: { index: true, follow: true },
+  robots: { index: true, follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
 };
 
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";

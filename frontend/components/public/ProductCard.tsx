@@ -56,7 +56,7 @@ export function ProductCard({ product }: { product: ProductCardType }) {
             src={mediaUrl(img.url)}
             srcSet={cardSrcSet(img.url)}
             sizes="(max-width: 640px) 100vw, 400px"
-            alt={img.alt_text || product.name}
+            alt={img.alt_text || `${product.name} — wholesale by New Look Impex, Moradabad`}
             width={800}
             height={600}
             className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"

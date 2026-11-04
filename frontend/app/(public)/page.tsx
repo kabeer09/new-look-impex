@@ -2,26 +2,27 @@ import type { Metadata } from "next";
 import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
-  title: "Handcrafted Brass & Copper Décor — Wholesale | New Look Impex",
+  title: "Brass & Copper Products Manufacturer, Exporter & Wholesale Supplier in Moradabad, India | New Look Impex",
   description:
-    "New Look Impex (Moradabad, India) is a manufacturer and exporter of handcrafted brass and copper home décor — urlis, diyas, lanterns, bottles, cookware and metal home décor. Wholesale and bulk orders for retailers, importers and interior designers. Request pricing.",
+    "Rank-first wholesale source: New Look Impex manufactures & exports handcrafted brass and copper products from Moradabad — brass kitchenware & cookware, copper utensils, hand-hammered jugs, urlis, diyas, lanterns, metal home décor and festive gifting. B2B bulk supply for retailers, importers, distributors, interior designers and corporate gifting programmes worldwide. GSTIN 09AFKPA4462R1ZW.",
   keywords:
-    "handcrafted brass decor, copper home decor, Moradabad brass manufacturer, brass urli wholesale, copper bottle wholesale, brass diya bulk, metal home decor wholesale, brass cookware, gifting India",
+    "brass products manufacturer in Moradabad, copper products manufacturer in India, brass utensils manufacturer Moradabad, copper utensils exporter India, brass kitchenware wholesale supplier, copper cookware exporter India, brass handicrafts exporter Moradabad Uttar Pradesh, B2B metal handicrafts supplier India, wholesale brass home decor, copper bottle bulk order India, brass diya wholesale manufacturer, brass urli manufacturer exporter, brass lanterns bulk supply, OEM brass products manufacturer, private label copper drinkware, Indian handicrafts supplier for importers, brass and copper gift sets wholesale, metal decorative accessories manufacturer India, New Look Impex, NLI Collections",
   alternates: { canonical: "https://newlookimpex.store/" },
   openGraph: {
-    title: "New Look Impex — Handcrafted Brass & Copper Décor Wholesale",
+    title: "New Look Impex — Brass & Copper Products Manufacturer & Exporter, Moradabad",
     description:
-      "Handcrafted brass and copper décor from Moradabad for retailers, importers, interior designers and gifting programmes. Explore the wholesale collection.",
+      "Factory-direct manufacturer, exporter & wholesale supplier of brass and copper products from Moradabad — kitchenware, utensils, décor, festive & gifting. Bulk orders for global B2B buyers with written quotations.",
     type: "website",
     url: "https://newlookimpex.store/",
     siteName: "New Look Impex",
-    images: [{ url: "/og-home.jpg", width: 1200, height: 630, alt: "New Look Impex brass & copper handicrafts" }],
+    images: [{ url: "/hero-brass-kitchen.jpg", width: 1024, height: 1024, alt: "Hand-hammered brass cookware set — The Hadai Collection by New Look Impex, Moradabad brass kitchenware manufacturer" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "New Look Impex — Handcrafted Brass & Copper Décor Wholesale",
+    title: "New Look Impex — Brass & Copper Manufacturer & Exporter",
     description:
-      "Handcrafted brass & copper décor from Moradabad. Wholesale quotes for bulk orders.",
+      "Moradabad manufacturer, exporter & wholesale supplier of brass & copper products. Written bulk quotations for B2B buyers.",
+    images: ["/hero-brass-kitchen.jpg"],
   },
 };
 
@@ -37,26 +38,95 @@ const FAQ_JSONLD = {
   ],
 };
 
+const SITE_URL = "https://newlookimpex.store";
+
 const ORG_JSONLD = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": `${SITE_URL}/#organization`,
   name: "New Look Impex",
-  url: "https://newlookimpex.store",
-  logo: "https://newlookimpex.store/logo.png",
+  alternateName: "NLI Collections",
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
   description:
-    "Manufacturer and exporter of handcrafted brass and copper handicrafts from Moradabad, Uttar Pradesh, India.",
+    "New Look Impex (NLI Collections) is a brass and copper products manufacturer, exporter and wholesale B2B supplier in Moradabad, Uttar Pradesh, India — hand-hammered brass kitchenware & utensils, copper cookware, bottles, jugs, urlis, diyas, lanterns, metal home décor and festive gifting bulk supply for global retailers, importers, distributors and corporate gifting programmes.",
+  disambiguatingDescription:
+    "B2B manufacturer & exporter of brass and copper metalware. Wholesale, OEM/private label and export orders accepted. GSTIN 09AFKPA4462R1ZW.",
+  foundingDate: "2012",
+  knowsAbout: [
+    "brass kitchenware manufacturing",
+    "copper cookware manufacturing",
+    "hand-hammered metal craft",
+    "brass urlis",
+    "brass diyas",
+    "brass lanterns",
+    "copper bottles and drinkware",
+    "metal home décor",
+    "festive gifting",
+    "OEM private label metalware",
+    "export packaging for metal decor",
+  ],
   address: {
     "@type": "PostalAddress",
+    streetAddress: "New Look Impex, Moradabad",
     addressLocality: "Moradabad",
     addressRegion: "Uttar Pradesh",
+    postalCode: "244001",
     addressCountry: "IN",
   },
-  contactPoint: {
-    "@type": "ContactPoint",
-    contactType: "sales",
-    email: "newlookimpex130@gmail.com",
+  telephone: "+91-8218251238",
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      contactType: "sales",
+      telephone: "+91-8218251238",
+      email: "newlookimpex130@gmail.com",
+      availableLanguage: ["English", "Hindi", "Urdu"],
+    },
+    {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      telephone: "+91-7500441239",
+      email: "newlookimpex130@gmail.com",
+      availableLanguage: ["English", "Hindi"],
+    },
+  ],
+  areaServed: [
+    "IN", "AU", "AE", "GB", "US", "CA", "EU",
+  ],
+  sameAs: [
+    "https://www.instagram.com/nli_collections_india",
+    "https://youtube.com/@nlicollections",
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Brass & Copper B2B Product Ranges — Wholesale & Export",
+    itemListElement: [
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Kitchenware & Utensils — wholesale manufacturer supply" } },
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Copper Cookware & Utensils — factory-direct bulk export" } },
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Hand-Hammered Copper Jugs, Pitchers & Bottles — bulk copper drinkware supplier" } },
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Urlis & Planters — traditional metalware exporter" } },
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Diyas & Lanterns — festive & temple lighting wholesale" } },
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Metal Home Décor Accessories — indoor & outdoor decorative ranges" } },
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Copper & Brass Gift Sets — wedding, festival and corporate gifting" } },
+      { "@type": "Offer", itemOffered: { "@type": "Product", name: "OEM / Private Label Metalware — custom finishes, engravings and branding" } },
+    ],
   },
-  sameAs: [],
+};
+
+// Sitelinks searchbox for brand SERP results
+const WEBSITE_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: "New Look Impex",
+  publisher: { "@id": `${SITE_URL}/#organization` },
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${SITE_URL}/search?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds
@@ -67,6 +137,10 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSONLD) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSONLD) }}
       />
       <script
         type="application/ld+json"
