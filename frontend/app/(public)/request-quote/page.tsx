@@ -5,10 +5,38 @@ import { PageHero } from "@/components/public/Shared";
 import { Loading } from "@/components/public/States";
 import { api, trackEvent } from "@/lib/api";
 import { useRfqCart } from "@/lib/rfq";
+import { useWhatsappNumber } from "@/hooks/useWhatsapp";
 import type { PublicSettings, RfqSubmitResult } from "@/lib/types";
+
+/** Compose the WhatsApp enquiry text with customer details + every selected product. */
+function buildWaText(
+  form: { full_name: string; business_email: string; company_name: string; country: string; phone: string; target_price: string; delivery_timeframe: string; additional_requirements: string },
+  items: { product_name: string; quantity: number; notes?: string; unit?: string }[],
+  reference?: string
+): string {
+  const lines: (string | false)[] = [
+    "*New Quote Request — New Look Impex*⃟",
+    reference ? `Ref: ${reference}` : false,
+    `Name: ${form.full_name}`,
+    `Company: ${form.company_name}`,
+    `Email: ${form.business_email}`,
+    form.country ? `Country: ${form.country}` : false,
+    form.phone ? `Phone: ${form.phone}` : false,
+    form.target_price ? `Target price: ${form.target_price}` : false,
+    form.delivery_timeframe ? `Delivery timeframe: ${form.delivery_timeframe}` : false,
+    form.additional_requirements ? `Requirements: ${form.additional_requirements}` : false,
+    "",
+    "*Selected Products:*",
+    ...items.map(
+      (it, i) => `${i + 1}. ${it.product_name} — Qty: ${it.quantity}${it.unit ? ` ${it.unit}` : ""}${it.notes ? ` ⃟ ${it.notes}` : ""}`
+    ),
+  ];
+  return lines.filter((l) => typeof l === "string").join("\n");
+}
 
 export default function RequestQuotePage() {
   const cart = useRfqCart();
+  const waNumber = useWhatsappNumber();
   const [countries, setCountries] = useState<string[]>([]);
   const [form, setForm] = useState({
     full_name: "",
@@ -24,6 +52,15 @@ export default function RequestQuotePage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<RfqSubmitResult | null>(null);
+  const [waLink, setWaLink] = useState("");
+  const waDigits = waNumber.replace(/\D/g, "");
+
+  /** Pre-submit option: send the current selection without submitting the form. */
+  const waSelectionLink = (() => {
+    if (cart.items.length === 0) return "";
+    const text = buildWaText(form, cart.items);
+    return `https://wa.me/${waDigits}?text=${encodeURIComponent(text)}`;
+  })();
 
   useEffect(() => {
     api<PublicSettings>("/api/public/settings")
@@ -63,6 +100,8 @@ export default function RequestQuotePage() {
         }),
       });
       trackEvent({ event_type: "rfq_submit" });
+      const finalText = buildWaText(form, cart.items, res.reference_number);
+      setWaLink(`https://wa.me/${waDigits}?text=${encodeURIComponent(finalText)}`);
       setResult(res);
       cart.clear();
     } catch (err) {
@@ -97,6 +136,17 @@ export default function RequestQuotePage() {
               <p className="text-xs text-gray mt-2">
                 Quote requests may be rate-limited or rejected as duplicates within 24 hours for
                 identical email + items.
+              </p>
+              <button
+                type="button"
+                onClick={() => { if (waLink) window.open(waLink, "_blank", "noopener,noreferrer"); }}
+                className="btn w-full mt-6 !bg-[#25D366] !text-white hover:!bg-[#1eb955]"
+              >
+                📲 Send this request to our WhatsApp
+              </button>
+              <p className="text-xs text-gray mt-2">
+                Opens WhatsApp with your details and every selected product already written —
+                just press send so we receive it instantly.
               </p>
               <div className="flex gap-2 mt-6">
                 <Link href="/products" className="btn btn-primary btn-sm">Continue shopping</Link>
@@ -148,6 +198,16 @@ export default function RequestQuotePage() {
                     </div>
                   ))}
                   <button className="btn btn-ghost btn-sm" onClick={() => cart.clear()}>Clear all</button>
+                  {waSelectionLink && (
+                    <a
+                      href={waSelectionLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm w-full !bg-[#25D366] !text-white hover:!bg-[#1eb955]"
+                    >
+                      📲 Send selection via WhatsApp
+                    </a>
+                  )}
                 </div>
               )}
             </div>
