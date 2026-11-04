@@ -60,19 +60,6 @@ const PROCESS_STEPS = [
   { num: "05", title: "Global Delivery & After-Sales Support", text: "Timely delivery to your destination with ongoing support for repeat orders." },
 ];
 
-const TRUST_STATS = [
-  { value: "5+", label: "Countries Served" },
-  { value: "99%", label: "On-Time Delivery" },
-  { value: "20+", label: "Verified Buyers" },
-  { value: "100+", label: "Products" },
-];
-
-const TESTIMONIALS = [
-  { quote: "Excellent craftsmanship and reliable wholesale supply. Our customers love the copper bottles.", name: "Retail Buyer, UAE", rating: 5 },
-  { quote: "Great quality brass décor with consistent finishing. Smooth ordering process for bulk orders.", name: "Import Buyer, UK", rating: 5 },
-  { quote: "Responsive team and dependable export packaging. Will continue sourcing from New Look Impex.", name: "Wholesale Distributor, USA", rating: 5 },
-];
-
 const FAQS = [
   { q: "Do you accept international wholesale orders?", a: "Yes. We handle bulk and export enquiries from buyers worldwide. Each order receives a written quotation with price, MOQ, lead time, and shipping terms." },
   { q: "What is your minimum order quantity (MOQ)?", a: "MOQs vary by product and finish. Each product page lists its MOQ. Custom and bulk quantities are quoted per enquiry." },
@@ -711,14 +698,6 @@ export default function HomeClient() {
                 <Link href="/craft" className="btn btn-outline">Our Craft</Link>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {TRUST_STATS.map((s) => (
-                <div key={s.label} className="card text-center">
-                  <p className="font-sans font-bold text-3xl text-clay">{s.value}</p>
-                  <p className="text-xs text-gray mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -841,30 +820,6 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Client Testimonials */}
-      <section className="section" aria-labelledby="testimonials">
-        <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Trust</p>
-            <h2 id="testimonials" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Client Testimonials</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5 mb-8">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="card text-center">
-                <div className="text-gold text-lg mb-2">{"★".repeat(t.rating)}</div>
-                <p className="text-sm text-gray italic">"{t.quote}"</p>
-                <p className="mt-3 text-xs font-semibold tracking-wide text-navy uppercase">{t.name}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-wrap justify-center gap-4">
-            {["EPCH", "UP EPB", "ODOP", "GST Registered"].map((badge) => (
-              <span key={badge} className="badge badge-brass !px-4 !py-2 text-sm">{badge}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* B2B Trade Banner */}
       <section className="section !pt-0" aria-labelledby="b2b-banner">
         <div className="container-x">
@@ -895,31 +850,6 @@ export default function HomeClient() {
               <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-white text-xl font-bold">YT</div>
               <div><p className="font-semibold text-navy">YouTube</p><p className="text-xs text-gray">@nlicollections</p></div>
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Certifications */}
-      <section className="section bg-white border-y border-sand" aria-labelledby="certifications">
-        <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Trust</p>
-            <h2 id="certifications" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Certifications &amp; Organization Resources</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { name: "EPCH", desc: "Export Promotion Council for Handicrafts", href: "https://www.epch.in", logo: "/logo-epch.png" },
-              { name: "UP EPB", desc: "Uttar Pradesh Export Promotion Bureau", href: "https://upepb.org", logo: "/logo-up-epb.jpg" },
-              { name: "ODOP", desc: "One District One Product — Moradabad", href: "https://odop.gov.in", logo: "/logo-odop.jpg" },
-              { name: "GST Registered", desc: "GSTIN: 09AFKPA4462R1ZW", href: "#", logo: "/logo-gst.png" },
-            ].map((c) => (
-              <a key={c.name} href={c.href} target="_blank" rel="noopener noreferrer" className="card text-center hover:shadow-lg transition-shadow flex flex-col items-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={c.logo} alt={c.name} className="h-12 w-auto object-contain mb-2" loading="lazy" />
-                <p className="font-sans font-bold text-navy text-sm">{c.name}</p>
-                <p className="text-xs text-gray mt-1">{c.desc}</p>
-              </a>
-            ))}
           </div>
         </div>
       </section>
@@ -1100,34 +1030,6 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* ── Testimonials — social proof like brassglobe ── */}
-      <section className="section" aria-labelledby="testimonials">
-        <div className="container-x">
-          <div className="text-center mb-10">
-            <p className="eyebrow text-clay">What Buyers Say</p>
-            <h2 id="testimonials" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
-              Trusted by Wholesale Buyers Worldwide
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: "Swati Sharma", where: "Mumbai, India", text: "Best place for brass products — perfect finish, beautiful packaging, highly recommend." },
-              { name: "Heena Singh", where: "Delhi, India", text: "Bought bronze baby dinner set and kalash. Package arrived in one day, owner is humble and sweet." },
-              { name: "Manvajit Singh", where: "Sydney, Australia", text: "Very antique and beautiful set. Delivered within four days to Sydney. Trustworthy and highly recommend." },
-            ].map((t, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl border border-sand shadow-sm">
-                <p className="text-gray text-sm leading-relaxed italic">"{t.text}"</p>
-                <p className="text-navy font-semibold mt-4">— {t.name}</p>
-                <p className="text-clay text-xs">{t.where}</p>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <Link href="/about" className="btn btn-outline btn-sm">Read More Reviews →</Link>
-          </div>
-        </div>
-      </section>
-
       {/* ── Buying Guides & Blogs — brassglobe "Inspire and Elevate" equivalent ── */}
       <section className="section bg-sand/40" aria-labelledby="buying-guides">
         <div className="container-x">
@@ -1166,23 +1068,6 @@ export default function HomeClient() {
               <h3 className="font-serif font-bold text-navy text-lg mt-2 group-hover:text-clay transition-colors">Kansa Dinner Set Buying Guide</h3>
               <p className="text-gray text-sm mt-2">What to look for before you buy bronze dinnerware.</p>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Price Range Quick Links ── */}
-      <section className="section" aria-labelledby="price-ranges">
-        <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Shop by Budget</p>
-            <h2 id="price-ranges" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">Products Under ₹5,000 &amp; Above</h2>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
-            <Link href="/products?max_price=5000" className="btn btn-outline btn-sm">Under ₹5,000</Link>
-            <Link href="/products?min_price=5001&max_price=15000" className="btn btn-outline btn-sm">₹5,000 – ₹15,000</Link>
-            <Link href="/products?min_price=15001" className="btn btn-outline btn-sm">₹15,000 &amp; Above</Link>
-            <Link href="/products?sort=newest" className="btn btn-clay btn-sm">New Arrivals</Link>
-            <Link href="/request-quote" className="btn btn-clay btn-sm">Bulk Quote Request</Link>
           </div>
         </div>
       </section>

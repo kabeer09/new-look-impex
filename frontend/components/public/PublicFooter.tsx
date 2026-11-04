@@ -22,7 +22,6 @@ const SHOP_LINKS: [string, string][] = [
   ["Brass Pooja Items", "/categories/brass-diyas"],
   ["Home Decor Brass Items", "/metal-home-decor"],
   ["Brass Dinner Set", "/categories/brass-kitchenware"],
-  ["Products Under ₹5,000", "/products?max_price=5000"],
   ["Top Picks / Best Sellers", "/products"],
 ];
 
