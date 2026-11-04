@@ -145,7 +145,7 @@ export default function HomeClient() {
     setDataError("");
     Promise.allSettled([
       api<{ items: Category[] }>("/api/public/categories"),
-      api<{ items: ProductCardType[] }>("/api/public/products?sort=featured&page_size=16"),
+      api<{ items: ProductCardType[] }>("/api/public/products?sort=featured&page_size=24"),
     ]).then((results) => {
       if (cancelled) return;
       const [cats, feats] = results;
@@ -171,6 +171,11 @@ export default function HomeClient() {
     api<{ items: Category[] }>("/api/public/categories").then((d) => setCategories(d.items || [])).catch((e) => setDataError(String(e)));
     api<{ items: ProductCardType[] }>("/api/public/products?sort=featured&page_size=8").then((d) => setFeatured(d.items || [])).catch((e) => setDataError(String(e)));
   };
+
+  // Derived product groups so each homepage section shows clean, non-repeating items
+  const ft = featured || [];
+  const copperAll = ft.filter((p) => p.material === "Copper");
+  const brassAll = ft.filter((p) => p.material === "Brass");
 
   return (
     <>
@@ -267,26 +272,26 @@ export default function HomeClient() {
           </div>
           {featured === null ? <Loading label="Loading new arrivals…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {featured.filter((p) => p.category?.slug === "copper-kitchenware" || p.material === "Copper").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              {copperAll.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
       </section>
 
-      {/* Copper Collection - Brass Kitchenware */}
+      {/* Material — Copper Collection */}
       <section className="section bg-sand/30" aria-labelledby="copper-collection">
         <div className="container-x">
           <div className="flex items-end justify-between mb-6">
             <div>
               <p className="eyebrow text-clay">Material</p>
               <h2 id="copper-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Copper Collection</h2>
-              <p className="text-sm text-gray mt-1">Premium brass kitchenware — handcrafted brass cookware for traditional and modern kitchens</p>
+              <p className="text-sm text-gray mt-1">Premium copper handicrafts — hammered vessels, planters, jugs and classic home décor, crafted from pure copper</p>
             </div>
-            <Link href="/categories/brass-kitchenware" className="btn btn-outline btn-sm">View All Brass Kitchenware →</Link>
+            <Link href="/products?material=Copper" className="btn btn-outline btn-sm">View All Copper Products →</Link>
           </div>
           {featured === null ? <Loading label="Loading…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {featured.filter((p) => p.category?.slug === "brass-kitchenware" || p.material === "Brass").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              {copperAll.slice(4, 8).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
@@ -372,7 +377,7 @@ export default function HomeClient() {
           <div className="text-center mb-10">
             <p className="eyebrow text-clay">Healthy Living</p>
             <h2 id="choose-better" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
-              Latest New Arrivals
+              Choose Better for Your Home
             </h2>
             <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
               Because a healthy home builds a healthy life. Discover our handcrafted copper and brass collections
@@ -427,7 +432,7 @@ export default function HomeClient() {
           </div>
           {featured === null ? <Loading label="Loading…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {(featured || []).filter((p) => p.material === "Copper").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              {(featured || []).length > 0 && copperAll.slice(8, 12).length > 0 ? copperAll.slice(8, 12).map((p) => <ProductCard key={p.id} product={p} />) : copperAll.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
           <div className="text-center mt-8">
@@ -451,7 +456,7 @@ export default function HomeClient() {
           </div>
           {featured === null ? <Loading label="Loading…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {(featured || []).filter((p) => p.material === "Brass").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              {brassAll.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
           <div className="text-center mt-8">
@@ -467,15 +472,15 @@ export default function HomeClient() {
             <div>
               <p className="eyebrow text-clay">Best Sellers</p>
               <h2 id="featured-products" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Our Most Loved &amp; Top-Selling Products</h2>
-              <p className="text-sm text-gray mt-1">Latest collections — best sellers recommended by our buyers</p>
+              <p className="text-sm text-gray mt-1">Latest collections — best sellers recommended by our buyers, a rotating mix from every category</p>
             </div>
             <Link href="/products" className="btn btn-outline btn-sm">View All →</Link>
           </div>
-          {featured === null ? <Loading label="Loading products…" /> : featured.length === 0 ? (
+          {featured === null ? <Loading label="Loading products…" /> : ft.length === 0 ? (
             <p className="text-sm text-gray">No featured products published yet.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {featured.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
+              {ft.slice(8, 12).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
@@ -753,7 +758,7 @@ export default function HomeClient() {
           </div>
           {featured === null ? <Loading label="Loading mix collection…" /> : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {(featured || []).slice(8, 16).map((p) => (
+              {ft.slice(12, 20).map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
