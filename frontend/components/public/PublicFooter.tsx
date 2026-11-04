@@ -10,6 +10,7 @@ const COMPANY_LINKS: [string, string][] = [
   ["Why Choose Us", "/wholesale"],
   ["Benefits", "/buyer-resources"],
   ["Partner With Us", "/customisation"],
+  ["NLI Collections", "/nli-collections"],
   ["Contact", "/contact"],
 ];
 
