@@ -96,6 +96,9 @@ const OFFER_MESSAGES = [
 
 /** Image slideshow below the Copper Collection section */
 const SHOWCASE_SLIDES = [
+  { src: "/slideshow-1.jpg", tag: "Autumn Edit", caption: "Hand-Hammered Copper Pitchers — Autumn Styling" },
+  { src: "/slideshow-2.jpg", tag: "Wellness", caption: "Copper Drinkware — Hydration, Designed Beautifully" },
+  { src: "/slideshow-3.jpg", tag: "Artisanal Brass", caption: "The Artisanal Brass Collection — Handcrafted Heritage" },
   { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-24-pm-e3fe2b29.jpeg`, tag: "Autumn Edit", caption: "Hand-Hammered Copper Jugs & Pitchers" },
   { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-28-pm-2-61db29c0.jpeg`, tag: "New Season", caption: "Copper Décor for Cozy Evenings" },
   { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-31-pm-60686508.jpeg`, tag: "Craft First", caption: "The Artisan Carved Copper Collection" },
