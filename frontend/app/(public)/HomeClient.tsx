@@ -373,11 +373,6 @@ export default function HomeClient() {
                 <input id="hero-search" className="input !py-3 flex-1 bg-white" placeholder='Try "brass urli" or "copper diya"…' value={q} onChange={(e) => setQ(e.target.value)} />
                 <button type="submit" className="btn bg-clay text-cream hover:bg-clay-dark !py-3">Search</button>
               </form>
-              <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-navy/70 font-semibold" aria-label="Buyer trust points">
-                <li>★ Hand-Hammered by Artisans</li>
-                <li>★ Factory-Direct Wholesale</li>
-                <li>★ GSTIN-Verified Exporter</li>
-              </ul>
             </div>
 
             {/* Visual collage — arch frame + floating polaroids */}
@@ -387,22 +382,17 @@ export default function HomeClient() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/hero-brass-kitchen.jpg"
                     onError={(e) => { const t = e.currentTarget; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"; } }}
-                    alt="Hand-hammered brass cookware set — The Hadai Collection by New Look Impex, brass kitchenware manufacturer and exporter in Moradabad, India"
+                    alt="Brass cookware — New Look Impex"
                     className="w-full aspect-[3/4] object-cover"
                     fetchPriority="high" loading="eager" width={1024} height={1024} />
                 </div>
-                <span className="absolute -top-2 -left-6 md:-left-10 bg-navy text-cream text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-full shadow-lg -rotate-3">
-                  {camp.emoji} {camp.percent}% Off · {camp.short}
-                </span>
                 <div className="absolute -bottom-8 -left-10 md:-left-16 w-24 md:w-32 -rotate-6 rounded-xl overflow-hidden ring-4 ring-cream shadow-xl bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/slideshow-1.jpg" alt="" aria-hidden="true" className="w-full aspect-square object-cover" loading="lazy" />
-                  <span className="block bg-white text-navy text-[9px] font-bold uppercase tracking-wider text-center py-1.5">New Copper</span>
                 </div>
                 <div className="absolute bottom-16 -right-6 md:-right-12 w-20 md:w-28 rotate-6 rounded-xl overflow-hidden ring-4 ring-gold/70 shadow-xl bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/slideshow-3.jpg" alt="" aria-hidden="true" className="w-full aspect-square object-cover" loading="lazy" />
-                  <span className="block bg-white text-navy text-[9px] font-bold uppercase tracking-wider text-center py-1.5">Brass Décor</span>
                 </div>
               </div>
             </div>
@@ -413,12 +403,6 @@ export default function HomeClient() {
       {/* B2B trust strip — manufacturer / exporter / wholesaler keyword band */}
       <section aria-label="B2B manufacturer credentials" className="border-y border-sand bg-cream">
         <div className="container-x py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center">
-          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-clay" aria-hidden="true" /> Brass &amp; Copper Manufacturer — Moradabad, India
-          </span>
-          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-gold" aria-hidden="true" /> Wholesale &amp; Export Supplier — GSTIN 09AFKPA4462R1ZW
-          </span>
           <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
             <span className="w-2 h-2 rounded-full bg-navy" aria-hidden="true" /> OEM / Private Label — B2B Bulk Orders
           </span>

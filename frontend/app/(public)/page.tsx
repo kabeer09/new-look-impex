@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://newlookimpex.store/",
     siteName: "New Look Impex",
-    images: [{ url: "/hero-brass-kitchen.jpg", width: 1024, height: 1024, alt: "Hand-hammered brass cookware set — The Hadai Collection by New Look Impex, Moradabad brass kitchenware manufacturer" }],
+    images: [{ url: "/hero-brass-kitchen.jpg", width: 1024, height: 1024, alt: "Brass cookware — New Look Impex" }],
   },
   twitter: {
     card: "summary_large_image",
