@@ -99,16 +99,6 @@ const SHOWCASE_SLIDES = [
   { src: "/slideshow-1.jpg", tag: "Autumn Edit", caption: "Hand-Hammered Copper Pitchers — Autumn Styling" },
   { src: "/slideshow-2.jpg", tag: "Wellness", caption: "Copper Drinkware — Hydration, Designed Beautifully" },
   { src: "/slideshow-3.jpg", tag: "Artisanal Brass", caption: "The Artisanal Brass Collection — Handcrafted Heritage" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-24-pm-e3fe2b29.jpeg`, tag: "Autumn Edit", caption: "Hand-Hammered Copper Jugs & Pitchers" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-28-pm-2-61db29c0.jpeg`, tag: "New Season", caption: "Copper Décor for Cozy Evenings" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-31-pm-60686508.jpeg`, tag: "Craft First", caption: "The Artisan Carved Copper Collection" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-33-pm-3-6414f7bb.jpeg`, tag: "Gifting", caption: "Festive Copper Gift Sets" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-31-37-pm-49a84313.jpeg`, tag: "Best Sellers", caption: "Copper Water Dispensers with Brass Stands" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-31-42-pm-17eb0d90.jpeg`, tag: "Heritage", caption: "Timeless Handcrafted Copper Vessels" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-34-46-pm-1-96b77998.jpeg`, tag: "Decor", caption: "Copper Planters for Autumn Styling" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-34-52-pm-3-e23c9f47.jpeg`, tag: "Homeware", caption: "Traditional Copper Drinkware" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-38-25-pm-f25863c1.jpeg`, tag: "Golden Touch", caption: "Brass & Copper Table Accents" },
-  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-38-30-pm-b170ea1a.jpeg`, tag: "Statement", caption: "Statement Copper Centrepieces" },
 ];
 
 export default function HomeClient() {
