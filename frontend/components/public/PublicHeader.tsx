@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
@@ -27,15 +27,22 @@ const NAV_RIGHT = [
 ];
 
 /** Older routes kept working and linked where sensible. */
+/** Top announcement bar — shows the live automated seasonal campaign when one is active.
+ *  Admin-configured announcement text (settings) always takes priority. */
 function AnnouncementBar() {
   const [text, setText] = useState<string>(DEFAULT_ANNOUNCEMENT);
+  const adminText = useRef<string | null>(null);
   useEffect(() => {
     api<PublicSettings>("/api/public/settings")
       .then((s) => {
         if (s.announcement && s.announcement.enabled && s.announcement.text.trim()) {
+          adminText.current = s.announcement.text;
           setText(s.announcement.text);
         }
       })
+      .catch(() => undefined);
+    api<{ emoji: string; name: string; percent: number; code: string }>("/api/public/active-campaign")
+      .then((c) => { if (!adminText.current) setText(`${c.emoji} ${c.name.toUpperCase()} — ${c.percent}% OFF STOREWIDE | CODE: ${c.code}`); })
       .catch(() => undefined);
   }, []);
   return (

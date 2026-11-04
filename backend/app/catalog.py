@@ -17,6 +17,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from . import models
+from . import campaigns as nli_campaigns
 from .auth import current_user, require_role, rate_limit
 from .database import get_db
 from .media_store import delete_file, save_file
@@ -113,6 +114,17 @@ def submit_review(slug: str, body: dict, db: Session = Depends(get_db)):
         body=(body.get("body") or "")[:2000], status="pending")
     db.add(r); db.commit(); db.refresh(r)
     return {"id": r.id, "status": "pending", "message": "Review submitted for moderation"}
+
+
+# ---------------- PUBLIC: automated seasonal sale campaign ----------------
+@router.get("/api/public/active-campaign")
+def public_active_campaign(db: Session = Depends(get_db)):
+    """Live seasonal campaign — rotates automatically by date (Halloween,
+    Black Friday, Christmas, Mother's Day, …) and self-syncs its discount
+    code into discount_codes. No manual work needed, ever."""
+    camp = nli_campaigns.active_campaign()
+    nli_campaigns.sync_if_changed(db, camp)
+    return camp
 
 
 # ---------------- PUBLIC: discount code validation ----------------

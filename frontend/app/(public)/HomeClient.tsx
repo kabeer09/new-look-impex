@@ -86,12 +86,45 @@ const FAQS = [
 
 const MEDIA_BASE = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/";
 
-/** Rotating offer announcements (Shopify-style) shown above the slideshow */
-const OFFER_MESSAGES = [
-  "🍁  AUTUMN SALE — Up to 30% Off on Copper & Brass Collections",
-  "🎁  Festive Gift Sets Now Live — Order Early for Season Stock",
+/** ── Automated seasonal campaigns (mirror of backend/app/campaigns.py) ──
+ *  The API /api/public/active-campaign is authoritative; this client-side
+ *  fallback keeps the site correct even if the API is briefly unreachable. */
+type CampaignInfo = {
+  code: string; name: string; short: string; emoji: string; percent: number;
+  tagline: string; blurb: string; cta: string; ends_label: string;
+};
+
+const NLI_CALENDAR: Array<Omit<CampaignInfo, "ends_label"> & { m: number; d0: number; d1: number }> = [
+  { code: "NEWYEAR25", name: "New Year Sale", short: "New Year", emoji: "🎆", percent: 25, m: 1, d0: 1, d1: 15, tagline: "Start the year in style — fresh stock, fresh prices", blurb: "Kick off the new year with a flat discount across Copper & Brass collections. New-year production slots are open for bulk orders.", cta: "Shop the New Year Sale" },
+  { code: "LOVE15", name: "Valentine's Day Sale", short: "Valentine's", emoji: "💝", percent: 15, m: 2, d0: 7, d1: 14, tagline: "Gifts forged in metal — for the ones you love", blurb: "A flat discount on gifting favourites — copper drinkware sets and engraved brass décor, gift-wrapped and ready for February 14th.", cta: "Shop Valentine's Gifts" },
+  { code: "SPRING20", name: "Spring Festival Sale", short: "Spring", emoji: "🌸", percent: 20, m: 3, d0: 10, d1: 31, tagline: "Spring refresh for retail shelves worldwide", blurb: "Storewide spring savings — refresh your shelves with hand-hammered copper and blooming brass florals.", cta: "Shop the Spring Sale" },
+  { code: "EASTER15", name: "Easter Sale", short: "Easter", emoji: "🐣", percent: 15, m: 4, d0: 10, d1: 20, tagline: "Table-worthy brass & copper for the Easter season", blurb: "Easter savings on serving and table décor picks — trays, bowls and centrepieces finished for spring tables.", cta: "Shop the Easter Sale" },
+  { code: "MOTHER20", name: "Mother's Day Sale", short: "Mother's Day", emoji: "💐", percent: 20, m: 5, d0: 1, d1: 10, tagline: "Happy Mother's Day — gifts as timeless as her", blurb: "Mother's Day savings on gift-ready copper drinkware and keepsake brass décor. Custom gift packaging available.", cta: "Shop Mother's Day Gifts" },
+  { code: "FATHER20", name: "Father's Day Sale", short: "Father's Day", emoji: "👔", percent: 20, m: 6, d0: 12, d1: 21, tagline: "Happy Father's Day — for the man who has everything", blurb: "Father's Day savings — copper mugs, bar sets and brass accents he will actually keep.", cta: "Shop Father's Day Gifts" },
+  { code: "SUMMER25", name: "Summer Sale", short: "Summer", emoji: "☀️", percent: 25, m: 7, d0: 1, d1: 31, tagline: "High summer, hot prices — storewide savings", blurb: "Summer-long savings — copper pitchers and barware shine in July. Stock up before the festive buying season.", cta: "Shop the Summer Sale" },
+  { code: "FREEDOM15", name: "Independence Day Sale", short: "Independence Day", emoji: "🇮🇳", percent: 15, m: 8, d0: 10, d1: 17, tagline: "Crafted in India — proud of it", blurb: "Celebrating India's Independence Day with savings on the heritage craft of Moradabad's metalworkers.", cta: "Shop the Independence Day Sale" },
+  { code: "FESTIVE20", name: "Festive Season Preview", short: "Festive", emoji: "🪔", percent: 20, m: 9, d0: 1, d1: 30, tagline: "Diwali & festive buying starts here — order early", blurb: "The festive preview — brass urlis, diyas and lanterns ahead of the Diwali rush. Book production slots early.", cta: "Shop the Festive Preview" },
+  { code: "AUTPREP15", name: "Autumn Preview Sale", short: "Autumn Preview", emoji: "🍂", percent: 15, m: 10, d0: 1, d1: 14, tagline: "Autumn is coming — new stock just landed", blurb: "Early-autumn savings — first pick of new copper cookware and brass décor before Halloween week.", cta: "Shop the Autumn Preview" },
+  { code: "HALLOWEEN30", name: "Halloween Sale", short: "Halloween", emoji: "🎃", percent: 30, m: 10, d0: 15, d1: 31, tagline: "Trick or treat — treat yourself", blurb: "The biggest spooky-season discount on all Copper & Brass collections — this week only. While stock lasts.", cta: "Shop the Halloween Sale" },
+  { code: "AUTUMN25", name: "Autumn Sale", short: "Autumn", emoji: "🍁", percent: 25, m: 11, d0: 1, d1: 19, tagline: "Autumn styling, autumn savings", blurb: "Storewide autumn savings — hand-hammered copper and engraved brass, fresh from Moradabad workshops.", cta: "Shop the Autumn Sale" },
+  { code: "BLACKFRIDAY30", name: "Black Friday Sale", short: "Black Friday", emoji: "🛍️", percent: 30, m: 11, d0: 20, d1: 30, tagline: "The biggest sale of the year — Black Friday & Cyber Monday", blurb: "Our biggest discount of the year, live through Black Friday and Cyber Monday. While stock lasts.", cta: "Shop Black Friday" },
+  { code: "XMAS25", name: "Christmas Sale", short: "Christmas", emoji: "🎄", percent: 25, m: 12, d0: 1, d1: 26, tagline: "Merry Christmas — handmade gifts from Moradabad", blurb: "Christmas savings on heirloom-quality brass and copper gifts, beautifully wrapped. Order before shipping cut-offs.", cta: "Shop the Christmas Sale" },
+  { code: "NYEAR20", name: "New Year Countdown", short: "New Year", emoji: "⏳", percent: 20, m: 12, d0: 27, d1: 31, tagline: "Countdown to the new year — last chance prices", blurb: "Final sale days of the year — prices reset when the calendar turns. Lock in new-year stock now.", cta: "Shop the Countdown Sale" },
+];
+
+const MONTHS_SHORT = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+function campaignForDate(now: Date): CampaignInfo {
+  const mi = now.getMonth(), day = now.getDate();
+  const hit = NLI_CALENDAR.find((c) => c.m === mi + 1 && day >= c.d0 && day <= c.d1);
+  if (hit) return { ...hit, ends_label: `${hit.d1} ${MONTHS_SHORT[hit.m - 1]}` };
+  return { code: "WELCOME10", name: "Welcome Offer", short: "Welcome", emoji: "🤝", percent: 10, tagline: "New buyers welcome — 10% off your first order", blurb: "A standing welcome to New Look Impex — Moradabad's premier copper & brass manufacturer. New buyers save on their first order.", cta: "Shop the Welcome Offer", ends_label: "always on" };
+}
+
+/** Evergreen ticker lines shown alongside the seasonal campaign */
+const OFFER_STATIC = [
   "🚚  Free Worldwide Shipping on Bulk Orders Above $5,000",
-  "✨  New Autumn Arrivals — Fresh From Moradabad Workshops",
+  "🎁  Custom Gift Packaging & Private Label on Request",
 ];
 
 /** Image slideshow below the Copper Collection section */
@@ -211,9 +244,26 @@ export default function HomeClient() {
     return () => clearInterval(t);
   }, []);
 
+  // ── Automated seasonal campaign (rotates by date: Halloween, Black Friday, Christmas, …) ──
+  const [campaign, setCampaign] = useState<CampaignInfo | null>(null);
   useEffect(() => {
-    const t = setInterval(() => setOffer((o) => (o + 1) % OFFER_MESSAGES.length), 3500);
+    api<CampaignInfo>("/api/public/active-campaign").then(setCampaign).catch(() => undefined);
+  }, []);
+  const camp: CampaignInfo = campaign || campaignForDate(new Date());
+
+  const offerMessages = [
+    `${camp.emoji}  ${camp.name.toUpperCase()} — FLAT ${camp.percent}% OFF STOREWIDE`,
+    camp.ends_label === "always on"
+      ? `USE CODE ${camp.code} — NEW BUYERS WELCOME`
+      : `USE CODE ${camp.code} — VALID TILL ${camp.ends_label.toUpperCase()}`,
+    `✨  ${camp.tagline}`,
+    ...OFFER_STATIC,
+  ];
+
+  useEffect(() => {
+    const t = setInterval(() => setOffer((o) => (o + 1) % offerMessages.length), 3500);
     return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const retry = () => {
@@ -246,7 +296,7 @@ export default function HomeClient() {
   };
   const copyCode = () => {
     try {
-      navigator.clipboard?.writeText("HALLOWEEN30").then(() => setCopiedCode(true));
+      navigator.clipboard?.writeText(camp.code).then(() => setCopiedCode(true));
     } catch { /* clipboard unavailable */ }
     setCopiedCode(true);
   };
@@ -342,7 +392,7 @@ export default function HomeClient() {
                     fetchPriority="high" loading="eager" width={1024} height={1024} />
                 </div>
                 <span className="absolute -top-2 -left-6 md:-left-10 bg-navy text-cream text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-full shadow-lg -rotate-3">
-                  🎃 30% Off · Autumn
+                  {camp.emoji} {camp.percent}% Off · {camp.short}
                 </span>
                 <div className="absolute -bottom-8 -left-10 md:-left-16 w-24 md:w-32 -rotate-6 rounded-xl overflow-hidden ring-4 ring-cream shadow-xl bg-white">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -469,10 +519,10 @@ export default function HomeClient() {
         <div className="container-x">
           <h2 id="autumn-showcase" className="sr-only">Autumn Collection Showcase</h2>
 
-          {/* Rotating offer announcements (Shopify-style) */}
+          {/* Rotating offer announcements (Shopify-style) — driven by the live campaign */}
           <div className="bg-clay text-cream rounded-lg md:rounded-full h-10 md:h-11 px-4 md:px-8 flex items-center justify-center text-center mb-6" role="status" aria-live="polite">
             <span key={offer} className="nli-rotate-in whitespace-nowrap overflow-hidden text-ellipsis text-[11px] md:text-sm font-semibold tracking-wide">
-              {OFFER_MESSAGES[offer]}
+              {offerMessages[offer % offerMessages.length]}
             </span>
           </div>
 
@@ -1000,30 +1050,32 @@ export default function HomeClient() {
         </div>
       )}
 
-      {/* ── Halloween offer popup (Shopify-style) ── */}
+      {/* ── Seasonal offer popup (Shopify-style, auto-rotates with campaign calendar) ── */}
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/70" role="dialog" aria-modal="true" aria-label="Halloween offer">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/70" role="dialog" aria-modal="true" aria-label="Seasonal offer">
           <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl nli-rotate-in">
             <div className="bg-gradient-to-br from-navy via-navy to-clay-dark p-8 text-center">
               <button type="button" onClick={closePopup} aria-label="Close offer"
                 className="absolute top-3 right-3 w-8 h-8 rounded-full bg-cream/15 text-cream flex items-center justify-center hover:bg-cream/30">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
               </button>
-              <p className="text-5xl" aria-hidden="true">🎃</p>
-              <h2 className="font-serif font-bold text-3xl text-cream mt-3">Halloween Offer</h2>
-              <p className="text-gold uppercase tracking-[0.25em] text-xs font-semibold mt-2">Trick or Treat — Treat Yourself</p>
+              <p className="text-5xl" aria-hidden="true">{camp.emoji}</p>
+              <h2 className="font-serif font-bold text-3xl text-cream mt-3">{camp.name}</h2>
+              <p className="text-gold uppercase tracking-[0.25em] text-xs font-semibold mt-2">{camp.tagline}</p>
               <p className="text-cream/90 mt-4 text-sm leading-relaxed">
-                Flat <strong className="text-gold text-2xl">30% OFF</strong> on all Copper &amp; Brass collections —
-                this spooky season only. While stock lasts.
+                Flat <strong className="text-gold text-2xl">{camp.percent}% OFF</strong> on all Copper &amp; Brass collections —
+                this season only. While stock lasts.
               </p>
               <button type="button" onClick={copyCode}
                 className="mt-5 inline-flex items-center gap-2 bg-cream/10 border border-dashed border-gold px-5 py-2.5 rounded-lg text-cream font-mono text-lg tracking-widest hover:bg-cream/20">
-                HALLOWEEN30
+                {camp.code}
                 <span className="text-[10px] font-sans uppercase tracking-wider text-gold">{copiedCode ? "✓ Copied" : "Copy code"}</span>
               </button>
-              <p className="text-cream/60 text-[11px] mt-2">Mention this code in your quote request — valid until 18 November.</p>
+              <p className="text-cream/60 text-[11px] mt-2">
+                Mention this code in your quote request — {camp.ends_label === "always on" ? "new buyers welcome, always on." : `valid until ${camp.ends_label}.`}
+              </p>
               <div className="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
-                <Link href="/products" onClick={closePopup} className="btn bg-gold text-navy hover:bg-cream">Shop the Halloween Sale</Link>
+                <Link href="/products" onClick={closePopup} className="btn bg-gold text-navy hover:bg-cream">{camp.cta}</Link>
                 <button type="button" onClick={closePopup} className="btn border border-cream/40 text-cream hover:bg-cream/10">Maybe later</button>
               </div>
             </div>
