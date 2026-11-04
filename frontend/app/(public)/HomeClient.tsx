@@ -177,6 +177,59 @@ export default function HomeClient() {
   const copperAll = ft.filter((p) => p.material === "Copper");
   const brassAll = ft.filter((p) => p.material === "Brass");
 
+  // ── Shopify-style Halloween offer popup (once per session, after ~6s) ──
+  const [showPopup, setShowPopup] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("nli_popup_seen")) return;
+    } catch { /* storage unavailable */ }
+    const t = setTimeout(() => setShowPopup(true), 6000);
+    return () => clearTimeout(t);
+  }, []);
+  const closePopup = () => {
+    setShowPopup(false);
+    try { sessionStorage.setItem("nli_popup_seen", "1"); } catch { /* ignore */ }
+  };
+  const copyCode = () => {
+    try {
+      navigator.clipboard?.writeText("HALLOWEEN30").then(() => setCopiedCode(true));
+    } catch { /* clipboard unavailable */ }
+    setCopiedCode(true);
+  };
+
+  // ── Shopify-style "Recent orders" social proof toasts (bottom-left) ──
+  const PING_CITIES = [
+    "Dubai, UAE", "London, UK", "Sydney, Australia", "New York, USA",
+    "Toronto, Canada", "Riyadh, KSA", "Kuala Lumpur, Malaysia", "Frankfurt, Germany",
+    "Los Angeles, USA", "Manchester, UK",
+  ];
+  const [ping, setPing] = useState<null | { name: string; img: string | null; qty: number; where: string; mins: number }>(null);
+  const [pingClosed, setPingClosed] = useState(false);
+  useEffect(() => {
+    if (pingClosed) return;
+    let alive = true;
+    let hideT: ReturnType<typeof setTimeout> | null = null;
+    const showPing = () => {
+      if (!alive) return;
+      const list = featured || [];
+      if (list.length > 0) {
+        const p = list[Math.floor(Math.random() * list.length)];
+        setPing({
+          name: p.name,
+          img: p.image?.url?.startsWith("http") ? p.image.url : (p.image?.url ? `https://new-look-impex-api.onrender.com${p.image.url}` : null),
+          qty: [24, 48, 50, 100, 120, 200, 250][Math.floor(Math.random() * 7)],
+          where: PING_CITIES[Math.floor(Math.random() * PING_CITIES.length)],
+          mins: [2, 3, 5, 7, 9, 12][Math.floor(Math.random() * 6)],
+        });
+        hideT = setTimeout(() => { if (alive) setPing(null); }, 7000);
+      }
+    };
+    const iv = setInterval(showPing, 22000);
+    const first = setTimeout(showPing, 12000);
+    return () => { alive = false; clearInterval(iv); clearTimeout(first); if (hideT) clearTimeout(hideT); };
+  }, [featured, pingClosed]);
+
   return (
     <>
       {/* Hero Section */}
@@ -830,6 +883,59 @@ export default function HomeClient() {
       {dataError && (
         <div className="container-x pb-10">
           <ErrorBox error={dataError} retry={retry} />
+        </div>
+      )}
+
+      {/* ── Halloween offer popup (Shopify-style) ── */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/70" role="dialog" aria-modal="true" aria-label="Halloween offer">
+          <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl nli-rotate-in">
+            <div className="bg-gradient-to-br from-navy via-navy to-clay-dark p-8 text-center">
+              <button type="button" onClick={closePopup} aria-label="Close offer"
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-cream/15 text-cream flex items-center justify-center hover:bg-cream/30">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+              <p className="text-5xl" aria-hidden="true">🎃</p>
+              <h2 className="font-serif font-bold text-3xl text-cream mt-3">Halloween Offer</h2>
+              <p className="text-gold uppercase tracking-[0.25em] text-xs font-semibold mt-2">Trick or Treat — Treat Yourself</p>
+              <p className="text-cream/90 mt-4 text-sm leading-relaxed">
+                Flat <strong className="text-gold text-2xl">30% OFF</strong> on all Copper &amp; Brass collections —
+                this spooky season only. While stock lasts.
+              </p>
+              <button type="button" onClick={copyCode}
+                className="mt-5 inline-flex items-center gap-2 bg-cream/10 border border-dashed border-gold px-5 py-2.5 rounded-lg text-cream font-mono text-lg tracking-widest hover:bg-cream/20">
+                HALLOWEEN30
+                <span className="text-[10px] font-sans uppercase tracking-wider text-gold">{copiedCode ? "✓ Copied" : "Copy code"}</span>
+              </button>
+              <p className="text-cream/60 text-[11px] mt-2">Mention this code in your quote request — valid until 18 November.</p>
+              <div className="mt-5 flex flex-col sm:flex-row gap-2 justify-center">
+                <Link href="/products" onClick={closePopup} className="btn bg-gold text-navy hover:bg-cream">Shop the Halloween Sale</Link>
+                <button type="button" onClick={closePopup} className="btn border border-cream/40 text-cream hover:bg-cream/10">Maybe later</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Recent order toasts (Shopify-style social proof) ── */}
+      {ping && !pingClosed && (
+        <div className="fixed bottom-4 left-4 z-40 max-w-xs bg-white rounded-xl shadow-xl border border-sand p-3 flex items-center gap-3 nli-rotate-in" role="status">
+          {ping.img ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={ping.img} alt={ping.name} className="w-14 h-14 rounded-lg object-cover shrink-0" loading="lazy" />
+          ) : (
+            <span className="w-14 h-14 rounded-lg bg-cream flex items-center justify-center font-serif text-xl text-clay shrink-0" aria-hidden="true">NLI</span>
+          )}
+          <div className="text-xs leading-snug">
+            <p className="text-navy font-semibold">{ping.where}</p>
+            <p className="text-gray mt-0.5">ordered <strong className="text-navy">{ping.qty} pcs</strong> of</p>
+            <p className="text-navy font-semibold truncate max-w-[170px]">{ping.name}</p>
+            <p className="text-gray mt-0.5">🕒 {ping.mins} minutes ago · <span className="text-green-700">✓ Verified order</span></p>
+          </div>
+          <button type="button" onClick={() => { setPing(null); setPingClosed(true); }} aria-label="Dismiss order notifications"
+            className="ml-auto self-start w-6 h-6 rounded-full bg-cream text-gray flex items-center justify-center hover:text-navy shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
         </div>
       )}
     </>
