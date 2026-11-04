@@ -84,6 +84,30 @@ const FAQS = [
   { q: "How can buyers request a quotation?", a: "Browse the catalogue, add items to your enquiry list with quantities, and submit a Request a Quote. You receive a reference number and a written quotation." },
 ];
 
+const MEDIA_BASE = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/";
+
+/** Rotating offer announcements (Shopify-style) shown above the slideshow */
+const OFFER_MESSAGES = [
+  "🍁  AUTUMN SALE — Up to 30% Off on Copper & Brass Collections",
+  "🎁  Festive Gift Sets Now Live — Order Early for Season Stock",
+  "🚚  Free Worldwide Shipping on Bulk Orders Above $5,000",
+  "✨  New Autumn Arrivals — Fresh From Moradabad Workshops",
+];
+
+/** Image slideshow below the Copper Collection section */
+const SHOWCASE_SLIDES = [
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-24-pm-e3fe2b29.jpeg`, tag: "Autumn Edit", caption: "Hand-Hammered Copper Jugs & Pitchers" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-28-pm-2-61db29c0.jpeg`, tag: "New Season", caption: "Copper Décor for Cozy Evenings" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-31-pm-60686508.jpeg`, tag: "Craft First", caption: "The Artisan Carved Copper Collection" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-27-33-pm-3-6414f7bb.jpeg`, tag: "Gifting", caption: "Festive Copper Gift Sets" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-31-37-pm-49a84313.jpeg`, tag: "Best Sellers", caption: "Copper Water Dispensers with Brass Stands" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-31-42-pm-17eb0d90.jpeg`, tag: "Heritage", caption: "Timeless Handcrafted Copper Vessels" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-34-46-pm-1-96b77998.jpeg`, tag: "Decor", caption: "Copper Planters for Autumn Styling" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-34-52-pm-3-e23c9f47.jpeg`, tag: "Homeware", caption: "Traditional Copper Drinkware" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-38-25-pm-f25863c1.jpeg`, tag: "Golden Touch", caption: "Brass & Copper Table Accents" },
+  { src: `${MEDIA_BASE}whatsapp-image-2026-11-01-at-3-38-30-pm-b170ea1a.jpeg`, tag: "Statement", caption: "Statement Copper Centrepieces" },
+];
+
 export default function HomeClient() {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -91,6 +115,8 @@ export default function HomeClient() {
   const [featured, setFeatured] = useState<ProductCardType[] | null>(null);
   const [dataError, setDataError] = useState("");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [slide, setSlide] = useState(0);
+  const [offer, setOffer] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +132,16 @@ export default function HomeClient() {
       if (results.some((r) => r.status === "rejected")) setDataError("Some sections could not be loaded.");
     });
     return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setSlide((s) => (s + 1) % SHOWCASE_SLIDES.length), 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setOffer((o) => (o + 1) % OFFER_MESSAGES.length), 3500);
+    return () => clearInterval(t);
   }, []);
 
   const retry = () => {
@@ -231,6 +267,61 @@ export default function HomeClient() {
               {featured.filter((p) => p.category?.slug === "brass-kitchenware" || p.material === "Brass").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Autumn Showcase — Rotating Offers + Image Slideshow */}
+      <section className="section !pt-8 bg-navy" aria-labelledby="autumn-showcase">
+        <div className="container-x">
+          <h2 id="autumn-showcase" className="sr-only">Autumn Collection Showcase</h2>
+
+          {/* Rotating offer announcements (Shopify-style) */}
+          <div className="bg-clay text-cream rounded-lg md:rounded-full h-10 md:h-11 px-4 md:px-8 flex items-center justify-center text-center mb-6" role="status" aria-live="polite">
+            <span key={offer} className="nli-rotate-in whitespace-nowrap overflow-hidden text-ellipsis text-[11px] md:text-sm font-semibold tracking-wide">
+              {OFFER_MESSAGES[offer]}
+            </span>
+          </div>
+
+          {/* Image slideshow */}
+          <div className="relative rounded-2xl overflow-hidden h-[340px] md:h-[520px] group" aria-roledescription="carousel">
+            {SHOWCASE_SLIDES.map((s, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={s.src} src={s.src} alt={s.caption}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${i === slide ? "opacity-100" : "opacity-0"}`}
+                loading={i === 0 ? "eager" : "lazy"} width={800} height={640} />
+            ))}
+            {SHOWCASE_SLIDES.map((s, i) => (
+              <div key={`cap-${i}`} className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy/95 via-navy/50 to-transparent pt-16 pb-6 px-6 md:px-10 transition-opacity duration-500 ${i === slide ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                <p className="text-gold text-[11px] md:text-xs uppercase tracking-[0.28em] font-semibold">{s.tag}</p>
+                <h3 className="text-cream font-serif font-bold text-xl md:text-3xl mt-1">{s.caption}</h3>
+              </div>
+            ))}
+
+            {/* Prev / Next */}
+            <button type="button" aria-label="Previous slide"
+              onClick={() => setSlide((s) => (s - 1 + SHOWCASE_SLIDES.length) % SHOWCASE_SLIDES.length)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-10 md:h-10 rounded-full bg-cream/90 text-navy flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+            <button type="button" aria-label="Next slide"
+              onClick={() => setSlide((s) => (s + 1) % SHOWCASE_SLIDES.length)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-10 md:h-10 rounded-full bg-cream/90 text-navy flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
+
+            {/* Dots */}
+            <div className="absolute bottom-3 right-4 flex gap-1.5">
+              {SHOWCASE_SLIDES.map((s, i) => (
+                <button key={`dot-${i}`} type="button" aria-label={`Go to slide ${i + 1}`}
+                  onClick={() => setSlide(i)}
+                  className={`w-2 h-2 rounded-full transition-all ${i === slide ? "bg-gold w-5" : "bg-cream/50 hover:bg-cream/80"}`} />
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-6">
+            <Link href="/products" className="btn btn-clay !px-6 !py-3">Shop the Autumn Collection</Link>
+          </div>
         </div>
       </section>
 
