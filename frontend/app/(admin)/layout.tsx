@@ -40,7 +40,7 @@ const SECTIONS = ["Workspace", "Catalogue", "Orders", "SEO", "System"];
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginErr, setLoginErr] = useState("");
 
@@ -65,10 +65,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     localStorage.removeItem(STORAGE_KEY);
     setAuthenticated(false);
   };
-
-  if (authenticated === null) {
-    return null; // hydrating
-  }
 
   if (!authenticated) {
     return (
