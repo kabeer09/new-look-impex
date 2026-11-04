@@ -400,18 +400,6 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* B2B trust strip — manufacturer / exporter / wholesaler keyword band */}
-      <section aria-label="B2B manufacturer credentials" className="border-y border-sand bg-cream">
-        <div className="container-x py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center">
-          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-navy" aria-hidden="true" /> OEM / Private Label — B2B Bulk Orders
-          </span>
-          <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-navy uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-clay-dark" aria-hidden="true" /> Trusted Since 2012 — Global B2B Buyers
-          </span>
-        </div>
-      </section>
-
       {/* Shop by Category */}
       <section className="section" aria-labelledby="shop-by-category">
         <div className="container-x">
@@ -424,7 +412,7 @@ export default function HomeClient() {
             <p className="text-sm text-gray text-center">Categories will appear here once published.</p>
           ) : (
             <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-              {categories.filter((c) => !["Brass Urlis", "Copper Urlis", "Brass Diyas", "Metal Diyas", "Brass Lanterns", "Decorative Bowls"].includes(c.name)).slice(0, 8).map((c) => (
+              {categories.filter((c) => !["Brass Urlis", "Copper Urlis", "Brass Diyas", "Metal Diyas", "Brass Lanterns", "Decorative Bowls", "Copper Handicrafts", "Brass Handicrafts", "Metal Home Décor", "Metal Home Decor"].includes(c.name)).slice(0, 8).map((c) => (
                 <Link key={c.slug} href={`/categories/${c.slug}`} className="group flex flex-col items-center text-center">
                   <span className="relative block w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-cream ring-2 ring-clay/25 group-hover:ring-clay transition-all">
                     {c.image_url ? (

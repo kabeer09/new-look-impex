@@ -17,7 +17,6 @@ const SECTIONS: { title: string; links: [string, string][] }[] = [
       ["Collections", "/collections"],
       ["Brass Collection", "/brass-collection"],
       ["Copper Collection", "/copper-collection"],
-      ["Metal Home Décor", "/metal-home-decor"],
       ["Urlis", "/urlis"],
       ["Diyas & Lanterns", "/diyas-lanterns"],
       ["Gifting", "/gifting"],

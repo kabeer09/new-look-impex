@@ -107,7 +107,6 @@ const ORG_JSONLD = {
       { "@type": "Offer", itemOffered: { "@type": "Product", name: "Hand-Hammered Copper Jugs, Pitchers & Bottles — bulk copper drinkware supplier" } },
       { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Urlis & Planters — traditional metalware exporter" } },
       { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Diyas & Lanterns — festive & temple lighting wholesale" } },
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Metal Home Décor Accessories — indoor & outdoor decorative ranges" } },
       { "@type": "Offer", itemOffered: { "@type": "Product", name: "Copper & Brass Gift Sets — wedding, festival and corporate gifting" } },
       { "@type": "Offer", itemOffered: { "@type": "Product", name: "OEM / Private Label Metalware — custom finishes, engravings and branding" } },
     ],

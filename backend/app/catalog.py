@@ -1144,7 +1144,10 @@ def public_product_detail(slug: str, db: Session = Depends(get_db)):
 
 @router.get("/api/public/categories")
 def public_categories(db: Session = Depends(get_db)):
-    rows = db.query(models.Category).filter(models.Category.status == "published") \
+    HIDDEN_CATEGORIES = {"copper handicrafts", "brass handicrafts", "metal home décor", "metal home decor"}
+    rows = db.query(models.Category).filter(
+        models.Category.status == "published",
+        ~func.lower(models.Category.name).in_(HIDDEN_CATEGORIES)) \
         .order_by(models.Category.sort_order, models.Category.id).all()
     items = []
     for c in rows:
@@ -1164,7 +1167,7 @@ def public_category_detail(slug: str, page: int = Query(1, ge=1),
     c = db.query(models.Category).filter(
         func.lower(models.Category.slug) == slug.strip().lower(),
         models.Category.status == "published").first()
-    if not c:
+    if not c or c.name.strip().lower() in {"copper handicrafts", "brass handicrafts", "metal home décor", "metal home decor"}:
         raise HTTPException(404, "Category not found")
     qry = db.query(models.Product).filter(models.Product.category_id == c.id,
                                           models.Product.status == "published")
