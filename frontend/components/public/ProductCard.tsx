@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { mediaUrl, cardSrcSet } from "@/lib/api";
+import { mediaUrl, cardSrcSet, whatsappLink } from "@/lib/api";
 import type { ProductCard as ProductCardType } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -40,6 +40,7 @@ export function ProductCard({ product }: { product: ProductCardType }) {
 
   const meta = [product.category?.name, product.material, product.finish].filter(Boolean).join(" · ");
   const showPrice = !product.price_on_request && product.price != null;
+  const moqText = product.moq ? `MOQ: ${product.moq}` : null;
 
   return (
     <article className="product-card !rounded-none border-clay/15">
@@ -93,14 +94,27 @@ export function ProductCard({ product }: { product: ProductCardType }) {
           ) : (
             <p className="text-xs font-semibold tracking-wide text-clay uppercase">Price on request</p>
           )}
+          {moqText && (
+            <p className="text-[10px] uppercase tracking-wider text-navy/60 font-bold mb-1">{moqText}</p>
+          )}
           <div className="mt-2 flex flex-wrap gap-2">
-            <Link href={`/products/${product.slug}`} className="btn btn-ghost btn-sm">
+            <Link href={`/products/${product.slug}`} className="btn btn-ghost btn-sm flex-1">
               Details
             </Link>
-            <button type="button" className="btn btn-clay btn-sm" onClick={add} disabled={added}>
-              {added ? "Added ✓" : "Request Pricing"}
+            <button type="button" className="btn btn-clay btn-sm flex-1" onClick={add} disabled={added}>
+              {added ? "Added ✓" : "Add to Enquiry"}
             </button>
           </div>
+          <a
+            href={whatsappLink(
+              `Hi, I'm interested in "${product.name}"${product.sku ? ` (SKU ${product.sku})` : ""}. Please share wholesale pricing and MOQ details.`
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 block w-full text-center text-[11px] font-bold uppercase tracking-wider text-gold underline underline-offset-4 hover:text-clay"
+          >
+            💬 WhatsApp Enquiry
+          </a>
         </div>
       </div>
     </article>

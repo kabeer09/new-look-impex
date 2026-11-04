@@ -389,6 +389,25 @@ export default function ProductClient({ slug }: { slug: string }) {
           </div>
         </div>
 
+        {/* Trade-readiness trust badges */}
+        <div className="mt-16 border-t border-sand pt-8">
+          <h2 className="font-serif font-bold text-navy text-xl mb-4">Seller Credibility</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="card p-4 text-center">
+              <p className="font-serif font-bold text-navy text-xs uppercase tracking-wider">Manufacturer</p>
+              <p className="text-sm text-gray mt-1">Hand-crafted in Moradabad, India since 2012</p>
+            </div>
+            <div className="card p-4 text-center">
+              <p className="font-serif font-bold text-navy text-xs uppercase tracking-wider">GSTIN Verified</p>
+              <p className="text-sm text-gray mt-1">09AFKPA4462R1ZW — export-registered</p>
+            </div>
+            <div className="card p-4 text-center">
+              <p className="font-serif font-bold text-navy text-xs uppercase tracking-wider">Wholesale &amp; Export</p>
+              <p className="text-sm text-gray mt-1">Bulk MOQ · Written quotes · Export documentation</p>
+            </div>
+          </div>
+        </div>
+
         {/* Reviews */}
         <div className="mt-16">
           <Reviews slug={product.slug} />

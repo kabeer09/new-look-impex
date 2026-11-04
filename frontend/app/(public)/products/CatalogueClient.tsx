@@ -106,6 +106,20 @@ export default function CatalogueClient() {
             {data ? `${data.total} product${data.total === 1 ? "" : "s"}` : "Handcrafted brass & copper décor"}
             {q ? ` matching “${q}”` : ""}
           </p>
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs text-navy/70 font-semibold">
+            <span>
+              <span className="w-2 h-2 rounded-full bg-clay mr-1.5" aria-hidden="true" />{" "}
+              {data?.total} products listed
+            </span>
+            <span>
+              <span className="w-2 h-2 rounded-full bg-gold mr-1.5" aria-hidden="true" />{" "}
+              GSTIN-verified exporter
+            </span>
+            <span>
+              <span className="w-2 h-2 rounded-full bg-navy mr-1.5" aria-hidden="true" />{" "}
+              Moradabad, India — since 2012
+            </span>
+          </div>
         </div>
       </section>
 
