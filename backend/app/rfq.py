@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from . import models
 from .auth import current_user, rate_limit, require_role
+from .config import settings
 from .database import get_db
 from .email import send_email
 from .schemas import RFQIn, RFQStatusIn
@@ -120,14 +121,27 @@ def submit_rfq(body: RFQIn, request: Request, db: Session = Depends(get_db)):
             f"{rfq.reference_number} to New Look Impex (Moradabad, India). "
             f"We will respond with a quotation shortly.\n\n"
             f"Items: {len(body.items)}\n\n"
-            f"New Look Impex — newlookimpex@gmail.com — +91 8218251238")
+            f"New Look Impex — newlookimpex130@gmail.com — +91 8218251238")
         email_sent, email_detail = ok, detail
-        # admin notification (best effort, honest)
-        send_email("newlookimpex@gmail.com",
-                   f"New RFQ {rfq.reference_number} from {body.company_name or body.full_name}",
-                   f"RFQ {rfq.reference_number}\nFrom: {body.full_name} <{body.business_email}>\n"
-                   f"Company: {body.company_name}\nCountry: {body.country}\n"
-                   f"Items: {len(body.items)}\n")
+        # Admin notification (best effort, honest) — includes every item so the
+        # owner understands exactly what was selected in the RFQ.
+        item_lines = "\n".join(
+            f"{i + 1}. {it.product_name} — Qty: {it.quantity}"
+            f"{' ' + it.unit.strip() if it.unit.strip() else ''}"
+            f"{' (notes: ' + it.notes.strip() + ')' if it.notes.strip() else ''}"
+            for i, it in enumerate(body.items)
+        )
+        send_email(
+            settings.ENQUIRY_NOTIFY_EMAIL,
+            f"New RFQ {rfq.reference_number} from {body.company_name or body.full_name}",
+            f"RFQ {rfq.reference_number}\n"
+            f"From: {body.full_name} <{body.business_email}>\n"
+            f"Company: {body.company_name}\nCountry: {body.country}\n"
+            f"Phone: {body.phone or '-'}\nTarget price: {body.target_price or '-'}\n"
+            f"Delivery: {body.delivery_timeframe or '-'}\n"
+            f"Requirements: {body.additional_requirements or '-'}\n\n"
+            f"Selected Products ({len(body.items)}):\n{item_lines}\n\n"
+            f"Admin record: {settings.PUBLIC_SITE_URL.rstrip('/')}/admin/rfqs")
     return {
         "reference_number": rfq.reference_number,
         "message": "Thank you — your wholesale enquiry has been received. "

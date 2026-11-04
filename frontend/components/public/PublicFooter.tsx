@@ -98,6 +98,11 @@ export function PublicFooter() {
           <nav aria-label="Categories">
             <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Categories</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
+              <li className="pb-1">
+                <Link href="/products" className="font-semibold text-gold-light hover:text-white">
+                  Mix Collection — All Products
+                </Link>
+              </li>
               {categories.length === 0 && (
                 <li>
                   <Link href="/categories" className="hover:text-white">
@@ -105,10 +110,11 @@ export function PublicFooter() {
                   </Link>
                 </li>
               )}
-              {categories.slice(0, 7).map((c) => (
+              {categories.slice(0, 10).map((c) => (
                 <li key={c.slug}>
                   <Link href={`/categories/${c.slug}`} className="hover:text-white">
                     {c.name}
+                    {typeof c.product_count === "number" && c.product_count > 0 ? ` (${c.product_count})` : ""}
                   </Link>
                 </li>
               ))}
@@ -118,6 +124,11 @@ export function PublicFooter() {
           <nav aria-label="Collections">
             <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Collections</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
+              <li className="pb-1">
+                <Link href="/products" className="font-semibold text-gold-light hover:text-white">
+                  Mix Collection — All Products
+                </Link>
+              </li>
               {collections.length === 0 && (
                 <li>
                   <Link href="/collections" className="hover:text-white">
@@ -125,7 +136,7 @@ export function PublicFooter() {
                   </Link>
                 </li>
               )}
-              {collections.slice(0, 7).map((c) => (
+              {collections.slice(0, 10).map((c) => (
                 <li key={c.slug}>
                   <Link href={`/collections/${c.slug}`} className="hover:text-white">
                     {c.name}

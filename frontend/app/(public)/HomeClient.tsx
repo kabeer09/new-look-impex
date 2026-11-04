@@ -110,13 +110,42 @@ export default function HomeClient() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [slide, setSlide] = useState(0);
   const [offer, setOffer] = useState(0);
+  const [subEmail, setSubEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [subStatus, setSubStatus] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const subscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubscribing(true);
+    setSubStatus(null);
+    api<unknown>("/api/public/enquiries", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Newsletter Subscriber",
+        email: subEmail,
+        product_interest: "Newsletter subscription",
+        message: "Please subscribe me to the New Look Impex wholesale trade bulletin (new products, offers, catalog releases).",
+        consent: true,
+        landing_page: "homepage-newsletter",
+      }),
+    })
+      .then(() => {
+        setSubStatus({ ok: true, text: "✓ Subscribed! Your details were sent to our team — we'll email the trade bulletin." });
+        setSubEmail("");
+      })
+      .catch((err) => {
+        const msg = String(err);
+        setSubStatus({ ok: msg.includes("409"), text: msg.includes("409") ? "You're already subscribed — thank you!" : "Could not subscribe. Please email newlookimpex130@gmail.com." });
+      })
+      .finally(() => setSubscribing(false));
+  };
 
   useEffect(() => {
     let cancelled = false;
     setDataError("");
     Promise.allSettled([
       api<{ items: Category[] }>("/api/public/categories"),
-      api<{ items: ProductCardType[] }>("/api/public/products?sort=featured&page_size=8"),
+      api<{ items: ProductCardType[] }>("/api/public/products?sort=featured&page_size=16"),
     ]).then((results) => {
       if (cancelled) return;
       const [cats, feats] = results;
@@ -711,6 +740,30 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* Mix Collection — all products in one view for every visitor */}
+      <section className="section" aria-labelledby="mix-collection">
+        <div className="container-x">
+          <div className="text-center mb-8">
+            <p className="eyebrow text-clay">Everything, One Place</p>
+            <h2 id="mix-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">The Mix Collection — All Products</h2>
+            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
+              A curated mix from every range — brass, copper, home décor, festive and gifting.
+              Browse the full wholesale catalogue in one view.
+            </p>
+          </div>
+          {featured === null ? <Loading label="Loading mix collection…" /> : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {(featured || []).slice(8, 16).map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
+          <div className="text-center mt-8">
+            <Link href="/products" className="btn btn-clay !px-6 !py-3">View All Products →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* Newsletter / Trade Bulletin Signup */}
       <section className="section bg-sand/40" aria-labelledby="newsletter">
         <div className="container-x">
@@ -722,11 +775,16 @@ export default function HomeClient() {
             <p className="text-gray mt-2 text-sm">
               Receive seasonal metal décor trends, trade fair schedules, and new wholesale catalog releases directly in your business inbox.
             </p>
-            <form className="mt-6 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={(e) => { e.preventDefault(); }}>
+            <form className="mt-6 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={subscribe}>
               <label htmlFor="newsletter-email" className="sr-only">Email address</label>
-              <input id="newsletter-email" type="email" className="input flex-1" placeholder="Your business email" required />
-              <button type="submit" className="btn btn-clay !px-6 !py-2.5 shrink-0">Subscribe</button>
+              <input id="newsletter-email" type="email" className="input flex-1" placeholder="Your business email" required value={subEmail} onChange={(e) => setSubEmail(e.target.value)} />
+              <button type="submit" className="btn btn-clay !px-6 !py-2.5 shrink-0" disabled={subscribing}>{subscribing ? "Subscribing…" : "Subscribe"}</button>
             </form>
+            {subStatus && (
+              <p className={`text-xs mt-3 font-semibold ${subStatus.ok ? "text-green-700" : "text-red-700"}`} role="status">
+                {subStatus.text}
+              </p>
+            )}
             <p className="text-xs text-gray mt-3">No spam. Unsubscribe anytime. We respect your privacy.</p>
           </div>
         </div>

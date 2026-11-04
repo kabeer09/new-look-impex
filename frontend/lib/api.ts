@@ -147,7 +147,7 @@ export function trackEvent(input: EventInput): void {
 }
 
 export const WHATSAPP_URL = "https://wa.me/918218251238";
-export const BUSINESS_EMAIL = "newlookimpex@gmail.com";
+export const BUSINESS_EMAIL = "newlookimpex130@gmail.com";
 export const BUSINESS_PHONES = ["+91 8218251238", "+91 7500441239"];
 export const BUSINESS_LOCATION = "Moradabad, Uttar Pradesh, India";
 export const WHATSAPP_TEXT = "Hi New Look Impex, I would like a wholesale quotation.";

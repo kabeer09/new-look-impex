@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     GOOGLE_LOGIN_REDIRECT_URI: str = ""
 
     N8N_WEBHOOK_TOKEN: str = "change-me-n8n-token"
-    ENQUIRY_NOTIFY_EMAIL: str = "newlookimpex@gmail.com"
+    ENQUIRY_NOTIFY_EMAIL: str = "newlookimpex130@gmail.com"
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
