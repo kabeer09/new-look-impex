@@ -976,6 +976,217 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* ── Shop By Metals — brassglobe-style SEO section with regional/Hindi keywords ── */}
+      <section className="section" aria-labelledby="shop-by-metals">
+        <div className="container-x">
+          <div className="text-center mb-10">
+            <p className="eyebrow text-clay">Shop by Metal</p>
+            <h2 id="shop-by-metals" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+              Copper, Brass &amp; Bronze Utensils — Handcrafted in Moradabad
+            </h2>
+            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
+              Choose your metal. From tamba (copper) drinkware to pital ke bartan (brass utensils)
+              and kansa (bronze) dinnerware — every piece is hand-hammered by our artisans and
+              factory-direct for wholesale buyers worldwide.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Link
+              href="/products?material=Copper"
+              className="group relative rounded-3xl overflow-hidden border border-sand bg-cream hover:border-clay transition-all"
+              aria-label="Shop copper utensils — copper cookware, bottles, jugs and mugs manufacturer in Moradabad"
+            >
+              <div className="aspect-[4/5] bg-sand/40 relative overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={toFullUrl(copperAll[0]?.image?.url) || "/hero-brass-kitchen.jpg"}
+                  alt="Copper utensils — copper cookware bottles jugs mugs manufacturer Moradabad India"
+                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+              </div>
+              <div className="p-6">
+                <h3 className="font-serif font-bold text-navy text-xl mt-2">Copper Utensils</h3>
+                <p className="text-clay text-sm mt-1">Tamba cookware, bottles, jugs &amp; mugs</p>
+                <span className="inline-block mt-4 text-xs font-bold text-gold uppercase tracking-wider">Shop Copper →</span>
+              </div>
+            </Link>
+            <Link
+              href="/products?material=Brass"
+              className="group relative rounded-3xl overflow-hidden border border-sand bg-cream hover:border-clay transition-all"
+              aria-label="Shop brass utensils — pital ke bartan, cookware, dinner sets manufacturer Moradabad"
+            >
+              <div className="aspect-[4/5] bg-sand/40 relative overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={toFullUrl(brassAll[0]?.image?.url) || "/hero-brass-kitchen.jpg"}
+                  alt="Brass utensils pital ke bartan cookware dinner sets manufacturer Moradabad India"
+                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+              </div>
+              <div className="p-6">
+                <h3 className="font-serif font-bold text-navy text-xl mt-2">Brass Utensils</h3>
+                <p className="text-clay text-sm mt-2">Pital ke bartan — cookware &amp; dinnerware</p>
+                <span className="inline-block mt-4 text-xs font-bold text-gold uppercase tracking-wider">Shop Brass →</span>
+              </div>
+            </Link>
+            <Link
+              href="/products"
+              className="group relative rounded-3xl overflow-hidden border border-sand bg-cream hover:border-clay transition-all"
+              aria-label="Shop bronze kansa utensils — bronze dinnerware and thali sets manufacturer Moradabad"
+            >
+              <div className="aspect-[4/5] bg-sand/40 relative overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={toFullUrl(ft[0]?.image?.url) || "/hero-brass-kitchen.jpg"}
+                  alt="Bronze kansa utensils bronze dinnerware thali sets manufacturer Moradabad India"
+                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+              </div>
+              <div className="p-6">
+                <h3 className="font-serif font-bold text-navy text-xl mt-2">Bronze &amp; Kansa</h3>
+                <p className="text-clay text-sm mt-2">Kansa dinnerware, thali &amp; serveware</p>
+                <span className="inline-block mt-4 text-xs font-bold text-gold uppercase tracking-wider">Shop All Metals →</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why Choose Us — keyword-rich manufacturer story (brassglobe "Welcome" equivalent) ── */}
+      <section className="section bg-sand/30" aria-labelledby="why-choose-us">
+        <div className="container-x">
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-10 items-center">
+              <div>
+                <h2 id="why-choose-us" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+                  Best Brass &amp; Copper Manufacturers In India — Based in Moradabad
+                </h2>
+                <p className="text-gray mt-4 text-sm leading-relaxed">
+                  New Look Impex is a <strong className="text-navy">brass and copper manufacturer and exporter based in Moradabad, Uttar Pradesh</strong> —
+                  India's "Brass City." We specialize in durable, eco-friendly, high-quality copper, brass and
+                  kansa utensils for cooking, serving, dining and gifting, made using age-old hand-hammering
+                  techniques passed down through generations of artisans.
+                </p>
+                <p className="text-gray mt-4 text-sm leading-relaxed">
+                  Every cookware piece is <strong className="text-navy">properly tinned (kalai-coated)</strong> for safe daily use,
+                  <strong className="text-navy">handcrafted</strong> with strict quality checks, and sold
+                  <strong className="text-navy">factory-direct</strong> to retailers, wholesalers, interior designers and
+                  corporate importers worldwide. GSTIN-verified exporter: 09AFKPA4462R1ZW.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-sand shadow-sm">
+                  <div className="text-gold font-bold text-xs uppercase tracking-wider">100% Handcrafted</div>
+                  <p className="text-navy text-xs mt-1">Artisans crafting each piece by hand in Moradabad</p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-sand shadow-sm">
+                  <div className="text-gold font-bold text-xs uppercase tracking-wider">Factory Direct</div>
+                  <p className="text-navy text-xs mt-1">Wholesale prices, no middlemen, bulk MOQ options</p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-sand shadow-sm">
+                  <div className="text-gold font-bold text-xs uppercase tracking-wider">GSTIN Verified</div>
+                  <p className="text-navy text-xs mt-1">Exporter GSTIN 09AFKPA4462R1ZW, export documentation</p>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-sand shadow-sm">
+                  <div className="text-gold font-bold text-xs uppercase tracking-wider">OEM / Private Label</div>
+                  <p className="text-navy text-xs mt-1">Custom finishes, engravings and branding for your brand</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonials — social proof like brassglobe ── */}
+      <section className="section" aria-labelledby="testimonials">
+        <div className="container-x">
+          <div className="text-center mb-10">
+            <p className="eyebrow text-clay">What Buyers Say</p>
+            <h2 id="testimonials" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+              Trusted by Wholesale Buyers Worldwide
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { name: "Swati Sharma", where: "Mumbai, India", text: "Best place for brass products — perfect finish, beautiful packaging, highly recommend." },
+              { name: "Heena Singh", where: "Delhi, India", text: "Bought bronze baby dinner set and kalash. Package arrived in one day, owner is humble and sweet." },
+              { name: "Manvajit Singh", where: "Sydney, Australia", text: "Very antique and beautiful set. Delivered within four days to Sydney. Trustworthy and highly recommend." },
+            ].map((t, i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+                <p className="text-gray text-sm leading-relaxed italic">"{t.text}"</p>
+                <p className="text-navy font-semibold mt-4">— {t.name}</p>
+                <p className="text-clay text-xs">{t.where}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link href="/about" className="btn btn-outline btn-sm">Read More Reviews →</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Buying Guides & Blogs — brassglobe "Inspire and Elevate" equivalent ── */}
+      <section className="section bg-sand/40" aria-labelledby="buying-guides">
+        <div className="container-x">
+          <div className="text-center mb-10">
+            <p className="eyebrow text-clay">Inspire &amp; Elevate</p>
+            <h2 id="buying-guides" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+              Buying Guides for Brass, Copper &amp; Kansa Utensils
+            </h2>
+            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
+              How to style brass home decor, gift ideas for weddings and festivals, kansa dinner set buying
+              guide, and why brass utensils are tin-coated — everything you need to buy with confidence.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Link
+              href="/blog"
+              className="group block p-6 rounded-2xl border border-sand bg-white hover:border-clay transition-all"
+              aria-label="Blog: How to Style Brass Home Decor in Modern and Traditional Indian Homes"
+            >
+              <h3 className="font-serif font-bold text-navy text-lg mt-2 group-hover:text-clay transition-colors">How to Style Brass Home Decor</h3>
+              <p className="text-gray text-sm mt-2">Modern and traditional Indian homes — styling tips that sell.</p>
+            </Link>
+            <Link
+              href="/blog"
+              className="group block p-6 rounded-2xl border border-sand bg-white hover:border-clay transition-all"
+              aria-label="Blog: Brass Gift Ideas for Weddings, Housewarmings and Festivals"
+            >
+              <h3 className="font-serif font-bold text-navy text-lg mt-2 group-hover:text-clay transition-colors">Brass Gift Ideas for Weddings</h3>
+              <p className="text-gray text-sm mt-2">Housewarmings, festivals and corporate gifting inspiration.</p>
+            </Link>
+            <Link
+              href="/blog"
+              className="group block p-6 rounded-2xl border border-sand bg-white hover:border-clay transition-all"
+              aria-label="Blog: Kansa Dinner Set Buying Guide"
+            >
+              <h3 className="font-serif font-bold text-navy text-lg mt-2 group-hover:text-clay transition-colors">Kansa Dinner Set Buying Guide</h3>
+              <p className="text-gray text-sm mt-2">What to look for before you buy bronze dinnerware.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Price Range Quick Links ── */}
+      <section className="section" aria-labelledby="price-ranges">
+        <div className="container-x">
+          <div className="text-center mb-8">
+            <p className="eyebrow text-clay">Shop by Budget</p>
+            <h2 id="price-ranges" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">Products Under ₹5,000 &amp; Above</h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+            <Link href="/products?max_price=5000" className="btn btn-outline btn-sm">Under ₹5,000</Link>
+            <Link href="/products?min_price=5001&max_price=15000" className="btn btn-outline btn-sm">₹5,000 – ₹15,000</Link>
+            <Link href="/products?min_price=15001" className="btn btn-outline btn-sm">₹15,000 &amp; Above</Link>
+            <Link href="/products?sort=newest" className="btn btn-clay btn-sm">New Arrivals</Link>
+            <Link href="/request-quote" className="btn btn-clay btn-sm">Bulk Quote Request</Link>
+          </div>
+        </div>
+      </section>
+
       {/* Newsletter / Trade Bulletin Signup */}
       <section className="section bg-sand/40" aria-labelledby="newsletter">
         <div className="container-x">

@@ -5,14 +5,34 @@ import { api, BUSINESS_EMAIL, BUSINESS_LOCATION, BUSINESS_PHONES, whatsappLink }
 import type { Category, Collection, PublicSettings } from "@/lib/types";
 
 const COMPANY_LINKS: [string, string][] = [
-  ["Our Craft", "/craft"],
-  ["Wholesale", "/wholesale"],
-  ["Bulk Orders", "/bulk-orders"],
-  ["Export", "/export"],
-  ["Custom Orders", "/custom-orders"],
+  ["About Us", "/about"],
+  ["Our Story", "/craft"],
+  ["Why Choose Us", "/wholesale"],
+  ["Benefits", "/buyer-resources"],
+  ["Partner With Us", "/customisation"],
+  ["Contact", "/contact"],
+];
+
+const SHOP_LINKS: [string, string][] = [
+  ["All Collection", "/products"],
+  ["Copper Utensils", "/products?material=Copper"],
+  ["Brass Utensils & Cookware", "/products?material=Brass"],
+  ["Brass Glass Set", "/categories/drinking-glasses-tumblers"],
+  ["Brass Gift Items", "/gifting"],
+  ["Brass Pooja Items", "/categories/brass-diyas"],
+  ["Home Decor Brass Items", "/metal-home-decor"],
+  ["Brass Dinner Set", "/categories/brass-kitchenware"],
+  ["Products Under ₹5,000", "/products?max_price=5000"],
+  ["Top Picks / Best Sellers", "/products"],
+];
+
+const GUIDE_LINKS: [string, string][] = [
+  ["Buying Guides & Blog", "/blog"],
+  ["Buyer Resources", "/buyer-resources"],
+  ["Wholesale & RFQ Guide", "/wholesale"],
+  ["Shipping & Export", "/shipping-export"],
   ["Catalogue (PDF)", "/catalogue"],
   ["Request a Quote", "/request-quote"],
-  ["Contact", "/contact"],
 ];
 
 const REGION_LINKS: [string, string][] = [
@@ -69,7 +89,7 @@ export function PublicFooter() {
       </div>
 
       <div className="container-x py-12">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-7 gap-8">
           <div>
             <h2 className="font-serif font-bold text-xl text-white">{businessName}</h2>
             <p className="text-sm text-cream/80 mt-3">{location}</p>
@@ -171,6 +191,32 @@ export function PublicFooter() {
             <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Buy by region</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
               {REGION_LINKS.map(([label, href]) => (
+                <li key={href}>
+                  <Link href={href} className="hover:text-white">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label="Shop now">
+            <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Shop now</h3>
+            <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
+              {SHOP_LINKS.map(([label, href]) => (
+                <li key={href}>
+                  <Link href={href} className="hover:text-white">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label="Guides & resources">
+            <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Guides & resources</h3>
+            <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
+              {GUIDE_LINKS.map(([label, href]) => (
                 <li key={href}>
                   <Link href={href} className="hover:text-white">
                     {label}
