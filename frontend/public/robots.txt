@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://api.newlookimpex.store/sitemap.xml
+llms.txt: https://newlookimpex.store/llms.txt

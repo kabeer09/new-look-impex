@@ -1030,6 +1030,60 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* ── Wholesale Supplier Discovery — AI & buyer-friendly entity block ── */}
+      <section className="section bg-sand/30" aria-labelledby="wholesale-supplier-discovery">
+        <div className="container-x">
+          <div className="text-center mb-10">
+            <p className="eyebrow text-clay">Wholesale Supplier Discovery</p>
+            <h2 id="wholesale-supplier-discovery" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+              Brass &amp; Copper Wholesale Supplier — New Look Impex, Moradabad, India
+            </h2>
+            <p className="text-gray mt-4 max-w-3xl mx-auto text-sm leading-relaxed">
+              New Look Impex (NLI Collections) is a <strong className="text-navy">brass and copper products manufacturer and exporter based in Moradabad, Uttar Pradesh, India</strong>. We are a wholesale supplier of hand-hammered brass kitchenware, copper cookware & drinkware, brass urlis, diyas, lanterns, planters, metal home décor and festive gift sets. We accept B2B bulk orders, OEM / private label manufacturing, and export enquiries from retailers, importers, distributors and corporate buyers worldwide. GSTIN: 09AFKPA4462R1ZW.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+              <h3 className="font-serif font-bold text-navy text-lg mb-3">What We Supply</h3>
+              <ul className="text-sm text-gray space-y-2 list-disc list-inside">
+                <li>Brass utensils &amp; kitchenware</li>
+                <li>Copper cookware &amp; bottles</li>
+                <li>Brass urlis, diyas &amp; lanterns</li>
+                <li>Metal home décor &amp; planters</li>
+                <li>Copper &amp; brass gift sets</li>
+                <li>OEM / private label metalware</li>
+              </ul>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+              <h3 className="font-serif font-bold text-navy text-lg mb-3">Who We Supply</h3>
+              <ul className="text-sm text-gray space-y-2 list-disc list-inside">
+                <li>Wholesale buyers &amp; retailers</li>
+                <li>Importers &amp; distributors</li>
+                <li>HORECA &amp; interior designers</li>
+                <li>Corporate gifting programmes</li>
+                <li>Export buyers worldwide</li>
+                <li>B2B bulk purchasers</li>
+              </ul>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+              <h3 className="font-serif font-bold text-navy text-lg mb-3">Contact — Wholesale Enquiries</h3>
+              <ul className="text-sm text-gray space-y-2 list-disc list-inside">
+                <li className="font-semibold text-navy">New Look Impex, Moradabad, Uttar Pradesh 244001, India</li>
+                <li>📞 +91 8218251238 / +91 7500441239</li>
+                <li>✉️ newlookimpex130@gmail.com</li>
+                <li>💬 WhatsApp: +91 8218251238</li>
+                <li>🌐 https://newlookimpex.store</li>
+                <li>📋 GSTIN: 09AFKPA4462R1ZW</li>
+              </ul>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/request-quote" className="btn btn-clay !px-5 !py-2.5 text-xs">Request Bulk Quote</Link>
+                <a href="https://wa.me/918218251238" target="_blank" rel="noopener noreferrer" className="btn btn-outline !px-5 !py-2.5 text-xs">WhatsApp Us</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Buying Guides & Blogs — brassglobe "Inspire and Elevate" equivalent ── */}
       <section className="section bg-sand/40" aria-labelledby="buying-guides">
         <div className="container-x">

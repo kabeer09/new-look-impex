@@ -1,0 +1,56 @@
+# New Look Impex — llms.txt
+# Helps AI assistants and search agents understand this B2B brass & copper manufacturer site.
+
+SITE_NAME: New Look Impex (NLI Collections)
+SITE_URL: https://newlookimpex.store
+DESCRIPTION: Brass and copper products manufacturer, exporter and wholesale B2B supplier based in Moradabad, Uttar Pradesh, India. Supplies hand-hammered brass kitchenware, copper cookware & drinkware, brass urlis, diyas, lanterns, planters, metal home decor and festive gift sets to global retailers, importers, distributors and corporate gifting programmes.
+
+BUSINESS_TYPE: Manufacturer, Exporter, Wholesale B2B Supplier
+LOCATION: Moradabad, Uttar Pradesh, India — 244001
+GSTIN: 09AFKPA4462R1ZW
+EMAIL: newlookimpex130@gmail.com
+PHONE: +91 8218251238 / +91 7500441239
+WHATSAPP: +91 8218251238
+
+KEY_PRODUCT_RANGES:
+- Brass kitchenware & utensils — wholesale manufacturer supply
+- Copper cookware & utensils — factory-direct bulk export
+- Hand-hammered copper jugs, pitchers & bottles — bulk copper drinkware supplier
+- Brass urlis & planters — traditional metalware exporter
+- Brass diyas & lanterns — festive & temple lighting wholesale
+- Copper & brass gift sets — wedding, festival and corporate gifting
+- OEM / private label metalware — custom finishes, engravings and branding
+
+TARGET_BUYERS:
+- Wholesale buyers & retailers
+- Importers & distributors
+- HORECA & interior designers
+- Corporate gifting programmes
+- Export buyers worldwide
+
+HOW_TO_CONTACT:
+- Request a written quotation: https://newlookimpex.store/request-quote
+- WhatsApp: https://wa.me/918218251238
+- Email: newlookimpex130@gmail.com
+- Phone: +91 8218251238
+
+IMPORTANT_PAGES:
+/ — Homepage (manufacturer & exporter overview)
+/products — Full catalogue (brass & copper, filter by material)
+/categories — Browse by product category
+/collections — Curated collections
+/request-quote — B2B bulk quote / RFQ form
+/wholesale — Wholesale & export information
+/customisation — OEM / private label enquiries
+/about — Company story & credentials
+/contact — Contact & location
+/blog — Buying guides & industry articles
+/sitemap.xml — XML sitemap (backend: https://api.newlookimpex.store/sitemap.xml)
+
+SOCIAL_PROFILES:
+- Instagram: https://www.instagram.com/nli_collections_india
+- YouTube: https://youtube.com/@nlicollections
+
+API_BACKEND: https://api.newlookimpex.store
+
+# End of llms.txt
