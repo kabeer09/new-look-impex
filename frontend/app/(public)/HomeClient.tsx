@@ -117,39 +117,47 @@ export default function HomeClient() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-navy text-white overflow-hidden">
-        <div className="absolute inset-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"
-            alt="Handcrafted brass and copper collection" className="w-full h-full object-cover opacity-30"
-            fetchPriority="high" loading="eager" width={1920} height={1080} />
-        </div>
-        <div className="relative container-x py-24 md:py-36">
-          <div className="max-w-3xl">
-            <p className="text-gold uppercase tracking-[0.28em] text-xs font-semibold">Timeless Heritage</p>
-            <h1 className="font-serif font-bold text-4xl md:text-6xl mt-4 leading-[1.05]">
-              Elevate Every Interior. Timeless Copper &amp; Brass Masterpieces.
-            </h1>
-            <p className="mt-5 text-white/80 max-w-2xl text-lg">
-              New Look Impex — artisan copper and brass collections from Moradabad, India. Premium craftsmanship
-              for global retailers, wholesalers, interior designers, and corporate importers. End-to-end
-              manufacturing, quality assurance, and export logistics.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/products" className="btn btn-clay !px-6 !py-3">Explore Our Catalog</Link>
-              <Link href="/request-quote" className="btn !px-6 !py-3 border border-white text-white hover:bg-white hover:text-navy">
-                Partner With Us
-              </Link>
+      <section className="relative bg-cream text-navy overflow-hidden">
+        <div className="grid md:grid-cols-2 items-stretch">
+          <div className="relative order-2 md:order-1 flex items-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-cream via-cream to-sand/60" aria-hidden="true" />
+            <div className="relative container-x !ml-0 md:!pl-12 py-16 md:py-24 px-6">
+              <p className="text-clay uppercase tracking-[0.28em] text-xs font-semibold">Timeless Heritage</p>
+              <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl mt-4 leading-[1.08]">
+                Elevate Every Interior. Timeless{" "}
+                <span className="text-clay">Copper</span> &amp;{" "}
+                <span className="text-gold underline decoration-gold/40 decoration-2 underline-offset-8">Brass</span>{" "}
+                Masterpieces.
+              </h1>
+              <p className="mt-5 text-navy/70 max-w-2xl text-base md:text-lg leading-relaxed">
+                New Look Impex — artisan copper and brass collections from Moradabad, India. Premium craftsmanship
+                for global retailers, wholesalers, interior designers, and corporate importers. End-to-end
+                manufacturing, quality assurance, and export logistics.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/products" className="btn btn-clay !px-6 !py-3">Explore Our Catalog</Link>
+                <Link href="/request-quote" className="btn btn-outline !px-6 !py-3 !border-clay !text-clay hover:!bg-clay hover:!text-cream">
+                  Partner With Us
+                </Link>
+              </div>
+              <form className="mt-8 flex flex-col sm:flex-row gap-2 max-w-xl" role="search" onSubmit={(e) => {
+                e.preventDefault();
+                const query = q.trim();
+                router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
+              }}>
+                <label htmlFor="hero-search" className="sr-only">Search the catalogue</label>
+                <input id="hero-search" className="input !py-3 flex-1 bg-white" placeholder='Try "brass urli" or "copper diya"…' value={q} onChange={(e) => setQ(e.target.value)} />
+                <button type="submit" className="btn btn-clay !py-3">Search</button>
+              </form>
             </div>
-            <form className="mt-8 flex flex-col sm:flex-row gap-2 max-w-xl" role="search" onSubmit={(e) => {
-              e.preventDefault();
-              const query = q.trim();
-              router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
-            }}>
-              <label htmlFor="hero-search" className="sr-only">Search the catalogue</label>
-              <input id="hero-search" className="input !py-3 flex-1 !bg-white/90" placeholder='Try "brass urli" or "copper diya"…' value={q} onChange={(e) => setQ(e.target.value)} />
-              <button type="submit" className="btn btn-clay !py-3">Search</button>
-            </form>
+          </div>
+          <div className="relative order-1 md:order-2 min-h-[320px] md:min-h-[560px] lg:min-h-[640px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hero-brass-kitchen.jpg"
+              onError={(e) => { const t = e.currentTarget; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"; } }}
+              alt="Hand-hammered brass and copper cookware styled in a golden kitchen" className="absolute inset-0 w-full h-full object-cover"
+              fetchPriority="high" loading="eager" width={1024} height={1024} />
+            <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-cream via-transparent to-transparent w-1/4" aria-hidden="true" />
           </div>
         </div>
       </section>
