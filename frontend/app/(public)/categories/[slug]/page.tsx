@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, mediaUrl } from "@/lib/api";
-import type { Category, Paged, ProductCard } from "@/lib/types";
+import type { Category, ProductCard } from "@/lib/types";
 import { Loading, ErrorBox, EmptyState } from "@/components/public/States";
 import { PageHero, ProductGrid } from "@/components/public/Shared";
 
@@ -11,13 +11,19 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<ProductCard[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [moreLoading, setMoreLoading] = useState(false);
   const [err, setErr] = useState("");
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
+  const PAGE_SIZE = 24;
+
+  const PAGES = (n: number) => Math.max(1, Math.ceil(n / PAGE_SIZE));
 
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
+    setPage(1);
     setErr("");
     setNotFound(false);
     api<Category & { items?: ProductCard[]; total?: number }>(`/api/public/categories/${encodeURIComponent(slug)}`)
@@ -33,6 +39,20 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
       .finally(() => setLoading(false));
   }, [slug]);
 
+  const loadMore = () => {
+    const next = page + 1;
+    setMoreLoading(true);
+    api<Category & { items?: ProductCard[]; total?: number }>(
+      `/api/public/categories/${encodeURIComponent(slug)}?page=${next}&page_size=${PAGE_SIZE}`
+    )
+      .then((d) => {
+        setProducts((prev) => [...prev, ...(d.items || [])]);
+        setPage(next);
+      })
+      .catch((e) => setErr(String(e)))
+      .finally(() => setMoreLoading(false));
+  };
+
   if (notFound) {
     return (
       <div className="container-x section">
@@ -40,6 +60,8 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
       </div>
     );
   }
+
+  const hasMore = products.length < total;
 
   return (
     <>
@@ -55,7 +77,7 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
             {category?.image_url && (
               <div className="relative aspect-[21/9] bg-sand rounded-xl overflow-hidden mb-8">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={mediaUrl(category.image_url)} alt={category.name} className="object-cover w-full h-full" />
+                <img src={mediaUrl(category.image_url)} alt={`${category.name} — wholesale by New Look Impex, Moradabad`} className="object-cover w-full h-full" />
               </div>
             )}
             {category?.description && <p className="text-gray max-w-2xl mb-8">{category.description}</p>}
@@ -63,8 +85,22 @@ export default function CategoryDetailPage({ params }: { params: { slug: string 
               <EmptyState title="No products in this category yet" action={<Link className="btn btn-outline btn-sm" href="/products">Browse all products</Link>} />
             ) : (
               <>
-                <p className="text-xs text-gray mb-3">{total || products.length} product{(total || products.length) === 1 ? "" : "s"}</p>
+                <p className="text-xs text-gray mb-3">
+                  Showing {products.length} of {total} product{(total || products.length) === 1 ? "" : "s"} in {category?.name}
+                </p>
                 <ProductGrid products={products} />
+                {hasMore && (
+                  <div className="text-center mt-10">
+                    <button
+                      type="button"
+                      onClick={loadMore}
+                      disabled={moreLoading}
+                      className="btn btn-primary !px-8"
+                    >
+                      {moreLoading ? "Loading…" : `Load More Products (${total - products.length} remaining)`}
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </>

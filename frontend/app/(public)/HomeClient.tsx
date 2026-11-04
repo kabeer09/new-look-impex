@@ -101,6 +101,56 @@ const SHOWCASE_SLIDES = [
   { src: "/slideshow-3.jpg", tag: "Artisanal Brass", caption: "The Artisanal Brass Collection — Handcrafted Heritage", alt: "Engraved brass canisters, spice box and tea strainer — brass kitchenware manufacturer and exporter Moradabad India" },
 ];
 
+/** Pinterest-lookbook card header used across homepage sections (Halloween-popup DNA). */
+function SectionCard(props: {
+  id: string;
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  badge?: string;
+  variant?: "navy" | "clay";
+  imgA?: string | null;
+  imgB?: string | null;
+  actions: React.ReactNode;
+}) {
+  const { id, eyebrow, title, blurb, badge, variant = "navy", imgA, imgB, actions } = props;
+  const grad = variant === "navy" ? "from-navy via-navy to-clay-dark" : "from-clay-dark via-navy to-navy";
+  return (
+    <div className="relative rounded-3xl overflow-hidden shadow-xl mb-6">
+      <div className={`absolute inset-0 bg-gradient-to-br ${grad}`} aria-hidden="true" />
+      <div className="relative grid md:grid-cols-[1.15fr_0.85fr] items-center gap-6 p-6 md:p-10">
+        <div>
+          <p className="text-gold uppercase tracking-[0.25em] text-xs font-semibold">{eyebrow}</p>
+          <h2 id={id} className="font-serif font-bold text-3xl md:text-4xl text-cream mt-2">{title}</h2>
+          <p className="text-cream/80 mt-3 max-w-lg text-sm leading-relaxed">{blurb}</p>
+          <div className="mt-5 flex flex-wrap gap-3">{actions}</div>
+        </div>
+        {imgA && (
+          <div className="relative h-44 md:h-56 hidden md:block" aria-hidden="true">
+            <div className="absolute right-24 top-2 w-32 md:w-36 -rotate-6 rounded-2xl overflow-hidden ring-4 ring-cream/90 shadow-2xl bg-cream">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imgA} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+            </div>
+            <div className="absolute right-0 bottom-0 w-36 md:w-44 rotate-3 rounded-2xl overflow-hidden ring-4 ring-gold/60 shadow-2xl bg-cream">
+              {imgB ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imgB} alt="" className="w-full aspect-[4/5] object-cover" loading="lazy" />
+              ) : (
+                <div className="w-full aspect-[4/5] bg-cream/20" />
+              )}
+              {badge && (
+                <span className="absolute top-2 left-2 bg-gold text-navy text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
+                  {badge}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function HomeClient() {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -176,6 +226,9 @@ export default function HomeClient() {
   const ft = featured || [];
   const copperAll = ft.filter((p) => p.material === "Copper");
   const brassAll = ft.filter((p) => p.material === "Brass");
+  const toFullUrl = (u?: string | null) =>
+    u ? (u.startsWith("http") ? u : `https://new-look-impex-api.onrender.com${u}`) : null;
+  const bothMix = [...copperAll.slice(4, 6), ...brassAll.slice(0, 2)];
 
   // ── Shopify-style Halloween offer popup (once per session, after ~6s) ──
   const [showPopup, setShowPopup] = useState(false);
@@ -330,56 +383,24 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* New Arrivals - Copper Cookware (lookbook card header, Halloween-card style) */}
+      {/* New Arrivals - Copper Cookware (lookbook card header) */}
       <section className="section !pb-0" aria-labelledby="new-arrivals">
         <div className="container-x">
-          <div className="relative rounded-3xl overflow-hidden shadow-xl mb-6">
-            <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-clay-dark" aria-hidden="true" />
-            <div className="relative grid md:grid-cols-[1.15fr_0.85fr] items-center gap-6 p-6 md:p-10">
-              <div>
-                <p className="text-gold uppercase tracking-[0.25em] text-xs font-semibold">✨ Latest</p>
-                <h2 id="new-arrivals" className="font-serif font-bold text-3xl md:text-4xl text-cream mt-2">
-                  New Arrivals
-                </h2>
-                <p className="text-cream/80 mt-3 max-w-lg text-sm leading-relaxed">
-                  Fresh from the artisan bench — premium copper cookware, hand-hammered kitchenware
-                  for healthy cooking and elegant serving.
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Link href="/categories/copper-kitchenware" className="btn bg-gold text-navy hover:bg-cream">
-                    Shop Copper Cookware
-                  </Link>
-                  <Link href="/products?sort=newest" className="btn border border-cream/40 text-cream hover:bg-cream/10">
-                    View All New Arrivals →
-                  </Link>
-                </div>
-              </div>
-
-              {/* Polaroid-tilt product frames (Pinterest lookbook style) */}
-              {copperAll[0] && (
-                <div className="relative h-44 md:h-56 hidden md:block" aria-hidden="true">
-                  <div className="absolute right-24 top-2 w-32 md:w-36 -rotate-6 rounded-2xl overflow-hidden ring-4 ring-cream/90 shadow-2xl bg-cream">
-                    {copperAll[0].image?.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={copperAll[0].image.url.startsWith("http") ? copperAll[0].image.url : `https://new-look-impex-api.onrender.com${copperAll[0].image.url}`} alt="" className="w-full aspect-square object-cover" loading="lazy" />
-                    ) : (
-                      <div className="w-full aspect-square bg-cream/20" />
-                    )}
-                  </div>
-                  <div className="absolute right-0 bottom-0 w-36 md:w-44 rotate-3 rounded-2xl overflow-hidden ring-4 ring-gold/60 shadow-2xl bg-cream">
-                    {copperAll[1]?.image?.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={copperAll[1].image.url.startsWith("http") ? copperAll[1].image.url : `https://new-look-impex-api.onrender.com${copperAll[1].image.url}`} alt="" className="w-full aspect-[4/5] object-cover" loading="lazy" />
-                    ) : (
-                      <div className="w-full aspect-[4/5] bg-cream/20" />
-                    )}
-                    <span className="absolute top-2 left-2 bg-gold text-navy text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">🆕 Just Landed</span>
-                  </div>
-                  <span className="absolute left-0 bottom-4 -rotate-3 font-serif italic text-gold/90 text-lg select-none">moradabad craft ✧</span>
-                </div>
-              )}
-            </div>
-          </div>
+          <SectionCard
+            id="new-arrivals"
+            eyebrow="✨ Latest"
+            title="New Arrivals"
+            blurb="Fresh from the artisan bench — premium copper cookware, hand-hammered kitchenware for healthy cooking and elegant serving."
+            badge="🆕 Just Landed"
+            imgA={toFullUrl(copperAll[0]?.image?.url)}
+            imgB={toFullUrl(copperAll[1]?.image?.url)}
+            actions={
+              <>
+                <Link href="/categories/copper-kitchenware" className="btn bg-gold text-navy hover:bg-cream">Shop Copper Cookware</Link>
+                <Link href="/products?sort=newest" className="btn border border-cream/40 text-cream hover:bg-cream/10">View All New Arrivals →</Link>
+              </>
+            }
+          />
           {featured === null ? <Loading label="Loading new arrivals…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               {copperAll.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
@@ -388,20 +409,27 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Material — Copper Collection */}
+      {/* Material — Copper & Brass Collections */}
       <section className="section bg-sand/30" aria-labelledby="copper-collection">
         <div className="container-x">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="eyebrow text-clay">Material</p>
-              <h2 id="copper-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Copper Collection</h2>
-              <p className="text-sm text-gray mt-1">Premium copper handicrafts — hammered vessels, planters, jugs and classic home décor, crafted from pure copper</p>
-            </div>
-            <Link href="/products?material=Copper" className="btn btn-outline btn-sm">View All Copper Products →</Link>
-          </div>
+          <SectionCard
+            id="copper-collection"
+            eyebrow="Material"
+            title="Copper & Brass Collections"
+            blurb="The best of both metals — hand-hammered copper cookware and planters beside engraved brass kitchenware, urlis and décor. Solid, food-safe, and built to last."
+            badge="🤝 Best of Both"
+            imgA={toFullUrl(copperAll[4]?.image?.url)}
+            imgB={toFullUrl(brassAll[0]?.image?.url)}
+            actions={
+              <>
+                <Link href="/products?material=Copper" className="btn bg-gold text-navy hover:bg-cream">Shop Copper</Link>
+                <Link href="/products?material=Brass" className="btn border border-cream/40 text-cream hover:bg-cream/10">Shop Brass →</Link>
+              </>
+            }
+          />
           {featured === null ? <Loading label="Loading…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {copperAll.slice(4, 8).map((p) => <ProductCard key={p.id} product={p} />)}
+              {bothMix.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
         </div>
@@ -530,62 +558,73 @@ export default function HomeClient() {
       {/* Gifts Handcrafted in Copper */}
       <section className="section bg-sand/30" aria-labelledby="copper-gifts">
         <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Gifts</p>
-            <h2 id="copper-gifts" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
-              Gifts Handcrafted in Copper
-            </h2>
-            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
-              Premium copper drinkware gift sets for weddings, festivals and every celebration. Thoughtful. Timeless.
-              Beautifully wrapped.
-            </p>
-          </div>
+          <SectionCard
+            id="copper-gifts"
+            eyebrow="🎁 Gifts"
+            title="Gifts Handcrafted in Copper"
+            blurb="Premium copper drinkware gift sets for weddings, festivals and every celebration. Thoughtful. Timeless. Beautifully wrapped — customised gift packaging available for corporate programmes."
+            badge="🎁 Gift Ready"
+            imgA={toFullUrl(copperAll[8]?.image?.url)}
+            imgB={toFullUrl(copperAll[9]?.image?.url)}
+            actions={
+              <>
+                <Link href="/products?material=Copper" className="btn bg-gold text-navy hover:bg-cream">Shop Gift Sets</Link>
+                <Link href="/gifting" className="btn border border-cream/40 text-cream hover:bg-cream/10">Corporate Gifting →</Link>
+              </>
+            }
+          />
           {featured === null ? <Loading label="Loading…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {(featured || []).length > 0 && copperAll.slice(8, 12).length > 0 ? copperAll.slice(8, 12).map((p) => <ProductCard key={p.id} product={p} />) : copperAll.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
+              {copperAll.length > 12 ? copperAll.slice(8, 12).map((p) => <ProductCard key={p.id} product={p} />) : copperAll.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
-          <div className="text-center mt-8">
-            <Link href="/products?material=Copper" className="btn btn-outline btn-sm">View All Copper Products →</Link>
-          </div>
         </div>
       </section>
 
       {/* Brass Collection Showcase */}
       <section className="section" aria-labelledby="brass-showcase">
         <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Collection</p>
-            <h2 id="brass-showcase" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">
-              Brass Collection
-            </h2>
-            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
-              Premium brass handicrafts and home décor — urlis, diyas, lanterns, vases, and decorative pieces.
-              Thoughtful. Timeless. Beautifully crafted.
-            </p>
-          </div>
+          <SectionCard
+            id="brass-showcase"
+            eyebrow="✨ Collection"
+            title="Brass Collection"
+            blurb="Engraved brass urlis, diyas, lanterns, vases and décor — the metal handicrafts Moradabad has been famous for, finished for modern homes worldwide."
+            badge="✨ Signature Metal"
+            imgA={toFullUrl(brassAll[0]?.image?.url)}
+            imgB={toFullUrl(brassAll[1]?.image?.url)}
+            actions={
+              <>
+                <Link href="/products?material=Brass" className="btn bg-gold text-navy hover:bg-cream">Shop Brass Collection</Link>
+                <Link href="/products?category=brass-kitchenware" className="btn border border-cream/40 text-cream hover:bg-cream/10">Brass Kitchenware →</Link>
+              </>
+            }
+          />
           {featured === null ? <Loading label="Loading…" /> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               {brassAll.slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
-          <div className="text-center mt-8">
-            <Link href="/products?material=Brass" className="btn btn-outline btn-sm">View All Brass Products →</Link>
-          </div>
         </div>
       </section>
 
       {/* Featured Products */}
       <section className="section" aria-labelledby="featured-products">
         <div className="container-x">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="eyebrow text-clay">Best Sellers</p>
-              <h2 id="featured-products" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Our Most Loved &amp; Top-Selling Products</h2>
-              <p className="text-sm text-gray mt-1">Latest collections — best sellers recommended by our buyers, a rotating mix from every category</p>
-            </div>
-            <Link href="/products" className="btn btn-outline btn-sm">View All →</Link>
-          </div>
+          <SectionCard
+            id="featured-products"
+            eyebrow="⭐ Best Sellers"
+            title="Our Most Loved & Top-Selling Products"
+            blurb="A rotating mix from every category — copper drinkware, brass décor, festive pieces and gifting, hand-picked by our buyers from real order trends."
+            badge="⭐ Most Loved"
+            imgA={toFullUrl(ft[8]?.image?.url)}
+            imgB={toFullUrl(ft[9]?.image?.url)}
+            actions={
+              <>
+                <Link href="/products" className="btn bg-gold text-navy hover:bg-cream">View All Products</Link>
+                <Link href="/request-quote" className="btn border border-cream/40 text-cream hover:bg-cream/10">Request a Quote →</Link>
+              </>
+            }
+          />
           {featured === null ? <Loading label="Loading products…" /> : ft.length === 0 ? (
             <p className="text-sm text-gray">No featured products published yet.</p>
           ) : (
@@ -858,14 +897,21 @@ export default function HomeClient() {
       {/* Mix Collection — all products in one view for every visitor */}
       <section className="section" aria-labelledby="mix-collection">
         <div className="container-x">
-          <div className="text-center mb-8">
-            <p className="eyebrow text-clay">Everything, One Place</p>
-            <h2 id="mix-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">The Mix Collection — All Products</h2>
-            <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
-              A curated mix from every range — brass, copper, home décor, festive and gifting.
-              Browse the full wholesale catalogue in one view.
-            </p>
-          </div>
+          <SectionCard
+            id="mix-collection"
+            eyebrow="🧩 Everything, One Place"
+            title="The Mix Collection — All Products"
+            blurb="Every range in one scroll — brass, copper, home décor, festive and gifting, mixed across categories so you see the whole catalogue in seconds."
+            badge="🧩 Every Range Here"
+            imgA={toFullUrl(ft[12]?.image?.url)}
+            imgB={toFullUrl(ft[13]?.image?.url)}
+            actions={
+              <>
+                <Link href="/products" className="btn bg-gold text-navy hover:bg-cream">View All Products</Link>
+                <Link href="/categories" className="btn border border-cream/40 text-cream hover:bg-cream/10">Browse by Category →</Link>
+              </>
+            }
+          />
           {featured === null ? <Loading label="Loading mix collection…" /> : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {ft.slice(12, 20).map((p) => (

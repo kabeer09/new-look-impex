@@ -14,10 +14,14 @@ export default function CollectionClient({ slug }: { slug: string }) {
   const [err, setErr] = useState("");
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [moreLoading, setMoreLoading] = useState(false);
+  const PAGE_SIZE = 24;
 
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
+    setPage(1);
     setErr("");
     setNotFound(false);
     api<Collection & { items?: ProductCard[]; total?: number }>(
@@ -38,6 +42,20 @@ export default function CollectionClient({ slug }: { slug: string }) {
       })
       .finally(() => setLoading(false));
   }, [slug]);
+
+  const loadMore = () => {
+    const next = page + 1;
+    setMoreLoading(true);
+    api<Collection & { items?: ProductCard[]; total?: number }>(
+      `/api/public/collections/${encodeURIComponent(slug)}?page=${next}&page_size=${PAGE_SIZE}`
+    )
+      .then((d) => {
+        setProducts((prev) => [...prev, ...(d.items || [])]);
+        setPage(next);
+      })
+      .catch((e) => setErr(String(e)))
+      .finally(() => setMoreLoading(false));
+  };
 
   if (notFound) {
     return (
@@ -101,8 +119,20 @@ export default function CollectionClient({ slug }: { slug: string }) {
               />
             ) : (
               <>
-                <p className="text-xs text-gray mb-3">{total} product{total === 1 ? "" : "s"}</p>
+                <p className="text-xs text-gray mb-3">Showing {products.length} of {total} product{total === 1 ? "" : "s"} in {collection?.name}</p>
                 <ProductGrid products={products} />
+                {products.length < total && (
+                  <div className="text-center mt-10">
+                    <button
+                      type="button"
+                      onClick={loadMore}
+                      disabled={moreLoading}
+                      className="btn btn-primary !px-8"
+                    >
+                      {moreLoading ? "Loading…" : `Load More Products (${total - products.length} remaining)`}
+                    </button>
+                  </div>
+                )}
               </>
             )}
 
