@@ -226,24 +226,6 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Brass Collection */}
-      <section className="section" aria-labelledby="brass-collection">
-        <div className="container-x">
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="eyebrow text-clay">Material</p>
-              <h2 id="brass-collection" className="font-sans font-bold text-navy text-2xl md:text-3xl mt-2">Brass Collection</h2>
-            </div>
-            <Link href="/products?material=Brass" className="btn btn-outline btn-sm">View All →</Link>
-          </div>
-          {featured === null ? <Loading label="Loading…" /> : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-              {featured.filter((p) => p.material === "Brass").slice(0, 4).map((p) => <ProductCard key={p.id} product={p} />)}
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* Core Services */}
       <section className="section bg-sand/40" aria-labelledby="services">
         <div className="container-x">
