@@ -387,6 +387,19 @@ class ProductReview(Base):
 
 
 # ================= DISCOUNT CODES =================
+class CampaignSend(Base):
+    """One row per automated campaign email blast (announcement / reminder),
+    so each seasonal sale emails subscribers exactly once."""
+    __tablename__ = "campaign_sends"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(64), unique=True, nullable=False, index=True)  # e.g. "AUTUMN25:announcement"
+    campaign = Column(String(128), default="")
+    kind = Column(String(32), default="announcement")  # announcement | reminder
+    recipients = Column(Integer, default=0)
+    sent_ok = Column(Integer, default=0)
+    sent_at = Column(DateTime, default=_now)
+
+
 class DiscountCode(Base):
     __tablename__ = "discount_codes"
     id = Column(Integer, primary_key=True, index=True)

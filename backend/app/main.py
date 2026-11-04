@@ -50,6 +50,8 @@ async def lifespan(app: FastAPI):
     from .watcher import start_watcher
     start_watcher()  # no-op unless INCOMING_ENABLED=true
     product_scanner.start_scanner()  # no-op unless PRODUCT_SCAN_ENABLED=true
+    from .campaign_mailer import start_mailer
+    start_mailer()  # automated seasonal-sale announcements to subscribers
     yield
 
 

@@ -19,6 +19,9 @@ from sqlalchemy.orm import Session
 from . import models
 from . import campaigns as nli_campaigns
 from .auth import current_user, require_role, rate_limit
+from .email import (campaign_email_html, campaign_email_text, email_configured,
+                    send_customer_ack, send_campaign_batch, send_email,
+                    send_newsletter_welcome)
 from .database import get_db
 from .media_store import delete_file, save_file
 from .schemas import (CategoryIn, CollectionIn, ProductIn, SpecIn, VariantIn)
@@ -125,6 +128,19 @@ def public_active_campaign(db: Session = Depends(get_db)):
     camp = nli_campaigns.active_campaign()
     nli_campaigns.sync_if_changed(db, camp)
     return camp
+
+
+# ---------------- ADMIN: preview / test-send a campaign email ----------------
+@router.post("/api/admin/campaign/test-send")
+def admin_campaign_test_send(to: str = Query(...), kind: str = Query("announcement"),
+                             u=Depends(require_role("admin"))):
+    """Send one copy of the current campaign email to a single address (preview)."""
+    camp = nli_campaigns.active_campaign()
+    sent_ok, failed, detail = send_campaign_batch(
+        [to.strip().lower()], f"[PREVIEW] {camp['name']} — {camp['percent']}% OFF",
+        campaign_email_html(camp, kind), campaign_email_text(camp, kind))
+    return {"sent": sent_ok, "failed": failed, "detail": detail,
+            "campaign": camp["code"], "kind": kind}
 
 
 # ---------------- PUBLIC: discount code validation ----------------
