@@ -285,48 +285,77 @@ export default function HomeClient() {
 
   return (
     <>
-      {/* Hero Section */}
+      {/* Hero Section — Pinterest editorial, copper & brass tones */}
       <section className="relative bg-cream text-navy overflow-hidden">
-        <div className="grid md:grid-cols-2 items-stretch">
-          <div className="relative order-2 md:order-1 flex items-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-cream via-cream to-sand/60" aria-hidden="true" />
-            <div className="relative container-x !ml-0 md:!pl-12 py-16 md:py-24 px-6">
-              <p className="text-clay uppercase tracking-[0.28em] text-xs font-semibold">Timeless Heritage</p>
+        {/* warm glow blobs */}
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-gold/20 blur-3xl pointer-events-none" aria-hidden="true" />
+        <div className="absolute top-40 -right-24 w-[28rem] h-[28rem] rounded-full bg-clay/15 blur-3xl pointer-events-none" aria-hidden="true" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-sand/70 blur-2xl pointer-events-none" aria-hidden="true" />
+
+        <div className="relative container-x py-14 md:py-20">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            {/* Copy */}
+            <div className="order-2 md:order-1">
+              <p className="text-clay uppercase tracking-[0.28em] text-xs font-semibold">✦ Timeless Heritage ✦</p>
               <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl mt-4 leading-[1.08]">
                 Elevate Every Interior. Timeless{" "}
-                <span className="text-clay">Copper</span> &amp;{" "}
-                <span className="text-gold underline decoration-gold/40 decoration-2 underline-offset-8">Brass</span>{" "}
+                <em className="font-serif italic text-clay">Copper</em> &amp;{" "}
+                <em className="font-serif italic text-gold">Brass</em>{" "}
                 Masterpieces.
               </h1>
-              <p className="mt-5 text-navy/70 max-w-2xl text-base md:text-lg leading-relaxed">
-                New Look Impex — artisan copper and brass collections from Moradabad, India. Premium craftsmanship
-                for global retailers, wholesalers, interior designers, and corporate importers. End-to-end
-                manufacturing, quality assurance, and export logistics.
+              <p className="mt-5 text-navy/70 max-w-xl text-base md:text-lg leading-relaxed">
+                Artisan collections from Moradabad — hand-hammered, food-safe, export-ready. Premium
+                craftsmanship for <strong className="text-navy">retailers, wholesalers, interior designers,
+                and corporate importers</strong> — end-to-end manufacturing, quality assurance and export logistics.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/products" className="btn btn-clay !px-6 !py-3">Explore Our Catalog</Link>
-                <Link href="/request-quote" className="btn btn-outline !px-6 !py-3 !border-clay !text-clay hover:!bg-clay hover:!text-cream">
+                <Link href="/products" className="btn bg-clay text-cream hover:bg-clay-dark !px-6 !py-3 shadow-lg shadow-clay/25">Explore Our Catalog</Link>
+                <Link href="/request-quote" className="btn bg-transparent border-2 !border-clay !text-clay hover:bg-clay hover:!text-cream !px-6 !py-3">
                   Partner With Us
                 </Link>
               </div>
-              <form className="mt-8 flex flex-col sm:flex-row gap-2 max-w-xl" role="search" onSubmit={(e) => {
+              <form className="mt-6 flex flex-col sm:flex-row gap-2 max-w-xl" role="search" onSubmit={(e) => {
                 e.preventDefault();
                 const query = q.trim();
                 router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
               }}>
                 <label htmlFor="hero-search" className="sr-only">Search the catalogue</label>
                 <input id="hero-search" className="input !py-3 flex-1 bg-white" placeholder='Try "brass urli" or "copper diya"…' value={q} onChange={(e) => setQ(e.target.value)} />
-                <button type="submit" className="btn btn-clay !py-3">Search</button>
+                <button type="submit" className="btn bg-clay text-cream hover:bg-clay-dark !py-3">Search</button>
               </form>
+              <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-navy/70 font-semibold" aria-label="Buyer trust points">
+                <li>★ Hand-Hammered by Artisans</li>
+                <li>★ Factory-Direct Wholesale</li>
+                <li>★ GSTIN-Verified Exporter</li>
+              </ul>
             </div>
-          </div>
-          <div className="relative order-1 md:order-2 min-h-[320px] md:min-h-[560px] lg:min-h-[640px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/hero-brass-kitchen.jpg"
-              onError={(e) => { const t = e.currentTarget; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"; } }}
-              alt="Hand-hammered brass cookware set — The Hadai Collection by New Look Impex, brass kitchenware manufacturer and exporter in Moradabad, India" className="absolute inset-0 w-full h-full object-cover"
-              fetchPriority="high" loading="eager" width={1024} height={1024} />
-            <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-cream via-transparent to-transparent w-1/4" aria-hidden="true" />
+
+            {/* Visual collage — arch frame + floating polaroids */}
+            <div className="relative order-1 md:order-2 flex justify-center pb-10 md:pb-6">
+              <div className="relative w-64 md:w-80 lg:w-96">
+                <div className="relative rounded-t-[999px] rounded-b-[2rem] overflow-hidden ring-4 ring-gold/50 shadow-2xl bg-cream">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/hero-brass-kitchen.jpg"
+                    onError={(e) => { const t = e.currentTarget; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"; } }}
+                    alt="Hand-hammered brass cookware set — The Hadai Collection by New Look Impex, brass kitchenware manufacturer and exporter in Moradabad, India"
+                    className="w-full aspect-[3/4] object-cover"
+                    fetchPriority="high" loading="eager" width={1024} height={1024} />
+                </div>
+                <span className="absolute -top-2 -left-6 md:-left-10 bg-navy text-cream text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-full shadow-lg -rotate-3">
+                  🎃 30% Off · Autumn
+                </span>
+                <div className="absolute -bottom-8 -left-10 md:-left-16 w-24 md:w-32 -rotate-6 rounded-xl overflow-hidden ring-4 ring-cream shadow-xl bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/slideshow-1.jpg" alt="" aria-hidden="true" className="w-full aspect-square object-cover" loading="lazy" />
+                  <span className="block bg-white text-navy text-[9px] font-bold uppercase tracking-wider text-center py-1.5">New Copper</span>
+                </div>
+                <div className="absolute bottom-16 -right-6 md:-right-12 w-20 md:w-28 rotate-6 rounded-xl overflow-hidden ring-4 ring-gold/70 shadow-xl bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/slideshow-3.jpg" alt="" aria-hidden="true" className="w-full aspect-square object-cover" loading="lazy" />
+                  <span className="block bg-white text-navy text-[9px] font-bold uppercase tracking-wider text-center py-1.5">Brass Décor</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
