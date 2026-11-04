@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { SessionProviderWrapper } from "@/components/providers/SessionProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://newlookimpex.store"),
@@ -58,7 +59,9 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${jakarta.variable} ${playfair.variable}`}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <SessionProviderWrapper>{children}</SessionProviderWrapper>
+      </body>
     </html>
   );
 }

@@ -1,10 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const AUTHORIZED_EMAIL = "newlookimpex130@gmail.com";
-const STORAGE_KEY = "nli_admin_email";
+import { useState } from "react";
 
 const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Overview", href: "/admin/overview", section: "Workspace" },
@@ -38,35 +36,12 @@ const NAV: { label: string; href: string; section?: string }[] = [
 const SECTIONS = ["Workspace", "Catalogue", "Orders", "SEO", "System"];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginErr, setLoginErr] = useState("");
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    setAuthenticated(saved === AUTHORIZED_EMAIL);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loginEmail.trim().toLowerCase() === AUTHORIZED_EMAIL) {
-      localStorage.setItem(STORAGE_KEY, AUTHORIZED_EMAIL);
-      setAuthenticated(true);
-      setLoginErr("");
-      setLoginEmail("");
-    } else {
-      setLoginErr("Only newlookimpex130@gmail.com can access the admin panel.");
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setAuthenticated(false);
-  };
-
-  if (!authenticated) {
+  // Not authenticated — show Google login screen
+  if (status === "unauthenticated") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl border border-sand">
@@ -79,28 +54,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <h2 className="font-serif font-bold text-navy text-2xl mb-2">Admin Login</h2>
           <p className="text-sm text-clay mb-6">
-            Enter your business email to access the New Look Impex admin dashboard.
+            Sign in with your business email to access the New Look Impex admin dashboard.
           </p>
-          <form onSubmit={handleLogin} className="space-y-3">
-            <label className="block text-xs font-semibold text-clay uppercase tracking-wider">Email address</label>
-            <input
-              type="email"
-              value={loginEmail}
-              onChange={(e) => setLoginEmail(e.target.value)}
-              placeholder="newlookimpex130@gmail.com"
-              className="w-full px-4 py-3 bg-cream border border-sand rounded-xl text-navy focus:ring-2 focus:ring-gold outline-none"
-              required
-            />
-            {loginErr && (
-              <p className="text-xs text-red-700 font-medium">{loginErr}</p>
-            )}
-            <button
-              type="submit"
-              className="w-full py-3 bg-navy text-ivory rounded-xl font-bold hover:bg-clay-dark transition-colors"
+          <div className="mt-8 flex justify-center">
+            <a
+              href="/api/auth/signin"
+              className="w-full py-3 bg-navy text-ivory rounded-xl font-bold text-center hover:bg-clay-dark transition-colors"
             >
-              Unlock Admin
-            </button>
-          </form>
+              Sign in with Google
+            </a>
+          </div>
           <p className="mt-6 text-center text-xs text-clay/50">
             Restricted to: newlookimpex130@gmail.com
           </p>
@@ -114,9 +77,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  // Loading state
+  if (status === "loading") {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-ivory">
-      {/* Top bar with logout */}
+      {/* Top bar (right sidebar pattern) */}
       <header className="hidden md:flex fixed inset-y-0 right-0 w-60 bg-navy text-ivory flex-col z-30 border-l border-ivory/10">
         <div className="px-4 py-4 border-b border-ivory/10">
           <div className="flex items-center gap-2">
@@ -144,7 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             View public site ↗
           </Link>
           <button
-            onClick={handleLogout}
+            onClick={() => signOut()}
             className="block w-full text-center text-xs text-red-500 hover:bg-red-50 rounded-lg py-2 border border-red-50/20"
           >
             Sign out
@@ -160,7 +128,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
           <Link href="/admin/overview" className="font-bold text-sm text-white">New Look Impex Admin</Link>
           <span className="flex-1" />
-          <button onClick={handleLogout} className="text-xs text-brass-light hover:text-white">
+          <button onClick={() => signOut()} className="text-xs text-brass-light hover:text-white">
             Sign out
           </button>
         </div>
