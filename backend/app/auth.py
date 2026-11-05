@@ -229,6 +229,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # Backward-compatible aliases (seed.py imports hash_pw)
 hash_pw = hash_password
 verify_pw = verify_password
+current_user = get_current_user
+rate_limit = rate_limit_check
 
 
 # ---------------------------------------------------------------------------
