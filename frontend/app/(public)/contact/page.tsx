@@ -1,8 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { PageHero } from "@/components/public/Shared";
 import { api, trackEvent, BUSINESS_EMAIL, BUSINESS_PHONES, whatsappUrl, BUSINESS_LOCATION } from "@/lib/api";
 import type { EnquiryInput, PublicSettings } from "@/lib/types";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
 export default function ContactPage() {
   const [settings, setSettings] = useState<PublicSettings | null>(null);
@@ -10,6 +12,8 @@ export default function ContactPage() {
   const [err, setErr] = useState("");
   const [sending, setSending] = useState(false);
   const [form, setForm] = useState<EnquiryInput>({ name: "", email: "", country: "", product_interest: "", message: "" });
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const turnstileRef = useRef<any>(null);
 
   // Contact details come from settings when available; known constants are the fallback.
   useEffect(() => {
@@ -18,16 +22,34 @@ export default function ContactPage() {
       .catch(() => undefined);
   }, []);
 
+  const onTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
+
+  const onTurnstileExpire = useCallback(() => {
+    setTurnstileToken("");
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr("");
     setSent("");
     setSending(true);
     try {
-      await api("/api/public/enquiries", { method: "POST", body: JSON.stringify(form) });
+      // Verify Turnstile token is present (if configured)
+      if (TURNSTILE_SITE_KEY && !turnstileToken) {
+        setErr("Please complete the security verification.");
+        setSending(false);
+        return;
+      }
+      await api("/api/public/enquiries", { method: "POST", body: JSON.stringify({ ...form, website_url: "" }) });
       trackEvent({ event_type: "contact_click" });
       setSent("Thank you — your enquiry has been received. We will respond by email.");
       setForm({ name: "", email: "", country: "", product_interest: "", message: "" });
+      setTurnstileToken("");
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     } catch (error) {
       setErr(String(error));
     } finally {
@@ -74,6 +96,19 @@ export default function ContactPage() {
               <label className="label" htmlFor="ct-msg">Message *</label>
               <textarea id="ct-msg" rows={6} className="input" required value={form.message || ""} onChange={(e) => setForm({ ...form, message: e.target.value })} />
             </div>
+            {TURNSTILE_SITE_KEY && (
+              <div className="mt-4">
+                <div className="flex justify-center">
+                  <div
+                    id="turnstile-widget"
+                    ref={turnstileRef}
+                    data-sitekey={TURNSTILE_SITE_KEY}
+                    data-callback={onTurnstileVerify}
+                    data-expired-callback={onTurnstileExpire}
+                  />
+                </div>
+              </div>
+            )}
             <button type="submit" className="btn btn-primary" disabled={sending}>
               {sending ? "Sending…" : "Send enquiry"}
             </button>

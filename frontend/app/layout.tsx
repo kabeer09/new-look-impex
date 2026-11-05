@@ -70,9 +70,17 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakart
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
   return (
     <html lang="en-IN" className={`${jakarta.variable} ${playfair.variable}`}>
       <body className="font-sans">
+        {turnstileSiteKey && (
+          <script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            async
+            defer
+          />
+        )}
         <SessionProviderWrapper>{children}</SessionProviderWrapper>
       </body>
     </html>

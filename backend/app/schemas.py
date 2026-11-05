@@ -104,6 +104,8 @@ class EnquiryPublicIn(_NullCoercing):
     landing_page: str = ""
     referrer: str = ""
     campaign: str = ""
+    # Honeypot field - hidden via CSS, should remain empty for humans
+    website_url: str = ""
 
 
 class EnquiryStatusIn(_NullCoercing):

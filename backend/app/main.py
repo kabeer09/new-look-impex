@@ -1,20 +1,31 @@
 """Main FastAPI app with all routers."""
 from __future__ import annotations
-import csv, io, json
+import csv, io, json, hashlib
 from datetime import date, datetime, timedelta, timezone
+from typing import Optional
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, UploadFile, File
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.security import HTTPBearer
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from .config import settings
-from .database import Base, engine, ensure_schema, get_db
+from .database import Base, engine, ensure_schema, get_db, SessionLocal
 from . import models
-from .auth import current_user, hash_pw, rate_limit, require_role
+from .auth import (current_user, hash_pw, require_role, create_access_token,
+                   create_refresh_token, decode_token, verify_password,
+                   ensure_bootstrap_admin, get_current_user,
+                   ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS,
+                   ALGORITHM, SECRET_KEY, is_locked_out,
+                   clear_login_attempts, record_login_attempt, _now,
+                   verify_totp_token)
+from .rate_limiter import rate_limit_check
+from .security_headers import SecurityHeadersMiddleware
+from .turnstile import verify_turnstile_token
 from .schemas import (AuditRunIn, ContentGenIn, EnquiryPublicIn, EnquiryStatusIn, KeywordIn,
-                      SearchToPageIn)
+                      SearchToPageIn, LoginIn, TokenOut)
 from .scoring import score_keyword, classify_intent, business_relevance, commercial_score
 from .audit_engine import audit_url, fetch_and_audit
 from .recommender import add_recommendation, generate_from_keyword
@@ -35,7 +46,48 @@ from .catalogue_pdf import build_catalogue_pdf, get_business_info
 from .media_store import file_path
 from .email import send_email, email_configured, send_customer_ack, send_newsletter_welcome
 
+# Max request body size: 10 MB (enough for forms, small for API)
+MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024
+
+# Security-relevant paths that need extra protection
+SENSITIVE_PATHS = (
+    "/api/public/enquiries",
+    "/api/public/rfqs",
+    "/api/auth/login",
+    "/api/auth/refresh",
+)
+
 Base.metadata.create_all(bind=engine)
+
+
+def _client_ip(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+async def _log_security_event(
+    db: Session,
+    event_type: str,
+    ip_address: str,
+    user_email: Optional[str] = None,
+    path: str = "",
+    detail: str = "",
+    severity: str = "medium",
+):
+    try:
+        db.add(models.SecurityEvent(
+            event_type=event_type,
+            ip_address=ip_address,
+            user_email=user_email,
+            path=path,
+            detail=detail[:1000],
+            severity=severity,
+        ))
+        db.commit()
+    except Exception:
+        pass
 
 
 @asynccontextmanager
@@ -45,6 +97,7 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed(db)
+        ensure_bootstrap_admin(db)
     finally:
         db.close()
     from .watcher import start_watcher
@@ -57,9 +110,110 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="New Look Impex — SEO & Enquiry Engine", version="1.0.0",
               docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=lifespan)
+
+# ---- CORS: explicit origins only; never wildcard with credentials ----
+_cors_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+# Always allow the production frontend and localhost for dev
+for extra in ("https://newlookimpex.store", "https://www.newlookimpex.store",
+              "http://localhost:3000"):
+    if extra not in _cors_origins:
+        _cors_origins.append(extra)
+
 app.add_middleware(CORSMiddleware,
-                   allow_origins=[o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()] + ["*"],
-                   allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+                   allow_origins=_cors_origins,
+                   allow_credentials=True,
+                   allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+                   allow_headers=["Authorization", "Content-Type", "X-Requested-With",
+                                  "Accept", "Origin"],
+                   expose_headers=["Retry-After"])
+
+# ---- Security headers middleware (CSP, HSTS, X-Frame-Options, etc.) ----
+app.add_middleware(SecurityHeadersMiddleware)
+
+
+# ---- Request size limit middleware ----
+@app.middleware("http")
+async def limit_request_body(request: Request, call_next):
+    if request.method in ("POST", "PUT", "PATCH"):
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > MAX_REQUEST_BODY_BYTES:
+            return JSONResponse(
+                {"error": "Request body too large"},
+                status_code=413,
+            )
+    response = await call_next(request)
+    return response
+
+
+# ---- Security event logging + rate limiting middleware ----
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    ip = _client_ip(request)
+    path = request.url.path
+
+    # Check if IP is blocked
+    db = SessionLocal()
+    try:
+        blocked = db.query(models.BlockedIP).filter(
+            models.BlockedIP.ip_address == ip,
+            (models.BlockedIP.expires_at.is_(None)) |
+            (models.BlockedIP.expires_at > datetime.now(timezone.utc))
+        ).first()
+        if blocked:
+            return JSONResponse(
+                {"error": "Access denied from this IP address"},
+                status_code=403,
+            )
+    finally:
+        db.close()
+
+    # Rate limit public form endpoints
+    if path in SENSITIVE_PATHS and request.method == "POST":
+        allowed, retry_after = rate_limit_check(
+            f"form:{ip}:{path}",
+            limit=5,
+            window_seconds=600,  # 10 minutes
+        )
+        if not allowed:
+            # Log rate limit event
+            try:
+                db = SessionLocal()
+                db.add(models.SecurityEvent(
+                    event_type="rate_limit",
+                    ip_address=ip,
+                    path=path,
+                    detail=f"Rate limit exceeded: {retry_after}s retry",
+                    severity="high",
+                ))
+                db.commit()
+                db.close()
+            except Exception:
+                pass
+            return JSONResponse(
+                {"error": f"Rate limit exceeded. Try again in {retry_after} seconds."},
+                status_code=429,
+                headers={"Retry-After": str(retry_after)},
+            )
+
+    response = await call_next(request)
+
+    # Log failed authentication attempts on auth endpoints
+    if path.startswith("/api/auth/login") and response.status_code == 401:
+        try:
+            db = SessionLocal()
+            db.add(models.SecurityEvent(
+                event_type="failed_login",
+                ip_address=ip,
+                path=path,
+                detail="Failed login attempt",
+                severity="high",
+            ))
+            db.commit()
+            db.close()
+        except Exception:
+            pass
+
+    return response
 
 # Commerce / CRM routers (ai_import first: its fixed paths like
 # /api/products/imports must win over catalog's /api/products/{pid})
@@ -100,6 +254,242 @@ def health():
 @app.get("/health")
 def health_alias():
     return health()
+
+
+# ---------- Authentication ----------
+
+@app.post("/api/auth/login", status_code=201)
+def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
+    """Authenticate user and return access + refresh tokens.
+
+    Rate-limited: 5 attempts per 15 minutes per IP + email.
+    Validates Turnstile token if TURNSTILE_SECRET_KEY is configured.
+    """
+    ip = _client_ip(request)
+
+    # Check lockout
+    locked, until = is_locked_out(f"login:{ip}")
+    if locked:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Too many failed login attempts. Try again in {int(until - _now())} seconds.",
+            headers={"Retry-After": str(int(until - _now()))},
+        )
+
+    # Turnstile verification (if configured)
+    if settings.TURNSTILE_SECRET_KEY:
+        # The token is passed in a custom header or body field
+        # For form posts, we expect it in the body as "turnstile_token"
+        # But LoginIn doesn't have that field, so we check headers
+        turnstile_token = request.headers.get("x-turnstile-token", "")
+        if not verify_turnstile_token(turnstile_token, ip):
+            record_login_attempt(f"login:{ip}", False)
+            db.add(models.SecurityEvent(
+                event_type="turnstile_fail",
+                ip_address=ip,
+                path="/api/auth/login",
+                detail="Invalid Turnstile token on login",
+                severity="high",
+            ))
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Security verification failed. Please refresh and try again.",
+            )
+
+    user = db.query(User).filter(User.email == body.email.strip().lower()).first()
+    if not user or not verify_password(body.password, user.password_hash):
+        record_login_attempt(f"login:{ip}", False)
+        db.add(models.LoginAttempt(
+            email=body.email,
+            ip_address=ip,
+            user_agent=request.headers.get("user-agent", "")[:512],
+            success=False,
+            failure_reason="invalid credentials",
+        ))
+        db.add(models.SecurityEvent(
+            event_type="failed_login",
+            ip_address=ip,
+            user_email=body.email,
+            path="/api/auth/login",
+            detail="Invalid email or password",
+            severity="high",
+        ))
+        db.commit()
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password",
+        )
+
+    if not user.is_active:
+        record_login_attempt(f"login:{ip}", False)
+        raise HTTPException(
+            status_code=403,
+            detail="Account is disabled",
+        )
+
+    # Check 2FA if enabled
+    if settings.TWO_FACTOR_ENABLED:
+        tfa = db.query(models.TwoFactorSecret).filter(
+            models.TwoFactorSecret.user_id == user.id,
+            models.TwoFactorSecret.enabled == True,
+        ).first()
+        if tfa:
+            # Require 2FA token in header
+            totp_token = request.headers.get("x-totp-token", "")
+            if not totp_token or not verify_totp_token(tfa.secret, totp_token):
+                record_login_attempt(f"login:{ip}", False)
+                db.add(models.SecurityEvent(
+                    event_type="failed_login",
+                    ip_address=ip,
+                    user_email=user.email,
+                    path="/api/auth/login",
+                    detail="2FA required or invalid token",
+                    severity="high",
+                ))
+                db.commit()
+                raise HTTPException(
+                    status_code=401,
+                    detail="Two-factor authentication required",
+                )
+
+    # Successful login
+    clear_login_attempts(f"login:{ip}")
+    db.add(models.LoginAttempt(
+        email=user.email,
+        ip_address=ip,
+        user_agent=request.headers.get("user-agent", "")[:512],
+        success=True,
+    ))
+    db.add(models.SecurityEvent(
+        event_type="successful_login",
+        ip_address=ip,
+        user_email=user.email,
+        path="/api/auth/login",
+        detail="Successful login",
+        severity="low",
+    ))
+
+    # Create session record
+    access_token = create_access_token(user.email, user.role, user.id)
+    refresh_token = create_refresh_token(user.email, user.id)
+
+    # Hash tokens for storage (we only store hashes)
+    access_hash = hashlib.sha256(access_token.encode()).hexdigest()
+    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+
+    session = models.UserSession(
+        user_id=user.id,
+        token_hash=access_hash,
+        refresh_token_hash=refresh_hash,
+        ip_address=ip,
+        user_agent=request.headers.get("user-agent", "")[:512],
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    db.add(session)
+    db.commit()
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "role": user.role,
+            "display_name": user.display_name or "",
+        },
+    }
+
+
+@app.post("/api/auth/refresh", status_code=200)
+def refresh_token(body: dict, request: Request, db: Session = Depends(get_db)):
+    """Exchange a refresh token for a new access token."""
+    refresh_token = body.get("refresh_token", "")
+    if not refresh_token:
+        raise HTTPException(status_code=400, detail="refresh_token required")
+
+    payload = decode_token(refresh_token, expected_type="refresh")
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+    user_id = payload.get("user_id")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="User not found or disabled")
+
+    # Check refresh token hash matches a stored session
+    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+    session = db.query(models.UserSession).filter(
+        models.UserSession.refresh_token_hash == refresh_hash,
+        models.UserSession.user_id == user.id,
+        models.UserSession.revoked == False,
+        models.UserSession.expires_at > datetime.now(timezone.utc),
+    ).first()
+    if not session:
+        raise HTTPException(status_code=401, detail="Refresh token revoked or expired")
+
+    # Rotate: revoke old, issue new
+    session.revoked = True
+    session.revoked_at = datetime.now(timezone.utc)
+    session.revoked_reason = "token rotation"
+
+    new_access = create_access_token(user.email, user.role, user.id)
+    new_refresh = create_refresh_token(user.email, user.id)
+    session.token_hash = hashlib.sha256(new_access.encode()).hexdigest()
+    session.refresh_token_hash = hashlib.sha256(new_refresh.encode()).hexdigest()
+    session.expires_at = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    db.commit()
+
+    return {
+        "access_token": new_access,
+        "refresh_token": new_refresh,
+        "token_type": "bearer",
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    }
+
+
+@app.post("/api/auth/logout", status_code=200)
+def logout(body: dict, request: Request, db: Session = Depends(get_db),
+           current: User = Depends(get_current_user)):
+    """Revoke the current session (access + refresh tokens)."""
+    access_token = body.get("access_token", "")
+    refresh_token = body.get("refresh_token", "")
+
+    if access_token:
+        access_hash = hashlib.sha256(access_token.encode()).hexdigest()
+        db.query(models.UserSession).filter(
+            models.UserSession.token_hash == access_hash,
+            models.UserSession.user_id == current.id,
+        ).update({models.UserSession.revoked: True,
+                  models.UserSession.revoked_at: datetime.now(timezone.utc),
+                  models.UserSession.revoked_reason: "logout"})
+
+    if refresh_token:
+        refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+        db.query(models.UserSession).filter(
+            models.UserSession.refresh_token_hash == refresh_hash,
+            models.UserSession.user_id == current.id,
+        ).update({models.UserSession.revoked: True,
+                  models.UserSession.revoked_at: datetime.now(timezone.utc),
+                  models.UserSession.revoked_reason: "logout"})
+
+    db.commit()
+    return {"message": "Logged out successfully"}
+
+
+@app.get("/api/auth/me", status_code=200)
+def me(current: User = Depends(get_current_user)):
+    """Return current authenticated user info."""
+    return {
+        "id": current.id,
+        "email": current.email,
+        "role": current.role,
+        "display_name": current.display_name or "",
+        "is_active": current.is_active,
+        "auth_provider": current.auth_provider or "local",
+    }
 
 
 @app.get("/api/dashboard/summary")
@@ -937,6 +1327,42 @@ def _next_enquiry_reference(db: Session) -> str:
 @app.post("/api/public/enquiries", status_code=201)
 def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depends(get_db)):
     rate_limit(f"enq:{request.client.host if request.client else 'x'}", 10, 3600)
+
+    # Turnstile verification (if configured)
+    if settings.TURNSTILE_SECRET_KEY:
+        turnstile_token = request.headers.get("x-turnstile-token", "")
+        ip = request.client.host if request.client else "unknown"
+        if not verify_turnstile_token(turnstile_token, ip):
+            db.add(models.SecurityEvent(
+                event_type="turnstile_fail",
+                ip_address=ip,
+                path="/api/public/enquiries",
+                detail="Invalid Turnstile token on enquiry submission",
+                severity="high",
+            ))
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Security verification failed. Please refresh and try again.",
+            )
+
+    # Honeypot check
+    body_dict = body.model_dump() if hasattr(body, 'model_dump') else body.dict()
+    website_url = body_dict.get("website_url", "")
+    if website_url and str(website_url).strip():
+        db.add(models.SecurityEvent(
+            event_type="honeypot_triggered",
+            ip_address=request.client.host if request.client else "unknown",
+            path="/api/public/enquiries",
+            detail="Honeypot field filled - likely bot",
+            severity="medium",
+        ))
+        db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid submission detected.",
+        )
+
     dup = db.query(models.Enquiry).filter(models.Enquiry.email == body.email,
                                           models.Enquiry.product_interest == body.product_interest).order_by(models.Enquiry.id.desc()).first()
     import datetime as dt

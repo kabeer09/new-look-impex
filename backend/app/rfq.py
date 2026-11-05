@@ -15,6 +15,7 @@ from .config import settings
 from .database import get_db
 from .email import send_email
 from .schemas import RFQIn, RFQStatusIn
+from .turnstile import require_turnstile
 
 router = APIRouter()
 
@@ -67,7 +68,42 @@ def _score_rfq(body: RFQIn) -> float:
 @router.post("/api/public/rfqs", status_code=201)
 def submit_rfq(body: RFQIn, request: Request, db: Session = Depends(get_db)):
     rate_limit(f"rfq:{request.client.host if request.client else 'x'}", 10, 3600)
-    # duplicate protection: same email + same item fingerprint within 24h
+
+    # Turnstile verification (if configured)
+    if settings.TURNSTILE_SECRET_KEY:
+        turnstile_token = request.headers.get("x-turnstile-token", "")
+        ip = request.client.host if request.client else "unknown"
+        if not verify_turnstile_token(turnstile_token, ip):
+            db.add(models.SecurityEvent(
+                event_type="turnstile_fail",
+                ip_address=ip,
+                path="/api/public/rfqs",
+                detail="Invalid Turnstile token on RFQ submission",
+                severity="high",
+            ))
+            db.commit()
+            raise HTTPException(
+                status_code=400,
+                detail="Security verification failed. Please refresh and try again.",
+            )
+
+    # Honeypot check - RFQIn doesn't have website_url, so check via body
+    # The honeypot is sent as an extra form field
+    body_dict = body.model_dump() if hasattr(body, 'model_dump') else body.dict()
+    website_url = body_dict.get("website_url", "")
+    if website_url and str(website_url).strip():
+        db.add(models.SecurityEvent(
+            event_type="honeypot_triggered",
+            ip_address=request.client.host if request.client else "unknown",
+            path="/api/public/rfqs",
+            detail="Honeypot field filled - likely bot",
+            severity="medium",
+        ))
+        db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid submission detected.",
+        )
     h = _items_hash(body.items)
     dup = db.query(models.RFQ).filter(
         func.lower(models.RFQ.business_email) == body.business_email.strip().lower(),

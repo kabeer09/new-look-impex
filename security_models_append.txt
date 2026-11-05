@@ -1,0 +1,68 @@
+# ================= SECURITY MODELS =================
+
+class LoginAttempt(Base):
+    """Records login attempts (success/failure) for security monitoring."""
+    __tablename__ = "login_attempts"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), nullable=False, index=True)
+    ip_address = Column(String(64), nullable=False, index=True)
+    user_agent = Column(String(512), default="")
+    success = Column(Boolean, default=False, index=True)
+    failure_reason = Column(String(255), default="")
+    created_at = Column(DateTime, default=_now, index=True)
+
+
+class BlockedIP(Base):
+    """IP addresses temporarily or permanently blocked from the admin/API."""
+    __tablename__ = "blocked_ips"
+    id = Column(Integer, primary_key=True, index=True)
+    ip_address = Column(String(64), unique=True, nullable=False, index=True)
+    reason = Column(String(255), default="")
+    blocked_at = Column(DateTime, default=_now)
+    expires_at = Column(DateTime, nullable=True)  # NULL = permanent block
+    blocked_by = Column(String(255), default="system")
+    created_at = Column(DateTime, default=_now)
+
+
+class SecurityEvent(Base):
+    """Security-relevant events for monitoring and alerting."""
+    __tablename__ = "security_events"
+    id = Column(Integer, primary_key=True, index=True)
+    event_type = Column(String(64), nullable=False, index=True)  # failed_login|turnstile_fail|rate_limit|sql_injection|xss|csrf|unauthorized_admin
+    ip_address = Column(String(64), nullable=False, index=True)
+    user_email = Column(String(255), nullable=True, index=True)
+    path = Column(String(1024), default="")
+    detail = Column(Text, default="")
+    severity = Column(String(16), default="medium")  # low|medium|high|critical
+    created_at = Column(DateTime, default=_now, index=True)
+
+
+class UserSession(Base):
+    """Tracks active user sessions for revocation/monitoring."""
+    __tablename__ = "user_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token_hash = Column(String(255), nullable=False, index=True)  # hash of JWT
+    refresh_token_hash = Column(String(255), nullable=True, index=True)
+    ip_address = Column(String(64), default="")
+    user_agent = Column(String(512), default="")
+    created_at = Column(DateTime, default=_now)
+    last_activity = Column(DateTime, default=_now, onupdate=_now)
+    expires_at = Column(DateTime, nullable=False)
+    revoked = Column(Boolean, default=False)
+    revoked_at = Column(DateTime, nullable=True)
+    revoked_reason = Column(String(255), default="")
+
+
+class TwoFactorSecret(Base):
+    """Stores TOTP secrets for users with 2FA enabled."""
+    __tablename__ = "two_factor_secrets"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True, unique=True)
+    secret = Column(String(255), nullable=False)  # base32-encoded TOTP secret
+    enabled = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+# ================= END SECURITY MODELS =================

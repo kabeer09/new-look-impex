@@ -32,6 +32,39 @@ class Settings(BaseSettings):
     # Empty => API_BASE_URL + "/api/auth/google/callback".
     GOOGLE_LOGIN_REDIRECT_URI: str = ""
 
+    # ==================== SECURITY SETTINGS ====================
+
+    # Cloudflare Turnstile (form spam protection)
+    # Get keys from: https://dash.cloudflare.com/ -> Turnstile -> Add site
+    TURNSTILE_SITE_KEY: str = ""
+    TURNSTILE_SECRET_KEY: str = ""
+
+    # HMAC secret for anti-replay tokens (password reset, admin actions, etc.)
+    # Generate with: openssl rand -hex 32
+    ANTI_REPLAY_SECRET: str = "change-me-in-production-min-32-chars"
+
+    # Session security
+    SESSION_COOKIE_NAME: str = "nli_session"
+    SESSION_COOKIE_SECURE: bool = True  # HTTPS only
+    SESSION_COOKIE_HTTPONLY: bool = True
+    SESSION_COOKIE_SAMESITE: str = "lax"
+    SESSION_MAX_AGE_MINUTES: int = 60  # 1 hour session expiry
+
+    # Password security
+    PASSWORD_MIN_LENGTH: int = 12
+    PASSWORD_REQUIRE_UPPER: bool = True
+    PASSWORD_REQUIRE_LOWER: bool = True
+    PASSWORD_REQUIRE_DIGIT: bool = True
+    PASSWORD_REQUIRE_SYMBOL: bool = True
+
+    # Login attempt tracking
+    MAX_LOGIN_ATTEMPTS: int = 5
+    LOGIN_LOCKOUT_MINUTES: int = 30
+
+    # Two-factor authentication
+    TWO_FACTOR_ENABLED: bool = False  # set true to require 2FA for admin login
+    TOTP_ISSUER: str = "New Look Impex"
+
     N8N_WEBHOOK_TOKEN: str = "change-me-n8n-token"
     ENQUIRY_NOTIFY_EMAIL: str = "newlookimpex130@gmail.com"
     SMTP_HOST: str = ""
