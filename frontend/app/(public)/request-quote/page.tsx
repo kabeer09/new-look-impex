@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
 import { Loading } from "@/components/public/States";
@@ -7,6 +7,8 @@ import { api, trackEvent } from "@/lib/api";
 import { useRfqCart } from "@/lib/rfq";
 import { useWhatsappNumber } from "@/hooks/useWhatsapp";
 import type { PublicSettings, RfqSubmitResult } from "@/lib/types";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
 /** Compose the WhatsApp enquiry text with customer details + every selected product. */
 function buildWaText(
@@ -53,7 +55,17 @@ export default function RequestQuotePage() {
   const [error, setError] = useState("");
   const [result, setResult] = useState<RfqSubmitResult | null>(null);
   const [waLink, setWaLink] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const turnstileRef = useRef<any>(null);
   const waDigits = waNumber.replace(/\D/g, "");
+
+  const onTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+  }, []);
+
+  const onTurnstileExpire = useCallback(() => {
+    setTurnstileToken("");
+  }, []);
 
   /** Pre-submit option: send the current selection without submitting the form. */
   const waSelectionLink = (() => {
@@ -80,6 +92,11 @@ export default function RequestQuotePage() {
       setError("Please tick the consent box to submit a quote request.");
       return;
     }
+    // Verify Turnstile token is present (if configured)
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setError("Please complete the security verification.");
+      return;
+    }
     setSending(true);
     try {
       const res = await api<RfqSubmitResult>("/api/public/rfqs", {
@@ -90,6 +107,7 @@ export default function RequestQuotePage() {
           target_price: form.target_price || undefined,
           delivery_timeframe: form.delivery_timeframe || undefined,
           additional_requirements: form.additional_requirements || undefined,
+          website_url: "",
           items: cart.items.map((i) => ({
             product_id: i.product_id,
             product_name: i.product_name,
@@ -104,6 +122,10 @@ export default function RequestQuotePage() {
       setWaLink(`https://wa.me/${waDigits}?text=${encodeURIComponent(finalText)}`);
       setResult(res);
       cart.clear();
+      setTurnstileToken("");
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     } catch (err) {
       setError(String(err));
     } finally {
@@ -267,7 +289,20 @@ export default function RequestQuotePage() {
                   <a className="link" href="/privacy">Privacy policy</a>
                 </span>
               </label>
-              <button type="submit" className="btn btn-brass w-full mt-5" disabled={sending || cart.items.length === 0}>
+              {TURNSTILE_SITE_KEY && (
+                <div className="mt-4">
+                  <div className="flex justify-center">
+                    <div
+                      id="turnstile-widget-rfq"
+                      ref={turnstileRef}
+                      data-sitekey={TURNSTILE_SITE_KEY}
+                      data-callback={onTurnstileVerify}
+                      data-expired-callback={onTurnstileExpire}
+                    />
+                  </div>
+                </div>
+              )}
+              <button type="submit" className="btn btn-brass w-full mt-5" disabled={sending || cart.items.length === 0 || (!!TURNSTILE_SITE_KEY && !turnstileToken)}>
                 {sending ? "Submitting…" : `Submit quote request (${cart.count} ${cart.count === 1 ? "item" : "items"})`}
               </button>
               <p className="text-xs text-gray mt-3">
