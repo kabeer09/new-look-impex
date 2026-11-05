@@ -52,6 +52,88 @@ const POSTS: Record<string, { title: string; description: string; content: strin
       "New Look Impex supports corporate and festive gifting programmes with gift-boxed copper and brass sets. Contact us early to plan your next gifting season.",
     ],
   },
+  "copper-bottles-wholesale-guide": {
+    title: "Copper Bottles Wholesale: A Guide for International Buyers",
+    description:
+      "Everything you need to know before sourcing copper bottles wholesale — MOQ, packaging, export documentation, and trusted suppliers from Moradabad, India.",
+    content: [
+      "Copper bottles are one of the fastest-growing wholesale categories for homeware, gift and wellness retailers. Before placing your first bulk order, understand what to look for in a manufacturer and how the export process works.",
+      "Start by identifying your target product range: plain copper bottles, hammered finish, diamond-cut, matte, or gift-boxed sets. Request SKU-level details including material grade, dimensions, weight, capacity, MOQ and packaging.",
+      "Always request samples before committing to bulk orders. Confirm lead times, export packaging standards, and whether customisation (size, finish, private label) is available. Get everything in writing — price, MOQ, lead time, and shipping terms.",
+      "New Look Impex is a Moradabad-based manufacturer and exporter of handcrafted copper bottles and drinkware. We supply wholesale buyers internationally with written quotations per order. Contact us to discuss your requirements.",
+    ],
+  },
+  "copper-kitchenware-sourcing-india": {
+    title: "How to Source Copper Kitchenware from India",
+    description:
+      "A practical buyer's guide to sourcing copper cookware, pots, pans and serveware from Indian manufacturers — quality checks, certifications and shipping.",
+    content: [
+      "Copper kitchenware — cookware, pots, pans, serveware and tabletop pieces — combines traditional craftsmanship with modern kitchen needs. Indian manufacturers, particularly from Moradabad, specialise in hand-hammered copper kitchenware for wholesale buyers.",
+      "When evaluating suppliers, check material quality, finish consistency, dimensions, and weight specifications. Ask about packaging standards for export and whether products are suitable for your target market.",
+      "Confirm lead times, production capacity, and whether customisation (size, finish, engraving, private label) is available. Get written quotations covering price, MOQ, lead time, packaging and shipping terms.",
+      "New Look Impex manufactures and exports copper kitchenware from Moradabad, India. We provide written per-order quotations and support export documentation for international buyers.",
+    ],
+  },
+  "brass-handicrafts-moradabad-buyer-guide": {
+    title: "Brass Handicrafts from Moradabad: A Buyer Guide",
+    description:
+      "Discover traditional Moradabad brass handicrafts — urlis, diyas, lanterns and décor. Learn how to evaluate quality, finish and craftsmanship before placing bulk orders.",
+    content: [
+      "Moradabad, Uttar Pradesh, is internationally recognised as India's brass city. The region's artisans have been crafting brass handicrafts for generations — urlis, diyas, lanterns, vases, and decorative home accents.",
+      "When sourcing brass handicrafts, evaluate the finish quality, weight, engraving detail, and consistency across pieces. Request samples to assess craftsmanship before placing bulk orders.",
+      "Confirm MOQ, lead time, packaging standards for export, and whether customisation (size, finish, engraving, private label) is available. Get written quotations for all terms.",
+      "New Look Impex manufactures brass handicrafts from Moradabad and exports globally. We support retailers, importers, distributors and corporate gifting programmes with written quotations and export documentation.",
+    ],
+  },
+  "brass-home-decor-retail-guide": {
+    title: "How to Select Brass Home Décor for Retail Stores",
+    description:
+      "Curating brass home décor for your retail assortment — urlis, vases, lanterns and serveware. Style trends, price points and supplier evaluation tips.",
+    content: [
+      "Brass home décor — urlis, diyas, lanterns, vases, planters and serveware — suits both traditional and contemporary retail assortments. Golden tones, hand-hammered textures and festive appeal make brass a strong category for gift and homeware stores.",
+      "When curating your assortment, consider your target customer, price points, and display requirements. Request product images, dimensions, and weight specifications for each SKU.",
+      "Evaluate suppliers on MOQ, lead time, packaging quality, and customisation options. Gift-box presentation and custom branding can add value for retail customers.",
+      "New Look Impex supplies brass home décor to retailers worldwide. We offer factory-direct wholesale pricing, written quotations, and support for custom finishes and private labelling.",
+    ],
+  },
+  "brass-lanterns-wholesale-guide": {
+    title: "Brass Lanterns: Wholesale Sourcing Guide",
+    description:
+      "Sourcing brass lanterns and festive lighting from India — styles, finishes, MOQ, packaging and export considerations for wholesale buyers.",
+    content: [
+      "Brass lanterns are popular for festive seasons, outdoor entertaining, and traditional home décor. From Diwali to Christmas, they serve gifting, hospitality, and retail markets worldwide.",
+      "When sourcing brass lanterns, consider style (traditional, contemporary, minimalist), size range, finish (hammered, polished, matte, antique), and whether they are for indoor or outdoor use.",
+      "Confirm MOQ, lead time, export packaging, and whether electrical components (if any) meet your target market's safety standards. Get written quotations covering all terms.",
+      "New Look Impex manufactures brass lanterns and festive lighting from Moradabad, India. We supply wholesale buyers globally with written quotations and export documentation support.",
+    ],
+  },
+  "private-label-copper-brass-products": {
+    title: "Private Label Copper and Brass Products",
+    description:
+      "OEM and private label manufacturing for copper and brass products — custom finishes, engravings, branding and packaging for your retail brand.",
+    content: [
+      "Private label manufacturing allows retailers to sell copper and brass products under their own brand name. From custom finishes and engravings to branded packaging, OEM solutions help differentiate your assortment.",
+      "When exploring private label, define your requirements clearly: product range, custom finishes, engraving or branding details, packaging design, MOQ, and lead time. Request samples before production.",
+      "New Look Impex offers OEM and private label manufacturing for copper and brass products. We work with retailers, importers and distributors to create branded product lines with custom finishes, engravings and packaging.",
+      "Contact us to discuss your private label requirements. We provide written quotations covering tooling, sampling, MOQ, lead time and shipping terms.",
+    ],
+  },
+  "questions-ask-indian-handicrafts-exporter": {
+    title: "Questions to Ask an Indian Handicrafts Exporter",
+    description:
+      "Before placing your first bulk order with an Indian handicrafts exporter — MOQ, samples, certifications, packaging, lead time and payment terms checklist.",
+    content: [
+      "Sourcing handicrafts from India requires careful supplier evaluation. Before placing your first bulk order, ask these key questions to ensure a reliable partnership.",
+      "1. What is your MOQ for each product, and does it vary by finish or customisation?",
+      "2. Can you provide samples before bulk production, and what are the sample costs and lead times?",
+      "3. What are your lead times for production and shipping to my destination?",
+      "4. What packaging standards do you use for export, and is gift-box presentation available?",
+      "5. Do you provide written quotations covering price, MOQ, lead time, packaging and shipping terms?",
+      "6. Can you support customisation — size, finish, engraving, or private label?",
+      "7. What documentation do you provide for export (commercial invoice, packing list, certificate of origin)?",
+      "New Look Impex welcomes these questions from every buyer. We provide written quotations, transparent terms, and support throughout the sourcing process.",
+    ],
+  },
 };
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
