@@ -673,6 +673,24 @@ def sitemap(db: Session = Depends(get_db)):
         f"{base}/bulk-orders", f"{base}/export", f"{base}/custom-orders",
         f"{base}/buyer-resources", f"{base}/shipping-export",
         f"{base}/privacy", f"{base}/terms", f"{base}/sitemap",
+        # Dedicated SEO category pages
+        f"{base}/copper-bottles/", f"{base}/copper-water-bottles-wholesale/",
+        f"{base}/copper-kitchenware/", f"{base}/brass-handicrafts/",
+        f"{base}/brass-home-decor/", f"{base}/brass-lanterns/",
+        f"{base}/brass-urli/", f"{base}/brass-diya/",
+        f"{base}/nli-collections/", f"{base}/blog/",
+        # Blog posts
+        f"{base}/blog/sourcing-brass-decor-moradabad",
+        f"{base}/blog/copper-vs-brass-homeware",
+        f"{base}/blog/wholesale-ordering-checklist",
+        f"{base}/blog/seasonal-gifting-programme",
+        f"{base}/blog/copper-bottles-wholesale-guide",
+        f"{base}/blog/copper-kitchenware-sourcing-india",
+        f"{base}/blog/brass-handicrafts-moradabad-buyer-guide",
+        f"{base}/blog/brass-home-decor-retail-guide",
+        f"{base}/blog/brass-lanterns-wholesale-guide",
+        f"{base}/blog/private-label-copper-brass-products",
+        f"{base}/blog/questions-ask-indian-handicrafts-exporter",
     ]
     # country buyer pages (curated, unique content each — see wholesale/[country])
     for slug in ("usa", "uk", "uae", "australia", "canada", "europe"):
