@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .database import get_db
 from .models import User
+from .rate_limiter import rate_limit_check
 
 # ---------------------------------------------------------------------------
 # JWT configuration (shared with NextAuth NEXTAUTH_SECRET)
