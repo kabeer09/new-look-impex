@@ -31,6 +31,7 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Automation", href: "/admin/automation", section: "SEO" },
   { label: "Users & Access", href: "/admin/users", section: "System" },
   { label: "Settings", href: "/admin/settings", section: "System" },
+  { label: "Security Monitor", href: "/admin/security", section: "System" },
 ];
 
 const SECTIONS = ["Workspace", "Catalogue", "Orders", "SEO", "System"];

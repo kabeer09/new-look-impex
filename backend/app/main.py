@@ -1616,6 +1616,160 @@ def admin_analytics(days: int = 90, db: Session = Depends(get_db),
     }
 
 
+# ================= SECURITY MONITORING ENDPOINTS =================
+
+@app.get("/api/security/events")
+def security_events(days: int = 7, severity: str = "", limit: int = Query(100, ge=1, le=500),
+                    db: Session = Depends(get_db),
+                    u=Depends(require_role("admin"))):
+    """Recent security events for admin monitoring."""
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
+    q = db.query(models.SecurityEvent).filter(models.SecurityEvent.created_at >= since)
+    if severity:
+        q = q.filter(models.SecurityEvent.severity == severity)
+    rows = q.order_by(models.SecurityEvent.created_at.desc()).limit(limit).all()
+    return {
+        "events": [{
+            "id": r.id,
+            "event_type": r.event_type,
+            "ip_address": r.ip_address,
+            "user_email": r.user_email,
+            "path": r.path,
+            "detail": r.detail,
+            "severity": r.severity,
+            "created_at": r.created_at.isoformat(),
+        } for r in rows],
+        "total": q.count(),
+    }
+
+
+@app.get("/api/security/login-attempts")
+def login_attempts(days: int = 7, db: Session = Depends(get_db),
+                   u=Depends(require_role("admin"))):
+    """Recent login attempts for admin monitoring."""
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
+    rows = db.query(models.LoginAttempt).filter(
+        models.LoginAttempt.created_at >= since
+    ).order_by(models.LoginAttempt.created_at.desc()).limit(200).all()
+    return {
+        "attempts": [{
+            "id": r.id,
+            "email": r.email,
+            "ip_address": r.ip_address,
+            "success": r.success,
+            "failure_reason": r.failure_reason,
+            "created_at": r.created_at.isoformat(),
+        } for r in rows],
+    }
+
+
+@app.get("/api/security/blocked-ips")
+def blocked_ips(db: Session = Depends(get_db),
+                u=Depends(require_role("admin"))):
+    """List blocked IP addresses."""
+    rows = db.query(models.BlockedIP).order_by(models.BlockedIP.created_at.desc()).all()
+    return {
+        "blocks": [{
+            "id": r.id,
+            "ip_address": r.ip_address,
+            "reason": r.reason,
+            "blocked_at": r.blocked_at.isoformat(),
+            "expires_at": r.expires_at.isoformat() if r.expires_at else None,
+            "blocked_by": r.blocked_by,
+        } for r in rows],
+    }
+
+
+@app.post("/api/security/block-ip")
+def block_ip(body: dict, db: Session = Depends(get_db),
+             u=Depends(require_role("admin"))):
+    """Manually block an IP address."""
+    ip = body.get("ip_address", "").strip()
+    reason = body.get("reason", "Manual block by admin")
+    expires_days = body.get("expires_days", None)
+    if not ip:
+        raise HTTPException(400, "ip_address required")
+    # Check if already blocked
+    existing = db.query(models.BlockedIP).filter(
+        models.BlockedIP.ip_address == ip,
+        (models.BlockedIP.expires_at.is_(None)) |
+        (models.BlockedIP.expires_at > datetime.now(timezone.utc))
+    ).first()
+    if existing:
+        return {"message": f"IP {ip} is already blocked"}
+    expires_at = None
+    if expires_days:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=expires_days)
+    b = models.BlockedIP(
+        ip_address=ip,
+        reason=reason,
+        expires_at=expires_at,
+        blocked_by=u.email,
+    )
+    db.add(b)
+    db.commit()
+    db.add(models.SecurityEvent(
+        event_type="ip_blocked",
+        ip_address=ip,
+        user_email=u.email,
+        path="/api/security/block-ip",
+        detail=f"IP blocked by admin: {reason}",
+        severity="high",
+    ))
+    db.commit()
+    return {"message": f"IP {ip} blocked", "expires_at": expires_at.isoformat() if expires_at else None}
+
+
+@app.delete("/api/security/block-ip/{ip_address}")
+def unblock_ip(ip_address: str, db: Session = Depends(get_db),
+               u=Depends(require_role("admin"))):
+    """Unblock an IP address."""
+    b = db.query(models.BlockedIP).filter(models.BlockedIP.ip_address == ip_address).first()
+    if not b:
+        raise HTTPException(404, "IP not found or not blocked")
+    db.delete(b)
+    db.commit()
+    return {"message": f"IP {ip_address} unblocked"}
+
+
+@app.get("/api/security/sessions")
+def active_sessions(db: Session = Depends(get_db),
+                    u=Depends(require_role("admin"))):
+    """List active user sessions."""
+    rows = db.query(models.UserSession).filter(
+        models.UserSession.revoked == False,
+        models.UserSession.expires_at > datetime.now(timezone.utc),
+    ).order_by(models.UserSession.last_activity.desc()).all()
+    return {
+        "sessions": [{
+            "id": r.id,
+            "user_id": r.user_id,
+            "ip_address": r.ip_address,
+            "user_agent": r.user_agent,
+            "created_at": r.created_at.isoformat(),
+            "last_activity": r.last_activity.isoformat(),
+            "expires_at": r.expires_at.isoformat(),
+        } for r in rows],
+    }
+
+
+@app.post("/api/security/sessions/{session_id}/revoke")
+def revoke_session(session_id: int, body: dict, db: Session = Depends(get_db),
+                   u=Depends(require_role("admin"))):
+    """Revoke a user session."""
+    s = db.query(models.UserSession).filter(models.UserSession.id == session_id).first()
+    if not s:
+        raise HTTPException(404, "Session not found")
+    s.revoked = True
+    s.revoked_at = datetime.now(timezone.utc)
+    s.revoked_reason = body.get("reason", "Revoked by admin")
+    db.commit()
+    return {"message": "Session revoked"}
+
+
+# ================= END SECURITY MONITORING =================
+
+
 @app.get("/api/reports/monthly")
 def monthly(db: Session = Depends(get_db), u=Depends(current_user)):
     end, start = date.today(), date.today() - timedelta(days=30)
