@@ -212,6 +212,26 @@ def require_role(*allowed_roles: str):
 
 
 # ---------------------------------------------------------------------------
+# Password hashing (kept for seed.py compatibility)
+# ---------------------------------------------------------------------------
+
+def hash_password(password: str) -> str:
+    return pwd_ctx.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        return pwd_ctx.verify(plain_password, hashed_password)
+    except Exception:
+        return False
+
+
+# Backward-compatible aliases (seed.py imports hash_pw)
+hash_pw = hash_password
+verify_pw = verify_password
+
+
+# ---------------------------------------------------------------------------
 # Bootstrap admin user
 # ---------------------------------------------------------------------------
 
