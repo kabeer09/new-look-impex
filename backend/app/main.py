@@ -14,8 +14,8 @@ from sqlalchemy import func
 from .config import settings
 from .database import Base, engine, ensure_schema, get_db, SessionLocal
 from . import models
-from .auth import (current_user, require_role,
-                   ensure_bootstrap_admin, get_current_user,
+from .auth import (get_current_user, require_role,
+                   ensure_bootstrap_admin,
                    ACCESS_TOKEN_EXPIRE_MINUTES,
                    ALGORITHM, SECRET_KEY, is_locked_out,
                    clear_login_attempts, record_login_attempt, _now)
