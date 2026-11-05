@@ -376,7 +376,7 @@ def me(current: User = Depends(get_current_user)):
 
 
 @app.get("/api/dashboard/summary")
-def dashboard(db: Session = Depends(get_db), u=Depends(current_user)):
+def dashboard(db: Session = Depends(get_db), u=Depends(get_current_user)):
     clicks = db.query(func.sum(models.AnalyticsDaily.clicks)).scalar() or 0
     impr = db.query(func.sum(models.AnalyticsDaily.impressions)).scalar() or 0
     ctr = round(clicks / impr, 4) if impr else 0.0
@@ -488,7 +488,7 @@ def _kw_out(k: models.TrackedKeyword) -> dict:
 
 
 @app.get("/api/keywords")
-def list_kw(db: Session = Depends(get_db), u=Depends(current_user),
+def list_kw(db: Session = Depends(get_db), u=Depends(get_current_user),
             q: str = "", country: str = "", intent: str = "", product: str = "",
             page: int = Query(1, ge=1), page_size: int = Query(20, ge=1, le=100)):
     qry = db.query(models.TrackedKeyword)
@@ -590,7 +590,7 @@ def discover(payload: dict, db: Session = Depends(get_db), u=Depends(require_rol
 
 
 @app.get("/api/keywords/{kid}")
-def get_kw(kid: int, db: Session = Depends(get_db), u=Depends(current_user)):
+def get_kw(kid: int, db: Session = Depends(get_db), u=Depends(get_current_user)):
     k = db.query(models.TrackedKeyword).filter(models.TrackedKeyword.id == kid).first()
     if not k: raise HTTPException(404, "Not found")
     return _kw_out(k)
@@ -606,7 +606,7 @@ def del_kw(kid: int, db: Session = Depends(get_db), u=Depends(require_role("admi
 
 # ---------- SEO audits / recommendations ----------
 @app.get("/api/seo/audits")
-def list_audits(db: Session = Depends(get_db), u=Depends(current_user), page: int = 1, page_size: int = 20):
+def list_audits(db: Session = Depends(get_db), u=Depends(get_current_user), page: int = 1, page_size: int = 20):
     q = db.query(models.SeoAudit).order_by(models.SeoAudit.id.desc())
     total = q.count()
     return {"total": total, "items": [{"id": a.id, "url": a.url, "score": a.score,
@@ -647,7 +647,7 @@ def _rec_out(r: models.SeoRecommendation) -> dict:
 
 
 @app.get("/api/seo/recommendations")
-def list_rec(db: Session = Depends(get_db), u=Depends(current_user), status: str = "", page: int = 1, page_size: int = 20):
+def list_rec(db: Session = Depends(get_db), u=Depends(get_current_user), status: str = "", page: int = 1, page_size: int = 20):
     q = db.query(models.SeoRecommendation).order_by(models.SeoRecommendation.id.desc())
     if status: q = q.filter(models.SeoRecommendation.status == status)
     total = q.count()
@@ -722,7 +722,7 @@ def rollback(rid: int, db: Session = Depends(get_db), u=Depends(require_role("ad
 
 # ---------- search-to-page ----------
 @app.post("/api/seo/search-to-page")
-def search_to_page(body: SearchToPageIn, db: Session = Depends(get_db), u=Depends(current_user)):
+def search_to_page(body: SearchToPageIn, db: Session = Depends(get_db), u=Depends(get_current_user)):
     kw = body.keyword.strip()
     pages = db.query(models.WebsitePage).all()
     terms = [t for t in kw.lower().split() if len(t) > 2]
@@ -785,14 +785,14 @@ def content_gen(body: ContentGenIn, db: Session = Depends(get_db), u=Depends(req
 
 
 @app.get("/api/content/drafts")
-def drafts(db: Session = Depends(get_db), u=Depends(current_user)):
+def drafts(db: Session = Depends(get_db), u=Depends(get_current_user)):
     return [{"id": d.id, "kind": d.kind, "title": d.title, "status": d.status,
              "target_keyword": d.target_keyword, "created_at": d.created_at.isoformat()} for d in
             db.query(models.ContentDraft).order_by(models.ContentDraft.id.desc()).limit(50)]
 
 
 @app.get("/api/seo/performance")
-def performance(db: Session = Depends(get_db), u=Depends(current_user), days: int = 28):
+def performance(db: Session = Depends(get_db), u=Depends(get_current_user), days: int = 28):
     since = date.today() - timedelta(days=days)
     rows = db.query(models.AnalyticsDaily).filter(models.AnalyticsDaily.date >= since).order_by(models.AnalyticsDaily.date).all()
     return {"days": days, "rows": [{"date": str(r.date), "source": r.source, "url": r.url, "query": r.query,
@@ -803,7 +803,7 @@ def performance(db: Session = Depends(get_db), u=Depends(current_user), days: in
 
 # ---------- integrations (GSC/GA stubs with OAuth URL builder + sync endpoint) ----------
 @app.get("/api/integrations/status")
-def integ_status(db: Session = Depends(get_db), u=Depends(current_user)):
+def integ_status(db: Session = Depends(get_db), u=Depends(get_current_user)):
     rows = db.query(models.Integration).all()
     return {r.provider: {"status": r.status, "property": r.property_id,
                          "configured": bool(settings.GOOGLE_CLIENT_ID)} for r in rows}
@@ -852,7 +852,7 @@ def gsc_callback(code: str = "", state: str = "", db: Session = Depends(get_db))
 
 
 @app.get("/api/integrations/google/search-console/properties")
-def gsc_props(db: Session = Depends(get_db), u=Depends(current_user)):
+def gsc_props(db: Session = Depends(get_db), u=Depends(get_current_user)):
     row = db.query(models.Integration).filter(models.Integration.provider == "google_search_console").first()
     if not row or row.status != "connected":
         return {"connected": False, "properties": [], "note": "Not connected. Use connect endpoint + guide."}
@@ -1032,7 +1032,7 @@ def catalogue_meta(db: Session = Depends(get_db)):
 @app.get("/api/media")
 def media_list(page: int = Query(1, ge=1),
                page_size: int = Query(30, ge=1, le=100),
-               db: Session = Depends(get_db), u=Depends(current_user)):
+               db: Session = Depends(get_db), u=Depends(get_current_user)):
     from .media_store import public_url
     q = db.query(models.MediaFile)
     total = q.count()
@@ -1651,7 +1651,7 @@ def revoke_session(session_id: int, body: dict, db: Session = Depends(get_db),
 
 
 @app.get("/api/reports/monthly")
-def monthly(db: Session = Depends(get_db), u=Depends(current_user)):
+def monthly(db: Session = Depends(get_db), u=Depends(get_current_user)):
     end, start = date.today(), date.today() - timedelta(days=30)
     prev_end, prev_start = start - timedelta(days=1), start - timedelta(days=30)
     def sums(a, b):
@@ -1708,7 +1708,7 @@ def n8n_enquiry(payload: dict, db: Session = Depends(get_db)):
 
 
 @app.get("/api/automation/workflows")
-def workflows(u=Depends(current_user)):
+def workflows(u=Depends(get_current_user)):
     import os, json as js
     base = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "n8n-workflows")
     out = []
