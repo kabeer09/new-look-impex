@@ -14,18 +14,16 @@ from sqlalchemy import func
 from .config import settings
 from .database import Base, engine, ensure_schema, get_db, SessionLocal
 from . import models
-from .auth import (current_user, hash_pw, require_role, create_access_token,
-                   create_refresh_token, decode_token, verify_password,
+from .auth import (current_user, require_role,
                    ensure_bootstrap_admin, get_current_user,
-                   ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS,
+                   ACCESS_TOKEN_EXPIRE_MINUTES,
                    ALGORITHM, SECRET_KEY, is_locked_out,
-                   clear_login_attempts, record_login_attempt, _now,
-                   verify_totp_token)
+                   clear_login_attempts, record_login_attempt, _now)
 from .rate_limiter import rate_limit_check
 from .security_headers import SecurityHeadersMiddleware
 from .turnstile import verify_turnstile_token
 from .schemas import (AuditRunIn, ContentGenIn, EnquiryPublicIn, EnquiryStatusIn, KeywordIn,
-                      SearchToPageIn, LoginIn, TokenOut)
+                      SearchToPageIn)
 from .scoring import score_keyword, classify_intent, business_relevance, commercial_score
 from .audit_engine import audit_url, fetch_and_audit
 from .recommender import add_recommendation, generate_from_keyword
@@ -256,104 +254,70 @@ def health_alias():
     return health()
 
 
-# ---------- Authentication ----------
+# ---------- Authentication (Google-only via NextAuth JWT) ----------
 
-@app.post("/api/auth/login", status_code=201)
-def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
-    """Authenticate user and return access + refresh tokens.
+@app.post("/api/auth/login", status_code=200)
+def login(body: dict, request: Request, db: Session = Depends(get_db)):
+    """Verify a NextAuth JWT and return user info.
 
-    Rate-limited: 5 attempts per 15 minutes per IP + email.
-    Validates Turnstile token if TURNSTILE_SECRET_KEY is configured.
+    The frontend sends the NextAuth JWT as Bearer token or in the body.
+    Only newlookimpex130@gmail.com is allowed admin access.
     """
     ip = _client_ip(request)
 
-    # Check lockout
-    locked, until = is_locked_out(f"login:{ip}")
-    if locked:
-        raise HTTPException(
-            status_code=429,
-            detail=f"Too many failed login attempts. Try again in {int(until - _now())} seconds.",
-            headers={"Retry-After": str(int(until - _now()))},
-        )
+    # Get token from body or Authorization header
+    token = body.get("access_token", "") if isinstance(body, dict) else ""
+    if not token:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
 
-    # Turnstile verification (if configured)
-    if settings.TURNSTILE_SECRET_KEY:
-        # The token is passed in a custom header or body field
-        # For form posts, we expect it in the body as "turnstile_token"
-        # But LoginIn doesn't have that field, so we check headers
-        turnstile_token = request.headers.get("x-turnstile-token", "")
-        if not verify_turnstile_token(turnstile_token, ip):
-            record_login_attempt(f"login:{ip}", False)
-            db.add(models.SecurityEvent(
-                event_type="turnstile_fail",
-                ip_address=ip,
-                path="/api/auth/login",
-                detail="Invalid Turnstile token on login",
-                severity="high",
-            ))
-            db.commit()
-            raise HTTPException(
-                status_code=400,
-                detail="Security verification failed. Please refresh and try again.",
-            )
+    if not token:
+        raise HTTPException(status_code=401, detail="No token provided")
 
-    user = db.query(User).filter(User.email == body.email.strip().lower()).first()
-    if not user or not verify_password(body.password, user.password_hash):
+    # Verify the NextAuth JWT
+    payload = verify_nextauth_token(token)
+    if payload is None:
         record_login_attempt(f"login:{ip}", False)
-        db.add(models.LoginAttempt(
-            email=body.email,
-            ip_address=ip,
-            user_agent=request.headers.get("user-agent", "")[:512],
-            success=False,
-            failure_reason="invalid credentials",
-        ))
         db.add(models.SecurityEvent(
             event_type="failed_login",
             ip_address=ip,
-            user_email=body.email,
             path="/api/auth/login",
-            detail="Invalid email or password",
+            detail="Invalid NextAuth token",
             severity="high",
         ))
         db.commit()
         raise HTTPException(
             status_code=401,
-            detail="Invalid email or password",
+            detail="Invalid or expired token",
         )
 
-    if not user.is_active:
-        record_login_attempt(f"login:{ip}", False)
+    email = payload.get("email") or payload.get("sub")
+    if not email:
+        raise HTTPException(status_code=401, detail="No email in token")
+
+    # Only allow the admin email
+    if email.lower() != ADMIN_EMAIL.lower():
         raise HTTPException(
-            status_code=403,
-            detail="Account is disabled",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Admin access restricted to {ADMIN_EMAIL}",
         )
 
-    # Check 2FA if enabled
-    if settings.TWO_FACTOR_ENABLED:
-        tfa = db.query(models.TwoFactorSecret).filter(
-            models.TwoFactorSecret.user_id == user.id,
-            models.TwoFactorSecret.enabled == True,
-        ).first()
-        if tfa:
-            # Require 2FA token in header
-            totp_token = request.headers.get("x-totp-token", "")
-            if not totp_token or not verify_totp_token(tfa.secret, totp_token):
-                record_login_attempt(f"login:{ip}", False)
-                db.add(models.SecurityEvent(
-                    event_type="failed_login",
-                    ip_address=ip,
-                    user_email=user.email,
-                    path="/api/auth/login",
-                    detail="2FA required or invalid token",
-                    severity="high",
-                ))
-                db.commit()
-                raise HTTPException(
-                    status_code=401,
-                    detail="Two-factor authentication required",
-                )
+    # Find or create user
+    user = db.query(User).filter(User.email == email).first()
+    if user is None:
+        user = User(
+            email=email,
+            password_hash="",  # Google handles auth
+            role="admin",
+            is_active=True,
+            auth_provider="google",
+            display_name=payload.get("name") or email.split("@")[0],
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
-    # Successful login
     clear_login_attempts(f"login:{ip}")
     db.add(models.LoginAttempt(
         email=user.email,
@@ -366,116 +330,32 @@ def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
         ip_address=ip,
         user_email=user.email,
         path="/api/auth/login",
-        detail="Successful login",
+        detail="Successful Google login",
         severity="low",
     ))
-
-    # Create session record
-    access_token = create_access_token(user.email, user.role, user.id)
-    refresh_token = create_refresh_token(user.email, user.id)
-
-    # Hash tokens for storage (we only store hashes)
-    access_hash = hashlib.sha256(access_token.encode()).hexdigest()
-    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
-
-    session = models.UserSession(
-        user_id=user.id,
-        token_hash=access_hash,
-        refresh_token_hash=refresh_hash,
-        ip_address=ip,
-        user_agent=request.headers.get("user-agent", "")[:512],
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-    db.add(session)
     db.commit()
 
     return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer",
-        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "user": {
             "id": user.id,
             "email": user.email,
             "role": user.role,
             "display_name": user.display_name or "",
         },
+        "token": token,
     }
 
 
 @app.post("/api/auth/refresh", status_code=200)
 def refresh_token(body: dict, request: Request, db: Session = Depends(get_db)):
-    """Exchange a refresh token for a new access token."""
-    refresh_token = body.get("refresh_token", "")
-    if not refresh_token:
-        raise HTTPException(status_code=400, detail="refresh_token required")
-
-    payload = decode_token(refresh_token, expected_type="refresh")
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
-
-    user_id = payload.get("user_id")
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user or not user.is_active:
-        raise HTTPException(status_code=401, detail="User not found or disabled")
-
-    # Check refresh token hash matches a stored session
-    refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
-    session = db.query(models.UserSession).filter(
-        models.UserSession.refresh_token_hash == refresh_hash,
-        models.UserSession.user_id == user.id,
-        models.UserSession.revoked == False,
-        models.UserSession.expires_at > datetime.now(timezone.utc),
-    ).first()
-    if not session:
-        raise HTTPException(status_code=401, detail="Refresh token revoked or expired")
-
-    # Rotate: revoke old, issue new
-    session.revoked = True
-    session.revoked_at = datetime.now(timezone.utc)
-    session.revoked_reason = "token rotation"
-
-    new_access = create_access_token(user.email, user.role, user.id)
-    new_refresh = create_refresh_token(user.email, user.id)
-    session.token_hash = hashlib.sha256(new_access.encode()).hexdigest()
-    session.refresh_token_hash = hashlib.sha256(new_refresh.encode()).hexdigest()
-    session.expires_at = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    db.commit()
-
-    return {
-        "access_token": new_access,
-        "refresh_token": new_refresh,
-        "token_type": "bearer",
-        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-    }
+    """Refresh token - re-verify the NextAuth JWT."""
+    return login(body, request, db)
 
 
 @app.post("/api/auth/logout", status_code=200)
 def logout(body: dict, request: Request, db: Session = Depends(get_db),
            current: User = Depends(get_current_user)):
-    """Revoke the current session (access + refresh tokens)."""
-    access_token = body.get("access_token", "")
-    refresh_token = body.get("refresh_token", "")
-
-    if access_token:
-        access_hash = hashlib.sha256(access_token.encode()).hexdigest()
-        db.query(models.UserSession).filter(
-            models.UserSession.token_hash == access_hash,
-            models.UserSession.user_id == current.id,
-        ).update({models.UserSession.revoked: True,
-                  models.UserSession.revoked_at: datetime.now(timezone.utc),
-                  models.UserSession.revoked_reason: "logout"})
-
-    if refresh_token:
-        refresh_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
-        db.query(models.UserSession).filter(
-            models.UserSession.refresh_token_hash == refresh_hash,
-            models.UserSession.user_id == current.id,
-        ).update({models.UserSession.revoked: True,
-                  models.UserSession.revoked_at: datetime.now(timezone.utc),
-                  models.UserSession.revoked_reason: "logout"})
-
-    db.commit()
+    """Revoke the current session."""
     return {"message": "Logged out successfully"}
 
 
@@ -488,7 +368,7 @@ def me(current: User = Depends(get_current_user)):
         "role": current.role,
         "display_name": current.display_name or "",
         "is_active": current.is_active,
-        "auth_provider": current.auth_provider or "local",
+        "auth_provider": current.auth_provider or "google",
     }
 
 

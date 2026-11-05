@@ -1,34 +1,20 @@
-"""Authentication, authorization, and session security for New Look Impex.
+"""Authentication and authorization for New Look Impex admin.
 
-Implements:
-- Argon2 password hashing (via passlib with bcrypt fallback)
-- JWT access tokens (short-lived) + refresh tokens (longer-lived, rotatable)
-- Admin role-based authorization (admin | editor | viewer)
-- Login attempt rate limiting + lockout
-- Two-factor authentication (TOTP) support
-- Secure session cookies (HttpOnly, Secure, SameSite=Lax)
-- Audit logging of all auth events
+Auth flow:
+1. User signs in with Google via NextAuth on the frontend
+2. NextAuth issues a JWT (access token) signed with NEXTAUTH_SECRET
+3. Frontend sends this JWT as Bearer token to backend APIs
+4. Backend verifies the JWT using the same SECRET_KEY (= NEXTAUTH_SECRET)
+5. Only newlookimpex130@gmail.com is allowed admin access
 
 Environment variables required:
-  SECRET_KEY             -- JWT signing secret (min 32 random chars)
+  SECRET_KEY             -- JWT signing secret (must match NEXTAUTH_SECRET)
+  ADMIN_EMAIL            -- admin email (default: newlookimpex130@gmail.com)
   ACCESS_TOKEN_EXPIRE_MINUTES -- access token TTL (default 15 min)
-  REFRESH_TOKEN_EXPIRE_DAYS  -- refresh token TTL (default 7 days)
-  TWO_FACTOR_ENABLED        -- "true" to require 2FA for admin login
-  TOTP_ISSUER               -- issuer name for TOTP (default "New Look Impex")
-  ADMIN_EMAIL               -- bootstrap admin email
-  ADMIN_PASSWORD            -- bootstrap admin password (changed on first login)
-
-Rate limits (in-memory fallback; Redis-backed preferred):
-  LOGIN_MAX_ATTEMPTS / LOGIN_LOCKOUT_MINUTES  -- from config
 """
 
 from __future__ import annotations
 
-import base64
-import hashlib
-import hmac
-import json
-import os
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -37,7 +23,6 @@ from typing import Optional
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from .config import settings
@@ -45,34 +30,23 @@ from .database import get_db
 from .models import User
 
 # ---------------------------------------------------------------------------
-# Password hashing: Argon2 (preferred) with bcrypt fallback
-# ---------------------------------------------------------------------------
-pwd_ctx = CryptContext(
-    schemes=["argon2", "bcrypt"],
-    deprecated="auto",
-    argon2__time_cost=3,
-    argon2__memory_cost=65536,
-    argon2__parallelism=4,
-)
-
-# ---------------------------------------------------------------------------
-# JWT configuration
+# JWT configuration (shared with NextAuth NEXTAUTH_SECRET)
 # ---------------------------------------------------------------------------
 SECRET_KEY = settings.SECRET_KEY
 if SECRET_KEY in ("change-me-in-production-min-32-chars", "", None):
     raise RuntimeError(
         "SECRET_KEY must be set to a strong random value in production. "
-        "Generate with: openssl rand -hex 32"
+        "Generate with: openssl rand -hex 32. Must match NEXTAUTH_SECRET."
     )
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+ADMIN_EMAIL = settings.ADMIN_EMAIL or "newlookimpex130@gmail.com"
 
 security = HTTPBearer(auto_error=False)
 
 # ---------------------------------------------------------------------------
-# In-memory rate limiting (fallback when Redis unavailable)
+# Rate limiting (in-memory fallback)
 # ---------------------------------------------------------------------------
 _login_attempts: dict[str, list[float]] = defaultdict(list)
 _lockouts: dict[str, float] = {}  # key -> lockout_until_timestamp
@@ -96,7 +70,6 @@ def record_login_attempt(key: str, success: bool) -> None:
     arr = [t for t in _login_attempts[key] if now - t < settings.LOGIN_LOCKOUT_MINUTES * 60]
     arr.append(now)
     _login_attempts[key] = arr
-
     if not success and len(arr) >= settings.MAX_LOGIN_ATTEMPTS:
         _lockouts[key] = now + settings.LOGIN_LOCKOUT_MINUTES * 60
 
@@ -110,32 +83,28 @@ def clear_login_attempts(key: str) -> None:
 # Token helpers
 # ---------------------------------------------------------------------------
 
-def _create_token(
-    data: dict,
-    secret: str,
-    expires_delta: timedelta,
-) -> str:
+def _create_token(data: dict, secret: str, expires_delta: timedelta) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
     return jwt.encode(to_encode, secret, algorithm=ALGORITHM)
 
 
-def create_access_token(subject: str, role: str, user_id: int) -> str:
+def create_access_token(email: str, role: str, user_id: int) -> str:
     """Short-lived access token."""
     return _create_token(
-        {"sub": subject, "role": role, "user_id": user_id, "type": "access"},
+        {"sub": email, "role": role, "user_id": user_id, "type": "access"},
         SECRET_KEY,
         timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
 
-def create_refresh_token(subject: str, user_id: int) -> str:
+def create_refresh_token(email: str, user_id: int) -> str:
     """Longer-lived refresh token."""
     return _create_token(
-        {"sub": subject, "user_id": user_id, "type": "refresh"},
+        {"sub": email, "user_id": user_id, "type": "refresh"},
         SECRET_KEY,
-        timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+        timedelta(days=7),
     )
 
 
@@ -150,8 +119,21 @@ def decode_token(token: str, expected_type: str = "access") -> Optional[dict]:
         return None
 
 
+def verify_nextauth_token(token: str) -> Optional[dict]:
+    """Verify a NextAuth JWT issued by the frontend's NextAuth provider.
+
+    NextAuth signs its session JWT with NEXTAUTH_SECRET. If SECRET_KEY equals
+    NEXTAUTH_SECRET, we can verify and extract the user email.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+
+
 # ---------------------------------------------------------------------------
-# Dependency: get current authenticated user
+# Dependency: get current authenticated user (NextAuth JWT)
 # ---------------------------------------------------------------------------
 
 async def get_current_user(
@@ -159,10 +141,9 @@ async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db),
 ) -> User:
-    """Validate the JWT bearer token and return the current User.
+    """Validate the NextAuth JWT bearer token and return the User.
 
-    Raises HTTPException(401) if missing/invalid/expired.
-    Raises HTTPException(403) if user is inactive.
+    Only newlookimpex130@gmail.com is allowed admin access.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -174,24 +155,45 @@ async def get_current_user(
         raise credentials_exception
 
     token = credentials.credentials
-    payload = decode_token(token, expected_type="access")
+    payload = verify_nextauth_token(token)
     if payload is None:
+        # Also try as our own access token
+        payload = decode_token(token, expected_type="access")
+        if payload is None:
+            raise credentials_exception
+
+    email = payload.get("email") or payload.get("sub")
+    if not email:
         raise credentials_exception
 
-    user_id: int = payload.get("user_id")
-    if user_id is None:
-        raise credentials_exception
+    # Only allow the admin email
+    if email.lower() != ADMIN_EMAIL.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Admin access restricted to {ADMIN_EMAIL}",
+        )
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.email == email).first()
     if user is None:
-        raise credentials_exception
+        # Auto-create admin user on first Google login
+        user = User(
+            email=email,
+            password_hash="",  # Google handles auth
+            role="admin",
+            is_active=True,
+            auth_provider="google",
+            display_name=payload.get("name") or email.split("@")[0],
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is disabled",
         )
 
-    # Record last activity (lightweight)
     return user
 
 
@@ -210,77 +212,23 @@ def require_role(*allowed_roles: str):
 
 
 # ---------------------------------------------------------------------------
-# Password helpers
-# ---------------------------------------------------------------------------
-
-def hash_password(password: str) -> str:
-    return pwd_ctx.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    try:
-        return pwd_ctx.verify(plain_password, hashed_password)
-    except Exception:
-        return False
-
-
-def validate_password_strength(password: str) -> list[str]:
-    """Return list of weakness messages (empty if strong)."""
-    weaknesses = []
-    if len(password) < settings.PASSWORD_MIN_LENGTH:
-        weaknesses.append(f"Password must be at least {settings.PASSWORD_MIN_LENGTH} characters")
-    if settings.PASSWORD_REQUIRE_UPPER and not any(c.isupper() for c in password):
-        weaknesses.append("Password must contain an uppercase letter")
-    if settings.PASSWORD_REQUIRE_LOWER and not any(c.islower() for c in password):
-        weaknesses.append("Password must contain a lowercase letter")
-    if settings.PASSWORD_REQUIRE_DIGIT and not any(c.isdigit() for c in password):
-        weaknesses.append("Password must contain a digit")
-    if settings.PASSWORD_REQUIRE_SYMBOL and not any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password):
-        weaknesses.append("Password must contain a special character")
-    return weaknesses
-
-
-# ---------------------------------------------------------------------------
 # Bootstrap admin user
 # ---------------------------------------------------------------------------
 
 def ensure_bootstrap_admin(db: Session) -> None:
     """Create the bootstrap admin user if none exists."""
-    existing = db.query(User).filter(User.is_active == True).first()
+    existing = db.query(User).filter(User.email == ADMIN_EMAIL).first()
     if existing:
         return
-    admin_email = settings.ADMIN_EMAIL or "admin@newlookimpex.example"
-    admin_password = settings.ADMIN_PASSWORD or "ChangeMe123!"
     u = User(
-        email=admin_email,
-        password_hash=hash_password(admin_password),
+        email=ADMIN_EMAIL,
+        password_hash="",  # Google handles auth
         role="admin",
         is_active=True,
-        auth_provider="local",
+        auth_provider="google",
         display_name="Admin",
     )
     db.add(u)
     db.commit()
-    print(f"\n[SECURITY] Bootstrap admin created: {admin_email}")
-    print(f"[SECURITY] Bootstrap password: {admin_password}")
-    print("[SECURITY] CHANGE THESE CREDENTIALS IMMEDIATELY AFTER FIRST LOGIN.\n")
-
-
-# ---------------------------------------------------------------------------
-# Two-factor (TOTP) helpers
-# ---------------------------------------------------------------------------
-
-def generate_totp_secret() -> str:
-    """Generate a base32-encoded TOTP secret."""
-    return base64.b32encode(os.urandom(20)).decode("utf-8")
-
-
-def verify_totp_token(secret: str, token: str) -> bool:
-    """Verify a TOTP token against the secret."""
-    try:
-        import pyotp
-    except ImportError:
-        # pyotp not installed — 2FA cannot be verified; deny
-        return False
-    totp = pyotp.TOTP(secret)
-    return totp.verify(token, valid_window=1)
+    print(f"\n[SECURITY] Bootstrap admin created: {ADMIN_EMAIL}")
+    print("[SECURITY] Login with Google at /api/auth/signin\n")

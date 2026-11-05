@@ -2,9 +2,16 @@ import type { EventInput } from "./types";
 
 export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+// NextAuth JWT token — set via setApiToken() from the NextAuth session provider
+let _apiToken: string | null = null;
+
+export function setApiToken(token: string | null) {
+  _apiToken = token;
+}
+
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("nli_token");
+  return _apiToken;
 }
 
 export function authHeaders(): HeadersInit {
