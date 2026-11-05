@@ -341,7 +341,7 @@ export default function HomeClient() {
                 Masterpieces.
               </h1>
               <p className="mt-5 text-navy/70 max-w-xl text-base md:text-lg leading-relaxed">
-                Artisan collections from Moradabad — hand-hammered, food-safe, export-ready. Premium
+                Artisan collections from Moradabad — hand-hammered, export-ready. Premium
                 craftsmanship for <strong className="text-navy">retailers, wholesalers, interior designers,
                 and corporate importers</strong> — end-to-end manufacturing, quality assurance and export logistics.
               </p>
@@ -684,8 +684,7 @@ export default function HomeClient() {
               </h2>
               <p className="text-gray mt-4 leading-relaxed">
                 New Look Impex is a Moradabad-based manufacturer and exporter of handcrafted brass and copper handicrafts.
-                With decades of craft tradition and verified supplier networks, we deliver premium metalware to retailers,
-                importers, and distributors across 50+ countries. GSTIN: 09AFKPA4462R1ZW.
+                We deliver premium metalware to retailers, importers, and distributors worldwide. GSTIN: 09AFKPA4462R1ZW.
               </p>
               <p className="text-gray mt-3 leading-relaxed">
                 Every product is crafted with attention to material quality, finish consistency, and export-ready packaging.
@@ -743,37 +742,6 @@ export default function HomeClient() {
               </div>
               <Link href="/about" className="btn btn-clay mt-4">Learn More About Us</Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Our Impact - Helping Artisans Grow */}
-      <section className="section bg-sand/40" aria-labelledby="impact">
-        <div className="container-x">
-          <div className="text-center mb-10">
-            <p className="eyebrow text-clay">Our Impact</p>
-            <h2 id="impact" className="font-sans font-bold text-navy text-3xl md:text-4xl mt-2">Helping Artisans Grow</h2>
-            <p className="text-gray mt-3 max-w-2xl mx-auto text-sm">
-              Every piece you bring home carries the hands, heritage, and hope of India's metal artisans.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {[
-              { value: "30+", label: "Artisan families empowered through craftsmanship" },
-              { value: "60+", label: "Meaningful livelihoods created" },
-              { value: "100+", label: "Lives positively impacted through our artisans" },
-              { value: "250+", label: "Heritage designs brought to life" },
-            ].map((s) => (
-              <div key={s.label} className="card text-center">
-                <p className="font-sans font-bold text-3xl text-clay">{s.value}</p>
-                <p className="text-xs text-gray mt-2">{s.label}</p>
-              </div>
-            ))}
-          </div>
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="text-gray leading-relaxed">
-              This is craftsmanship with a purpose — helping Indian art survive, and grow, in a way it never has before.
-            </p>
           </div>
         </div>
       </section>
@@ -1001,8 +969,7 @@ export default function HomeClient() {
                   techniques passed down through generations of artisans.
                 </p>
                 <p className="text-gray mt-4 text-sm leading-relaxed">
-                  Every cookware piece is <strong className="text-navy">properly tinned (kalai-coated)</strong> for safe daily use,
-                  <strong className="text-navy">handcrafted</strong> with strict quality checks, and sold
+                  Every cookware piece is <strong className="text-navy">handcrafted</strong> with strict quality checks, and sold
                   <strong className="text-navy">factory-direct</strong> to retailers, wholesalers, interior designers and
                   corporate importers worldwide. GSTIN-verified exporter: 09AFKPA4462R1ZW.
                 </p>
@@ -1070,14 +1037,14 @@ export default function HomeClient() {
               <ul className="text-sm text-gray space-y-2 list-disc list-inside">
                 <li className="font-semibold text-navy">New Look Impex, Moradabad, Uttar Pradesh 244001, India</li>
                 <li>📞 +91 8218251238 / +91 7500441239</li>
-                <li>✉️ newlookimpex130@gmail.com</li>
-                <li>💬 WhatsApp: +91 8218251238</li>
+                <li>✉️ Website: newlookimpex130@gmail.com · Sales: newlookimpex@gmail.com</li>
+                <li>💬 WhatsApp Business: +91 96900 53913 · Sales WhatsApp: +91 9808588603</li>
                 <li>🌐 https://newlookimpex.store</li>
                 <li>📋 GSTIN: 09AFKPA4462R1ZW</li>
               </ul>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link href="/request-quote" className="btn btn-clay !px-5 !py-2.5 text-xs">Request Bulk Quote</Link>
-                <a href="https://wa.me/918218251238" target="_blank" rel="noopener noreferrer" className="btn btn-outline !px-5 !py-2.5 text-xs">WhatsApp Us</a>
+                <a href="https://wa.me/919690053913" target="_blank" rel="noopener noreferrer" className="btn btn-outline !px-5 !py-2.5 text-xs">WhatsApp Business</a>
               </div>
             </div>
           </div>

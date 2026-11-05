@@ -146,16 +146,19 @@ export function trackEvent(input: EventInput): void {
   }
 }
 
-export const WHATSAPP_URL = "https://wa.me/918218251238";
+export const WHATSAPP_URL = "https://wa.me/919690053913";
 export const BUSINESS_EMAIL = "newlookimpex130@gmail.com";
+export const BUSINESS_SALES_EMAIL = "newlookimpex@gmail.com";
 export const BUSINESS_PHONES = ["+91 8218251238", "+91 7500441239"];
+export const BUSINESS_WHATSAPP = "+91 96900 53913";
+export const BUSINESS_SALES_WHATSAPP = "+91 9808588603";
 export const BUSINESS_LOCATION = "Moradabad, Uttar Pradesh, India";
 export const WHATSAPP_TEXT = "Hi New Look Impex, I would like a wholesale quotation.";
 
 // Configurable WhatsApp number (admin setting `whatsapp_number`, E.164 digits).
 // Seeded with the known default; the public layout fetches settings once and
 // updates it, and components subscribe via useWhatsappNumber() to re-render.
-export const DEFAULT_WHATSAPP_NUMBER = "918218251238";
+export const DEFAULT_WHATSAPP_NUMBER = "919690053913";
 let _whatsappNumber = DEFAULT_WHATSAPP_NUMBER;
 const _waListeners = new Set<() => void>();
 

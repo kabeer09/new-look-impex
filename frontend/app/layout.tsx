@@ -49,6 +49,19 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
+  alternates: {
+    canonical: "https://newlookimpex.store/",
+    languages: {
+      "en-IN": "https://newlookimpex.store/",
+      "en-AU": "https://newlookimpex.store/au",
+      "en-AE": "https://newlookimpex.store/uae",
+      "en-GB": "https://newlookimpex.store/uk",
+      "en-US": "https://newlookimpex.store/usa",
+      "en-CA": "https://newlookimpex.store/canada",
+      "en-EU": "https://newlookimpex.store/europe",
+      "x-default": "https://newlookimpex.store/",
+    },
+  },
 };
 
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
@@ -58,7 +71,7 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${playfair.variable}`}>
+    <html lang="en-IN" className={`${jakarta.variable} ${playfair.variable}`}>
       <body className="font-sans">
         <SessionProviderWrapper>{children}</SessionProviderWrapper>
       </body>

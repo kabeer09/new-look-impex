@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api, BUSINESS_EMAIL, BUSINESS_LOCATION, BUSINESS_PHONES, whatsappLink } from "@/lib/api";
+import { api, BUSINESS_EMAIL, BUSINESS_LOCATION, BUSINESS_PHONES, whatsappLink, BUSINESS_SALES_EMAIL } from "@/lib/api";
 import type { Category, Collection, PublicSettings } from "@/lib/types";
 
 const COMPANY_LINKS: [string, string][] = [
@@ -96,7 +96,12 @@ export function PublicFooter() {
             <ul className="text-sm text-cream/80 mt-3 space-y-1.5">
               <li>
                 <a className="hover:text-gold-light underline underline-offset-2" href={`mailto:${email}`}>
-                  {email}
+                  Website Enquiries: {email}
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-gold-light underline underline-offset-2" href={`mailto:${BUSINESS_SALES_EMAIL}`}>
+                  Sales: {BUSINESS_SALES_EMAIL}
                 </a>
               </li>
               {phones.map((p) => (
@@ -109,8 +114,11 @@ export function PublicFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  WhatsApp: +91 8218251238
+                  WhatsApp Business: +91 96900 53913
                 </a>
+              </li>
+              <li>
+                <span className="text-xs text-gray">Sales WhatsApp: +91 9808588603</span>
               </li>
             </ul>
           </div>
