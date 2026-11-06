@@ -96,7 +96,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Content-Security-Policy"] = CSP_HEADER_VALUE
 
         # Remove server identification headers if present
-        response.headers.pop("Server", None)
-        response.headers.pop("X-Powered-By", None)
+        response.headers["Server"] = ""
+        response.headers["X-Powered-By"] = ""
 
         return response
