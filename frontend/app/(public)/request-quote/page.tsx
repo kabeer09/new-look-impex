@@ -13,7 +13,7 @@ const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 /** Compose the WhatsApp enquiry text with customer details + every selected product. */
 function buildWaText(
   form: { full_name: string; business_email: string; company_name: string; country: string; phone: string; target_price: string; delivery_timeframe: string; additional_requirements: string },
-  items: { product_name: string; quantity: number; notes?: string; unit?: string }[],
+  items: { product_name: string; quantity: string | number; notes?: string; unit?: string }[],
   reference?: string
 ): string {
   const lines: (string | false)[] = [
@@ -111,7 +111,7 @@ export default function RequestQuotePage() {
           items: cart.items.map((i) => ({
             product_id: i.product_id,
             product_name: i.product_name,
-            quantity: i.quantity,
+            quantity: String(i.quantity),
             unit: i.unit || undefined,
             notes: i.notes || undefined,
           })),
