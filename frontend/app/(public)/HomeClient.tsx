@@ -367,7 +367,7 @@ export default function HomeClient() {
               <div className="relative w-64 md:w-80 lg:w-96">
                 <div className="relative rounded-t-[999px] rounded-b-[2rem] overflow-hidden ring-4 ring-gold/50 shadow-2xl bg-cream">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/hero-brass-kitchen.jpg"
+                  <img src="/hero-banner.png"
                     onError={(e) => { const t = e.currentTarget; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/banner-featured-collection.jpg"; } }}
                     alt="Brass cookware — New Look Impex"
                     className="w-full aspect-[3/4] object-cover"
@@ -897,7 +897,7 @@ export default function HomeClient() {
               <div className="aspect-[4/5] bg-sand/40 relative overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={toFullUrl(copperAll[0]?.image?.url) || "/hero-brass-kitchen.jpg"}
+                  src={toFullUrl(copperAll[0]?.image?.url) || "/hero-banner.png"}
                   alt="Copper utensils — copper cookware bottles jugs mugs manufacturer Moradabad India"
                   className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
@@ -917,7 +917,7 @@ export default function HomeClient() {
               <div className="aspect-[4/5] bg-sand/40 relative overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={toFullUrl(brassAll[0]?.image?.url) || "/hero-brass-kitchen.jpg"}
+                  src={toFullUrl(brassAll[0]?.image?.url) || "/hero-banner.png"}
                   alt="Brass utensils pital ke bartan cookware dinner sets manufacturer Moradabad India"
                   className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
@@ -937,7 +937,7 @@ export default function HomeClient() {
               <div className="aspect-[4/5] bg-sand/40 relative overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={toFullUrl(ft[0]?.image?.url) || "/hero-brass-kitchen.jpg"}
+                  src={toFullUrl(ft[0]?.image?.url) || "/hero-banner.png"}
                   alt="Bronze kansa utensils bronze dinnerware thali sets manufacturer Moradabad India"
                   className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"

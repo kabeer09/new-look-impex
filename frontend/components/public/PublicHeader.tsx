@@ -90,6 +90,7 @@ export function PublicHeader() {
               className="hidden lg:flex flex-col items-center leading-none mx-6"
               aria-label="New Look Impex home"
             >
+              <img src="/logo-newlookimpex.jpg" alt="New Look Impex" className="h-10 w-auto" />
               <span className="font-serif font-bold text-espresso text-xl tracking-wide">NEW LOOK IMPEX</span>
               <span className="text-[10px] tracking-[0.28em] text-clay mt-1">BRASS &amp; COPPER · WHOLESALE</span>
             </Link>
