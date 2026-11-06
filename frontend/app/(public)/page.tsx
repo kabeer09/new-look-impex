@@ -118,19 +118,6 @@ const ORG_JSONLD = {
     "https://youtube.com/@nlicollections",
     "https://newlookimpex.store",
   ],
-  hasOfferCatalog: {
-    "@type": "OfferCatalog",
-    name: "Brass & Copper B2B Product Ranges — Wholesale & Export",
-    itemListElement: [
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Kitchenware & Utensils — wholesale manufacturer supply", eligibleQuantity: { "@type": "QuantitativeValue", value: "MOQ applies" } } },
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Copper Cookware & Utensils — factory-direct bulk export", eligibleQuantity: { "@type": "QuantitativeValue", value: "MOQ applies" } } },
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Hand-Hammered Copper Jugs, Pitchers & Bottles — bulk copper drinkware supplier", eligibleQuantity: { "@type": "QuantitativeValue", value: "MOQ applies" } } },
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Urlis & Planters — traditional metalware exporter", eligibleQuantity: { "@type": "QuantitativeValue", value: "MOQ applies" } } },
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Brass Diyas & Lanterns — festive & temple lighting wholesale", eligibleQuantity: { "@type": "QuantitativeValue", value: "MOQ applies" } } },
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "Copper & Brass Gift Sets — wedding, festival and corporate gifting", eligibleQuantity: { "@type": "QuantitativeValue", value: "MOQ applies" } } },
-      { "@type": "Offer", itemOffered: { "@type": "Product", name: "OEM / Private Label Metalware — custom finishes, engravings and branding", eligibleQuantity: { "@type": "QuantitativeValue", value: "MOQ applies" } } },
-    ],
-  },
 };
 
 // Sitelinks searchbox for brand SERP results
