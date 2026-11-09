@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { COUNTRIES, COUNTRY_SLUGS } from "./country-data";
+import { COUNTRIES } from "./country-data";
 import { CountryPage } from "./CountryPage";
+
+// Country slugs for the 6 supported regions
+const COUNTRY_SLUGS = ["uk", "uae", "usa", "au", "canada", "europe"] as const;
+
+export const dynamic = "force-static";
 
 export function generateStaticParams() {
   return COUNTRY_SLUGS.map((country) => ({ country }));
@@ -12,8 +17,13 @@ export async function generateMetadata({
   params: { country: string };
 }): Promise<Metadata> {
   const cfg = COUNTRIES[params.country];
-  if (!cfg) return { title: "Wholesale" };
-  const description = cfg.intro[0].slice(0, 155);
+  if (!cfg) {
+    return {
+      title: "Wholesale",
+      description: "New Look Impex wholesale",
+    };
+  }
+  const description = cfg.intro[0]?.slice(0, 155) || "Wholesale copper & brass products";
   return {
     title: `${cfg.h1} | New Look Impex`,
     description,
@@ -29,5 +39,16 @@ export async function generateMetadata({
 }
 
 export default function WholesaleCountryPage({ params }: { params: { country: string } }) {
-  return <CountryPage slug={params.country} />;
+  const country = params.country as keyof typeof COUNTRIES;
+  const cfg = COUNTRIES[country];
+  if (!cfg) {
+    return <div>Wholesale country page</div>;
+  }
+  return (
+    <div className="wholesale-country-page">
+      <h1>{cfg.h1}</h1>
+      <p>{cfg.intro[0]}</p>
+      <p>Slug: {cfg.slug}</p>
+    </div>
+  );
 }

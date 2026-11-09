@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   verification: {
     google: "TEfYClAKNA6ckET-Smb56-eka2ydnJ1BW3s0On4X6EI",
   },
-  title: "New Look Impex — Brass & Copper Products Manufacturer, Exporter & Wholesale B2B Supplier | Moradabad, India",
+  title: "New Look Impex | Brass & Copper Manufacturer in India",
   description:
-    "New Look Impex (NLI Collections) is a brass and copper products manufacturer, exporter and wholesale B2B supplier based in Moradabad, Uttar Pradesh, India. Brass utensils & kitchenware, copper cookware & bottles, handcrafted urlis, diyas, lanterns, decorative home accents and festival gifting at factory-direct bulk prices. Trusted by global retailers, importers, distributors, hardline/HORECA buyers. GSTIN 09AFKPA4462R1ZW — request your written quotation.",
+    "New Look Impex is a Moradabad, India-based manufacturer and exporter of handcrafted brass and copper products, home décor, kitchenware and metal handicrafts. Wholesale, OEM and private label enquiries welcome.",
   keywords: [
     "brass products manufacturer in Moradabad",
     "copper products manufacturer in India",
@@ -100,6 +100,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());`,
+          }}
+        />
+        {/* Organization Schema (JSON-LD) - Validated via Google Rich Results Test */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "New Look Impex",
+              "description": "Manufacturer and Exporter of Handcrafted Brass and Copper Products",
+              "url": "https://newlookimpex.store",
+              "logo": "https://newlookimpex.store/logo.png",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Moradabad",
+                "addressRegion": "Uttar Pradesh",
+                "addressCountry": "India",
+                "postalCode": "244001"
+              },
+              "telephone": "+91 8218251238",
+              "email": "newlookimpex130@gmail.com",
+              "sameAs": [
+                "https://facebook.com/newlookimpex",
+                "https://instagram.com/newlookimpex_india"
+              ]
+            }, null, 2)
           }}
         />
       </head>
