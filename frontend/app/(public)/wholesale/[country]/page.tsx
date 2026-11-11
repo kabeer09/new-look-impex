@@ -3,7 +3,7 @@ import { COUNTRIES } from "./country-data";
 import { CountryPage } from "./CountryPage";
 
 // Country slugs for the 6 supported regions
-const COUNTRY_SLUGS = ["uk", "uae", "usa", "au", "canada", "europe"] as const;
+const COUNTRY_SLUGS = Object.keys(COUNTRIES) as string[];
 
 export const dynamic = "force-static";
 
@@ -47,7 +47,7 @@ export default function WholesaleCountryPage({ params }: { params: { country: st
   return (
     <div className="wholesale-country-page">
       <h1>{cfg.h1}</h1>
-      <p>{cfg.intro[0]}</p>
+      <p>{cfg.intro?.[0]}</p>
       <p>Slug: {cfg.slug}</p>
     </div>
   );

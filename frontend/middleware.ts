@@ -1,13 +1,18 @@
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
+  pages: {
+    signIn: "/admin/signin",
+  },
   callbacks: {
     authorized: ({ token, req }) => {
-      const isAdmin = req.nextUrl.pathname.startsWith("/admin");
-      if (isAdmin) {
-        return !!token && token.email === "newlookimpex130@gmail.com";
+      const path = req.nextUrl.pathname;
+
+      if (path === "/admin/signin") {
+        return true;
       }
-      return true; // public pages stay open
+
+      return token?.email === "newlookimpex130@gmail.com";
     },
   },
 });
