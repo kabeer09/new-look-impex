@@ -1,0 +1,39 @@
+# Environment files - never commit
+.env*
+.env.example
+
+# Production and deployment files
+.next/
+/out/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Dependencies
+node_modules/
+yarn.lock
+p-lockfile
+
+# Next.js
+/.next/
+/dist/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.code-workspace
+
+# Local overrides
+next-env.d*
+
+# Cloudinary
+next.config.js
+
+# NextAuth
+app/api/auth/[...nextauth]/
+
+# IntelliJ/Idea
+*.iml

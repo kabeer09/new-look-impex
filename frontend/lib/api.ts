@@ -5,6 +5,17 @@ export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 // NextAuth JWT token — set via setApiToken() from the NextAuth session provider
 let _apiToken: string | null = null;
 
+// Track auth failure category for diagnostics (never exposes credentials)
+let authFailureCategory: "missing_header" | "malformed_token" | "invalid_credentials" | "none" = "none";
+
+export function setAuthFailureCategory(category: "missing_header" | "malformed_token" | "invalid_credentials" | "none") {
+  authFailureCategory = category;
+}
+
+export function getAuthFailureCategory(): "missing_header" | "malformed_token" | "invalid_credentials" | "none" {
+  return authFailureCategory;
+}
+
 export function setApiToken(token: string | null) {
   _apiToken = token;
 }
@@ -14,9 +25,44 @@ export function getToken(): string | null {
   return _apiToken;
 }
 
+// Enhanced auth headers with better null/empty handling
 export function authHeaders(): HeadersInit {
   const t = getToken();
-  return t ? { Authorization: `Bearer ${t}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
+  // Accept non-empty string tokens (including JWTs); empty string means no valid token
+  const hasValidToken = t && typeof t === "string" && t.length > 0;
+  return hasValidToken
+    ? { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }
+    : { "Content-Type": "application/json" };
+}
+
+/** Diagnostic: attempt to decode JWT header without exposing secret */
+function tryJwtDecode(encodedToken: string): { header: string; payload: string } | null {
+  try {
+    const parts = encodedToken.split(".");
+    if (parts.length !== 3) return null;
+    const header = Buffer.from(parts[0], "base64").toString("utf-8");
+    const payload = Buffer.from(parts[1], "base64").toString("utf-8");
+    return { header, payload };
+  } catch {
+    return null;
+  }
+}
+
+/** Parse JWT payload claims for diagnostics (never returns secret) */
+function tryJwtClaims(encodedToken: string): { exp?: number; iat?: number; role?: string; email?: string } | null {
+  try {
+    const parts = encodedToken.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
+    return {
+      exp: payload.exp,
+      iat: payload.iat,
+      role: payload.role,
+      email: payload.email,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function parseError(status: number, body: string): string {
@@ -33,6 +79,15 @@ function parseError(status: number, body: string): string {
 async function handleResponse<T>(r: Response): Promise<T> {
   if (!r.ok) {
     const body = await r.text();
+    // Set auth failure category based on response
+    const lowerBody = body.toLowerCase();
+    if (lowerBody.includes("401") || lowerBody.includes("unauthorized") || lowerBody.includes("invalid credentials")) {
+      setAuthFailureCategory("invalid_credentials");
+    } else if (lowerBody.includes("missing") || lowerBody.includes("no auth")) {
+      setAuthFailureCategory("missing_header");
+    } else if (lowerBody.includes("malformed") || lowerBody.includes("invalid token")) {
+      setAuthFailureCategory("malformed_token");
+    }
     throw new Error(parseError(r.status, body));
   }
   const text = await r.text();
