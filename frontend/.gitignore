@@ -37,3 +37,4 @@ app/api/auth/[...nextauth]/
 
 # IntelliJ/Idea
 *.iml
+.vercel
