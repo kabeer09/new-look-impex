@@ -12,6 +12,7 @@ const COMPANY_LINKS: [string, string][] = [
   ["Partner With Us", "/customisation"],
   ["NLI Collections", "/nli-collections"],
   ["Contact", "/contact"],
+  ["Admin Login", "/admin/signin"],
 ];
 
 const SHOP_LINKS: [string, string][] = [
