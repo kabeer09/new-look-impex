@@ -189,6 +189,29 @@ class ProductIn(_NullCoercing):
     image_urls: list[str] = []
 
 
+class ProductPatch(BaseModel):
+    """Partial product update.
+
+    Only fields present in the payload are changed; absent or null fields
+    keep their current values. Unlike a full PUT save this never touches
+    variants, specs, collections or image rows, so it is safe for bulk
+    SEO/content edits (name, slug, descriptions, meta tags).
+    """
+
+    name: Optional[str] = Field(default=None, max_length=512)
+    slug: Optional[str] = Field(default=None, max_length=512)
+    short_description: Optional[str] = None
+    description: Optional[str] = None
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+
+
+class ImagePatch(BaseModel):
+    """Partial image update — alt text only; null keeps the current value."""
+
+    alt_text: Optional[str] = Field(default=None, max_length=512)
+
+
 class RFQItemIn(_NullCoercing):
     product_id: Optional[int] = None
     product_name: str = Field(min_length=1, max_length=512)

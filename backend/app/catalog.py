@@ -24,7 +24,8 @@ from .email import (campaign_email_html, campaign_email_text, email_configured,
                     send_newsletter_welcome)
 from .database import get_db
 from .media_store import delete_file, save_file
-from .schemas import (CategoryIn, CollectionIn, ProductIn, SpecIn, VariantIn)
+from .schemas import (CategoryIn, CollectionIn, ImagePatch, ProductIn, ProductPatch,
+                      SpecIn, VariantIn)
 from .text import slugify
 from . import media_store
 
@@ -850,6 +851,76 @@ def update_product(pid: int, body: ProductIn, db: Session = Depends(get_db),
         raise HTTPException(404, "Product not found")
     p = _save_product(p, body, db, is_new=False)
     return _product_out(p, db)
+
+
+@router.patch("/api/products/{pid}")
+def patch_product(pid: int, body: ProductPatch, db: Session = Depends(get_db),
+                  u=Depends(require_role("admin", "editor"))):
+    """Partial update of SEO/content fields only (name, slug, descriptions,
+    meta tags). Fields that are absent or null are left untouched, and unlike
+    PUT it never rebuilds variants, specs, collections or image rows — safe
+    for bulk content edits. A slug change records a permanent redirect from
+    the previous slug, exactly like PUT does."""
+    p = db.query(models.Product).filter(models.Product.id == pid).first()
+    if not p:
+        raise HTTPException(404, "Product not found")
+
+    if body.name is not None:
+        name = body.name.strip()
+        if not name:
+            raise HTTPException(422, "name cannot be empty")
+        p.name = name[:512]
+    if body.short_description is not None:
+        p.short_description = body.short_description
+    if body.description is not None:
+        p.description = body.description
+    if body.seo_title is not None:
+        p.seo_title = body.seo_title.strip()[:255]
+    if body.seo_description is not None:
+        p.seo_description = body.seo_description.strip()[:512]
+
+    if body.slug is not None and body.slug.strip():
+        new_slug = slugify(body.slug)
+        if new_slug and new_slug != p.slug:
+            def _slug_taken(slug_val: str) -> bool:
+                q = db.query(models.Product).filter(
+                    func.lower(models.Product.slug) == slug_val.lower())
+                return q.filter(models.Product.id != p.id).first() is not None
+
+            if _slug_taken(new_slug):
+                base, n = new_slug, 2
+                while _slug_taken(f"{base}-{n}"):
+                    n += 1
+                new_slug = f"{base}-{n}"
+            old_slug = (p.slug or "").strip().lower() or None
+            p.slug = new_slug
+            db.flush()
+            if old_slug and not db.query(models.ProductSlugRedirect).filter(
+                    func.lower(models.ProductSlugRedirect.old_slug) == old_slug).first():
+                db.add(models.ProductSlugRedirect(old_slug=old_slug, product_id=p.id))
+
+    db.commit()
+    db.refresh(p)
+    return _product_out(p, db)
+
+
+@router.patch("/api/products/{pid}/images/{image_id}")
+def patch_product_image(pid: int, image_id: int, body: ImagePatch,
+                        db: Session = Depends(get_db),
+                        u=Depends(require_role("admin", "editor"))):
+    """Update a product image's alt text only. Null keeps the current value."""
+    img = db.query(models.ProductImage).filter(
+        models.ProductImage.id == image_id,
+        models.ProductImage.product_id == pid).first()
+    if not img:
+        raise HTTPException(404, "Image not found")
+    if body.alt_text is not None:
+        img.alt_text = body.alt_text.strip()[:512]
+        db.commit()
+        db.refresh(img)
+    return {"id": img.id, "product_id": img.product_id, "url": img.url,
+            "alt_text": img.alt_text, "source": img.source or "",
+            "permission": img.permission or "", "is_concept": bool(img.is_concept)}
 
 
 @router.delete("/api/products/{pid}")
