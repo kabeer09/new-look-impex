@@ -17,7 +17,7 @@ export default function AdminProducts() {
   const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const page = 1;
+  const [page, setPage] = useState(1);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -30,6 +30,9 @@ export default function AdminProducts() {
       .catch((e) => setErr(String(e)))
       .finally(() => setLoading(false));
   }, [q, status, page]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setPage(1); }, [q, status]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -189,7 +192,30 @@ export default function AdminProducts() {
       )}
 
       {data && data.total > data.page_size && (
-        <p className="text-xs text-gray">Showing {data.items.length} of {data.total} products (page {data.page}).</p>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <p className="text-xs text-gray">
+            Showing {data.items.length} of {data.total} products (page {data.page} of {Math.ceil(data.total / data.page_size)}).
+          </p>
+          <div className="flex gap-2">
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              ← Previous
+            </button>
+            <span className="btn btn-ghost btn-sm pointer-events-none">
+              Page {page} / {Math.max(1, Math.ceil(data.total / data.page_size))}
+            </span>
+            <button
+              className="btn btn-ghost btn-sm"
+              disabled={page >= Math.ceil(data.total / data.page_size) || loading}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next →
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
