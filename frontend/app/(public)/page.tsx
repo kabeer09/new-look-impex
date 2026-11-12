@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
+import type { Category, ProductCard as ProductCardType } from "@/lib/types";
 import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
-  title: "Brass & Copper Products Manufacturer, Exporter & Wholesale Supplier in Moradabad, India | New Look Impex",
+  // absolute — bypasses the site-wide "| New Look Impex" title template so the
+  // brand appears exactly once (75 chars; primary homepage keyword first)
+  title: {
+    absolute: "Brass & Copper Handicraft Manufacturer in Moradabad, India | New Look Impex",
+  },
   description:
-    "Rank-first wholesale source: New Look Impex manufactures & exports handcrafted brass and copper products from Moradabad — brass kitchenware & cookware, copper utensils, hand-hammered jugs, urlis, diyas, lanterns, metal home décor and festive gifting. B2B bulk supply for retailers, importers, distributors, interior designers and corporate gifting programmes worldwide. GSTIN 09AFKPA4462R1ZW.",
+    "New Look Impex manufactures and exports brass handicrafts, copper bottles, kitchenware and metal home décor from Moradabad, India. Wholesale and bulk enquiries.",
   keywords:
-    "brass products manufacturer in Moradabad, copper products manufacturer in India, brass utensils manufacturer Moradabad, copper utensils exporter India, brass kitchenware wholesale supplier, copper cookware exporter India, brass handicrafts exporter Moradabad Uttar Pradesh, B2B metal handicrafts supplier India, wholesale brass home decor, copper bottle bulk order India, brass diya wholesale manufacturer, brass urli manufacturer exporter, brass lanterns bulk supply, OEM brass products manufacturer, private label copper drinkware, Indian handicrafts supplier for importers, brass and copper gift sets wholesale, metal decorative accessories manufacturer India, New Look Impex, NLI Collections",
+    "brass and copper handicraft manufacturer in India, Moradabad handicraft manufacturer, brass handicraft exporter from India, copper products manufacturer in India, metal handicraft exporter in India, brass and copper wholesale supplier, Indian handicraft manufacturer and exporter, brass home décor manufacturer, copper kitchenware wholesale supplier, Moradabad brass handicraft exporter, brass products manufacturer in Moradabad, copper utensils exporter India, brass kitchenware wholesale supplier, brass urli manufacturer, brass diya wholesale manufacturer, brass lanterns bulk supply, OEM brass products manufacturer, private label copper drinkware, Indian handicrafts supplier for importers, New Look Impex, NLI Collections",
   alternates: { canonical: "https://www.newlookimpex.store/" },
   openGraph: {
-    title: "New Look Impex — Brass & Copper Products Manufacturer & Exporter, Moradabad",
+    title: "Brass & Copper Handicraft Manufacturer in Moradabad, India | New Look Impex",
     description:
-      "Factory-direct manufacturer, exporter & wholesale supplier of brass and copper products from Moradabad — kitchenware, utensils, décor, festive & gifting. Bulk orders for global B2B buyers with written quotations.",
+      "Manufacturer and exporter of brass handicrafts, copper bottles, kitchenware and metal home décor from Moradabad, India — wholesale, bulk, custom manufacturing and private label for global buyers.",
     type: "website",
     url: "https://www.newlookimpex.store/",
     siteName: "New Look Impex",
@@ -19,9 +24,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "New Look Impex — Brass & Copper Manufacturer & Exporter",
+    title: "Brass & Copper Handicraft Manufacturer in Moradabad, India | New Look Impex",
     description:
-      "Moradabad manufacturer, exporter & wholesale supplier of brass & copper products. Written bulk quotations for B2B buyers.",
+      "Manufacturer and exporter of brass handicrafts, copper bottles, kitchenware and metal home décor from Moradabad, India. Written quotations for bulk orders.",
     images: ["/hero-brass-kitchen.jpg"],
   },
 };
@@ -137,7 +142,39 @@ const WEBSITE_JSONLD = {
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds
 
-export default function HomePage() {
+/**
+ * Server-side prefetch of the homepage's category and featured-product data so
+ * the initial HTML contains real category/product links (crawlable internal
+ * linking) instead of client-side loading placeholders. Any failure degrades to
+ * null and the client component fetches as before.
+ */
+async function fetchHomeData(): Promise<{
+  categories: Category[] | null;
+  featured: ProductCardType[] | null;
+}> {
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const [cats, feats] = await Promise.allSettled([
+    fetch(`${API_BASE}/api/public/categories`, { next: { revalidate: 3600 } }).then((r) =>
+      r.ok ? r.json() : Promise.reject(new Error(String(r.status)))
+    ),
+    fetch(`${API_BASE}/api/public/products?sort=featured&page_size=24`, {
+      next: { revalidate: 3600 },
+    }).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
+  ]);
+  return {
+    categories:
+      cats.status === "fulfilled" && Array.isArray(cats.value?.items)
+        ? cats.value.items
+        : null,
+    featured:
+      feats.status === "fulfilled" && Array.isArray(feats.value?.items)
+        ? feats.value.items
+        : null,
+  };
+}
+
+export default async function HomePage() {
+  const { categories, featured } = await fetchHomeData();
   return (
     <>
       <script
@@ -152,7 +189,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSONLD) }}
       />
-      <HomeClient />
+      <HomeClient initialCategories={categories} initialFeatured={featured} />
     </>
   );
 }

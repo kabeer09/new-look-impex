@@ -8,7 +8,12 @@ import type { PublicSettings } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
 import { RfqDrawer } from "./RfqDrawer";
 
-export const DEFAULT_ANNOUNCEMENT = "Global B2B Exporter of Handcrafted Copper & Brass Masterpieces | MOQ Applies | Worldwide Shipping";
+export const DEFAULT_ANNOUNCEMENT = "Brass & Copper Handicraft Manufacturer & Exporter in Moradabad, India | Wholesale, Bulk & Private Label Enquiries";
+
+/** Consumer-facing surfaces (regional storefronts + the B2C brand page) keep the
+ *  seasonal campaign announcement; the main B2B site always shows the trade line
+ *  so no discount/clearance messaging appears on B2B pages. */
+const CONSUMER_SURFACES = ["/usa", "/uk", "/uae", "/au", "/canada", "/europe", "/nli-collections", "/shop"];
 
 const NAV_LEFT = [
   { label: "Home", href: "/" },
@@ -27,9 +32,11 @@ const NAV_RIGHT = [
 ];
 
 /** Older routes kept working and linked where sensible. */
-/** Top announcement bar — shows the live automated seasonal campaign when one is active.
- *  Admin-configured announcement text (settings) always takes priority. */
+/** Top announcement bar — admin-configured text always wins; otherwise the
+ *  seasonal campaign shows on consumer surfaces and the B2B trade line elsewhere. */
 function AnnouncementBar() {
+  const pathname = usePathname() || "/";
+  const isConsumerSurface = CONSUMER_SURFACES.some((p) => pathname === p || pathname.startsWith(p + "/"));
   const [text, setText] = useState<string>(DEFAULT_ANNOUNCEMENT);
   const adminText = useRef<string | null>(null);
   useEffect(() => {
@@ -41,10 +48,12 @@ function AnnouncementBar() {
         }
       })
       .catch(() => undefined);
-    api<{ emoji: string; name: string; percent: number; code: string }>("/api/public/active-campaign")
-      .then((c) => { if (!adminText.current) setText(`${c.emoji} ${c.name.toUpperCase()} — ${c.percent}% OFF STOREWIDE | CODE: ${c.code}`); })
-      .catch(() => undefined);
-  }, []);
+    if (isConsumerSurface) {
+      api<{ emoji: string; name: string; percent: number; code: string }>("/api/public/active-campaign")
+        .then((c) => { if (!adminText.current) setText(`${c.emoji} ${c.name.toUpperCase()} — ${c.percent}% OFF STOREWIDE | CODE: ${c.code}`); })
+        .catch(() => undefined);
+    }
+  }, [isConsumerSurface]);
   return (
     <div className="bg-clay text-cream text-center text-[11px] tracking-[0.18em] uppercase py-1.5 px-4">
       <p>{text}</p>
