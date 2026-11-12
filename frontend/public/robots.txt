@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://www.newlookimpex.store/sitemap.xml
-llms.txt: https://www.newlookimpex.store/llms.txt
+# AI-readable company info: https://www.newlookimpex.store/llms.txt
