@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Brass Home Décor Wholesale — Manufacturer from Moradabad India",
   description:
     "Wholesale brass home décor from New Look Impex — manufacturer and exporter of brass urlis, diyas, lanterns, vases and decorative items from Moradabad, India. Bulk B2B pricing for retailers and distributors. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/brass-home-decor/" },
+  alternates: { canonical: "https://www.newlookimpex.store/brass-home-decor" },
   openGraph: {
     title: "Brass Home Décor Wholesale — Manufacturer India | New Look Impex",
     description: "Brass home décor manufacturer and exporter from Moradabad, India — urlis, diyas, lanterns and decorative items wholesale.",
     type: "website",
-    url: "https://newlookimpex.store/brass-home-decor/",
+    url: "https://www.newlookimpex.store/brass-home-decor",
   },
 };
 

@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const p = await r.json();
     // fetch follows 308 slug redirects — canonical/OG always use the CURRENT slug.
     const canonicalSlug = p.canonical_slug || p.slug || params.slug;
-    const canonical = `https://newlookimpex.store/products/${canonicalSlug}`;
+    const canonical = `https://www.newlookimpex.store/products/${canonicalSlug}`;
     const title = p.seo_title || p.name || "Product";
     const description =
       p.seo_description || p.short_description || p.description?.slice(0, 160) || fallback.description;

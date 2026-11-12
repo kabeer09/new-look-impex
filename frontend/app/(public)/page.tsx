@@ -7,13 +7,13 @@ export const metadata: Metadata = {
     "Rank-first wholesale source: New Look Impex manufactures & exports handcrafted brass and copper products from Moradabad — brass kitchenware & cookware, copper utensils, hand-hammered jugs, urlis, diyas, lanterns, metal home décor and festive gifting. B2B bulk supply for retailers, importers, distributors, interior designers and corporate gifting programmes worldwide. GSTIN 09AFKPA4462R1ZW.",
   keywords:
     "brass products manufacturer in Moradabad, copper products manufacturer in India, brass utensils manufacturer Moradabad, copper utensils exporter India, brass kitchenware wholesale supplier, copper cookware exporter India, brass handicrafts exporter Moradabad Uttar Pradesh, B2B metal handicrafts supplier India, wholesale brass home decor, copper bottle bulk order India, brass diya wholesale manufacturer, brass urli manufacturer exporter, brass lanterns bulk supply, OEM brass products manufacturer, private label copper drinkware, Indian handicrafts supplier for importers, brass and copper gift sets wholesale, metal decorative accessories manufacturer India, New Look Impex, NLI Collections",
-  alternates: { canonical: "https://newlookimpex.store/" },
+  alternates: { canonical: "https://www.newlookimpex.store/" },
   openGraph: {
     title: "New Look Impex — Brass & Copper Products Manufacturer & Exporter, Moradabad",
     description:
       "Factory-direct manufacturer, exporter & wholesale supplier of brass and copper products from Moradabad — kitchenware, utensils, décor, festive & gifting. Bulk orders for global B2B buyers with written quotations.",
     type: "website",
-    url: "https://newlookimpex.store/",
+    url: "https://www.newlookimpex.store/",
     siteName: "New Look Impex",
     images: [{ url: "/hero-brass-kitchen.jpg", width: 1024, height: 1024, alt: "Brass cookware — New Look Impex" }],
   },
@@ -38,7 +38,7 @@ const FAQ_JSONLD = {
   ],
 };
 
-const SITE_URL = "https://newlookimpex.store";
+const SITE_URL = "https://www.newlookimpex.store";
 
 const ORG_JSONLD = {
   "@context": "https://schema.org",
@@ -116,7 +116,7 @@ const ORG_JSONLD = {
   sameAs: [
     "https://www.instagram.com/nli_collections_india",
     "https://youtube.com/@nlicollections",
-    "https://newlookimpex.store",
+    "https://www.newlookimpex.store",
   ],
 };
 

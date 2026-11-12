@@ -13,7 +13,7 @@ import { mediaUrl } from "@/lib/api";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://new-look-impex-api.onrender.com";
 /** Canonical host — matches the sitemap's product URLs. */
-const SITE = "https://newlookimpex.store";
+const SITE = "https://www.newlookimpex.store";
 const BRAND = "New Look Impex";
 
 /** Rendered per request; product data itself is cached via fetch revalidate. */

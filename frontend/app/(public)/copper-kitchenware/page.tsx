@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Copper Kitchenware Manufacturer — Wholesale from Moradabad India",
   description:
     "Wholesale copper kitchenware from New Look Impex — hand-hammered copper cookware, pots, pans and serveware manufacturer in Moradabad, India. Bulk B2B pricing for retailers and distributors. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/copper-kitchenware/" },
+  alternates: { canonical: "https://www.newlookimpex.store/copper-kitchenware" },
   openGraph: {
     title: "Copper Kitchenware Manufacturer — Wholesale India | New Look Impex",
     description: "Hand-hammered copper kitchenware manufacturer and exporter from Moradabad, India — wholesale cookware, pots, pans and serveware.",
     type: "website",
-    url: "https://newlookimpex.store/copper-kitchenware/",
+    url: "https://www.newlookimpex.store/copper-kitchenware",
   },
 };
 

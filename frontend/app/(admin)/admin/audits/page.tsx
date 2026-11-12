@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 
 export default function Audits() {
   const [items, setItems] = useState<any[]>([]);
-  const [url, setUrl] = useState("https://newlookimpex.example/");
+  const [url, setUrl] = useState("https://www.newlookimpex.store/");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const load = () => api<any>("/api/seo/audits").then((d) => setItems(d.items || [])).catch((e) => setMsg(String(e)));

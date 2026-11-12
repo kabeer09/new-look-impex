@@ -1039,7 +1039,7 @@ export default function HomeClient() {
                 <li>📞 +91 8218251238 / +91 7500441239</li>
                 <li>✉️ Website: newlookimpex130@gmail.com · Sales: newlookimpex@gmail.com</li>
                 <li>💬 WhatsApp Business: +91 96900 53913 · Sales WhatsApp: +91 9808588603</li>
-                <li>🌐 https://newlookimpex.store</li>
+                <li>🌐 https://www.newlookimpex.store</li>
                 <li>📋 GSTIN: 09AFKPA4462R1ZW</li>
               </ul>
               <div className="mt-4 flex flex-wrap gap-3">

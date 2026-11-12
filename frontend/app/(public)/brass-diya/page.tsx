@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Brass Diyas Wholesale — Manufacturer from Moradabad India",
   description:
     "Wholesale brass diyas from New Look Impex — manufacturer and exporter of traditional Indian brass diyas, oil lamps and festive lighting from Moradabad, India. Bulk B2B pricing for retailers and distributors. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/brass-diya/" },
+  alternates: { canonical: "https://www.newlookimpex.store/brass-diya" },
   openGraph: {
     title: "Brass Diyas Wholesale — Manufacturer India | New Look Impex",
     description: "Brass diyas manufacturer and exporter from Moradabad, India — traditional oil lamps and festive lighting wholesale.",
     type: "website",
-    url: "https://newlookimpex.store/brass-diya/",
+    url: "https://www.newlookimpex.store/brass-diya",
   },
 };
 

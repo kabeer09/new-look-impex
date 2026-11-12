@@ -102,7 +102,7 @@ export default function ProductClient({ slug }: { slug: string }) {
     ["Packaging", product.packaging_info],
   ] as [string, string | null][]).flatMap(([k, v]) => (v ? [[k, v] as [string, string]] : []));
 
-  const canonical = `https://newlookimpex.store/products/${product.slug}`;
+  const canonical = `https://www.newlookimpex.store/products/${product.slug}`;
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -126,8 +126,8 @@ export default function ProductClient({ slug }: { slug: string }) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://newlookimpex.store/" },
-      { "@type": "ListItem", position: 2, name: "Products", item: "https://newlookimpex.store/products" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.newlookimpex.store/" },
+      { "@type": "ListItem", position: 2, name: "Products", item: "https://www.newlookimpex.store/products" },
       { "@type": "ListItem", position: 3, name: product.name, item: canonical },
     ],
   };

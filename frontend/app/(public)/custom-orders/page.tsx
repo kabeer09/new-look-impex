@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
 import { WholesaleEnquiryForm } from "@/app/(public)/wholesale/WholesaleEnquiryForm";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://newlookimpex.example";
+const SITE = "https://www.newlookimpex.store";
 
 export const metadata: Metadata = {
   title: "Custom Orders — Bespoke Copper & Brass | New Look Impex",

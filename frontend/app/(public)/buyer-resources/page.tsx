@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Buyer Resources",
   description:
     "Buyer resources from New Look Impex — catalogue PDF, wholesale RFQ guide, shipping & export information, customisation and contact.",
+  alternates: { canonical: "/buyer-resources" },
 };
 
 export default function BuyerResourcesPage() {

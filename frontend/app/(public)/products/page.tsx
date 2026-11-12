@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   title: "Shop Products — Wholesale Catalogue",
   description:
     "Browse the New Look Impex wholesale catalogue: handcrafted brass and copper décor searchable by name, SKU, category, material and finish. Request pricing on any piece.",
-  alternates: { canonical: "https://newlookimpex.store/products" },
+  alternates: { canonical: "https://www.newlookimpex.store/products" },
   openGraph: {
     title: "Shop Products — New Look Impex Wholesale Catalogue",
     description:
       "Searchable wholesale catalogue of handcrafted brass and copper décor. Filter by category, material and finish.",
     type: "website",
-    url: "https://newlookimpex.store/products",
+    url: "https://www.newlookimpex.store/products",
   },
 };
 

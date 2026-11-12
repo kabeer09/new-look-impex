@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { CountryConfig } from "./country-data";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://newlookimpex.example";
+const SITE = "https://www.newlookimpex.store";
 
 /** Metadata for a top-level regional page (canonical = the short /xx path).
  *  Reuses the shared country config so copy stays in one place. */

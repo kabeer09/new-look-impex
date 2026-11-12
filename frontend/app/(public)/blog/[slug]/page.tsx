@@ -144,12 +144,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title: `${post.title} | New Look Impex`,
     description: post.description,
-    alternates: { canonical: `https://newlookimpex.store/blog/${params.slug}` },
+    alternates: { canonical: `https://www.newlookimpex.store/blog/${params.slug}` },
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
-      url: `https://newlookimpex.store/blog/${params.slug}`,
+      url: `https://www.newlookimpex.store/blog/${params.slug}`,
     },
   };
 }

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "About New Look Impex",
   description:
     "New Look Impex is a Moradabad, Uttar Pradesh based manufacturer and exporter of brass and copper handicrafts — urlis, diyas, lanterns, metal home décor and gifting.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

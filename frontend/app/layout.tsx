@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SessionProviderWrapper } from "@/components/providers/SessionProvider";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://newlookimpex.store"),
+  metadataBase: new URL("https://www.newlookimpex.store"),
   verification: {
     google: "TEfYClAKNA6ckET-Smb56-eka2ydnJ1BW3s0On4X6EI",
   },
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     description:
       "Factory-direct brass & copper products from Moradabad, India — utensils, kitchenware, cookware, décor and festive gifting for global B2B buyers. Manufacturer, exporter and wholesale supplier with written quotations and export logistics.",
     type: "website",
-    url: "https://newlookimpex.store",
+    url: "https://www.newlookimpex.store",
     siteName: "New Look Impex",
   },
   twitter: {
@@ -50,16 +50,19 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
   alternates: {
-    canonical: "https://newlookimpex.store/",
+    // No site-wide canonical here: it would cascade onto every page that does
+    // not declare its own canonical (Google then treats them as homepage
+    // duplicates — "Alternate page with proper canonical tag"). Each page
+    // declares its own self-canonical instead.
     languages: {
-      "en-IN": "https://newlookimpex.store/",
-      "en-AU": "https://newlookimpex.store/au",
-      "en-AE": "https://newlookimpex.store/uae",
-      "en-GB": "https://newlookimpex.store/uk",
-      "en-US": "https://newlookimpex.store/usa",
-      "en-CA": "https://newlookimpex.store/canada",
-      "en-EU": "https://newlookimpex.store/europe",
-      "x-default": "https://newlookimpex.store/",
+      "en-IN": "https://www.newlookimpex.store/",
+      "en-AU": "https://www.newlookimpex.store/au",
+      "en-AE": "https://www.newlookimpex.store/uae",
+      "en-GB": "https://www.newlookimpex.store/uk",
+      "en-US": "https://www.newlookimpex.store/usa",
+      "en-CA": "https://www.newlookimpex.store/canada",
+      "en-EU": "https://www.newlookimpex.store/europe",
+      "x-default": "https://www.newlookimpex.store/",
     },
   },
 };
@@ -111,8 +114,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "@type": "Organization",
               "name": "New Look Impex",
               "description": "Manufacturer and Exporter of Handcrafted Brass and Copper Products",
-              "url": "https://newlookimpex.store",
-              "logo": "https://newlookimpex.store/logo.png",
+              "url": "https://www.newlookimpex.store",
+              "logo": "https://www.newlookimpex.store/logo.png",
               "address": {
                 "@type": "PostalAddress",
                 "addressLocality": "Moradabad",

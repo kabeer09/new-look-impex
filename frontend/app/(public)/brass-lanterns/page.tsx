@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Brass Lanterns Wholesale — Manufacturer from Moradabad India",
   description:
     "Wholesale brass lanterns from New Look Impex — manufacturer and exporter of hand-hammered brass lanterns, diyas and festive lighting from Moradabad, India. Bulk B2B pricing for retailers and distributors. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/brass-lanterns/" },
+  alternates: { canonical: "https://www.newlookimpex.store/brass-lanterns" },
   openGraph: {
     title: "Brass Lanterns Wholesale — Manufacturer India | New Look Impex",
     description: "Brass lanterns manufacturer and exporter from Moradabad, India — hand-hammered festive lighting and diyas wholesale.",
     type: "website",
-    url: "https://newlookimpex.store/brass-lanterns/",
+    url: "https://www.newlookimpex.store/brass-lanterns",
   },
 };
 

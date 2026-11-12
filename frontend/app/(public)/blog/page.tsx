@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Buying Guides & Blog | New Look Impex",
   description:
     "Practical buying guides for wholesale brass and copper handicrafts from Moradabad — sourcing tips, styling advice, and export insights.",
-  alternates: { canonical: "https://newlookimpex.store/blog" },
+  alternates: { canonical: "https://www.newlookimpex.store/blog" },
 };
 
 const POSTS = [

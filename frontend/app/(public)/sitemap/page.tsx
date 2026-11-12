@@ -5,6 +5,7 @@ import { PageHero } from "@/components/public/Shared";
 export const metadata: Metadata = {
   title: "Sitemap",
   description: "HTML sitemap of the New Look Impex public website.",
+  alternates: { canonical: "/sitemap" },
 };
 
 const SECTIONS: { title: string; links: [string, string][] }[] = [

@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Collections — Curated Wholesale Ranges",
   description:
     "Browse curated wholesale collections from New Look Impex — brass edits, copper ranges and seasonal selections of handcrafted metal décor.",
-  alternates: { canonical: "https://newlookimpex.store/collections" },
+  alternates: { canonical: "https://www.newlookimpex.store/collections" },
   openGraph: {
     title: "Collections — New Look Impex",
     description: "Curated wholesale collections of handcrafted brass and copper décor.",
     type: "website",
-    url: "https://newlookimpex.store/collections",
+    url: "https://www.newlookimpex.store/collections",
   },
 };
 

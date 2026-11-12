@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Copper Bottles Manufacturer — Wholesale Copper Drinkware from Moradabad, India",
   description:
     "Buy wholesale copper bottles direct from New Look Impex, a manufacturer and exporter based in Moradabad, India. Hand-hammered copper bottles, jugs and tumblers for retailers, importers and corporate gifting. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/copper-bottles/" },
+  alternates: { canonical: "https://www.newlookimpex.store/copper-bottles" },
   openGraph: {
     title: "Copper Bottles Manufacturer — Wholesale from Moradabad | New Look Impex",
     description: "Hand-hammered copper bottles, jugs and tumblers — wholesale manufacturer and exporter from Moradabad, India.",
     type: "website",
-    url: "https://newlookimpex.store/copper-bottles/",
+    url: "https://www.newlookimpex.store/copper-bottles",
   },
 };
 

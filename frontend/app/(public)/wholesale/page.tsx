@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   title: "Wholesale & Bulk Sourcing",
   description:
     "How wholesale ordering works at New Look Impex: browse the catalogue, request pricing, receive a written quote with MOQ and lead time. Export enquiries welcome.",
-  alternates: { canonical: "https://newlookimpex.store/wholesale" },
+  alternates: { canonical: "https://www.newlookimpex.store/wholesale" },
   openGraph: {
     title: "Wholesale & Bulk Sourcing — New Look Impex",
     description: "Bulk sourcing of handcrafted brass and copper décor, quoted per order. Export enquiries welcome.",
     type: "website",
-    url: "https://newlookimpex.store/wholesale",
+    url: "https://www.newlookimpex.store/wholesale",
   },
 };
 

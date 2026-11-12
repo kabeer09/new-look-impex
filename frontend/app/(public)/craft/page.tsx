@@ -7,12 +7,12 @@ export const metadata: Metadata = {
   title: "Our Craft — Moradabad Metalcraft",
   description:
     "How New Look Impex designs and sources handcrafted brass and copper décor in Moradabad — materials, finishes and customisation enquiries for wholesale buyers.",
-  alternates: { canonical: "https://newlookimpex.store/craft" },
+  alternates: { canonical: "https://www.newlookimpex.store/craft" },
   openGraph: {
     title: "Our Craft — New Look Impex",
     description: "Moradabad metalcraft heritage, materials and finishes behind our wholesale décor catalogue.",
     type: "website",
-    url: "https://newlookimpex.store/craft",
+    url: "https://www.newlookimpex.store/craft",
   },
 };
 

@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Brass Handicrafts Manufacturer — Wholesale from Moradabad India",
   description:
     "Wholesale brass handicrafts from New Look Impex — manufacturer and exporter of brass urlis, diyas, lanterns, décor and gifting from Moradabad, India. Bulk B2B pricing. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/brass-handicrafts/" },
+  alternates: { canonical: "https://www.newlookimpex.store/brass-handicrafts" },
   openGraph: {
     title: "Brass Handicrafts Manufacturer — Wholesale India | New Look Impex",
     description: "Brass handicrafts manufacturer and exporter from Moradabad, India — urlis, diyas, lanterns, décor and festive gifting wholesale.",
     type: "website",
-    url: "https://newlookimpex.store/brass-handicrafts/",
+    url: "https://www.newlookimpex.store/brass-handicrafts",
   },
 };
 

@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Brass Urlis & Diyas Wholesale — Manufacturer from Moradabad India",
   description:
     "Wholesale brass urlis and diyas from New Look Impex — manufacturer and exporter of traditional Indian brass urlis, diyas and festive lighting from Moradabad, India. Bulk B2B pricing. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/brass-urli/" },
+  alternates: { canonical: "https://www.newlookimpex.store/brass-urli" },
   openGraph: {
     title: "Brass Urlis & Diyas Wholesale — Manufacturer India | New Look Impex",
     description: "Brass urlis and diyas manufacturer and exporter from Moradabad, India — traditional festive lighting wholesale.",
     type: "website",
-    url: "https://newlookimpex.store/brass-urli/",
+    url: "https://www.newlookimpex.store/brass-urli",
   },
 };
 

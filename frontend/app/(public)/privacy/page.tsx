@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "Privacy policy for New Look Impex — what data we collect via enquiry and RFQ forms, how it is stored, and how to request access or deletion.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

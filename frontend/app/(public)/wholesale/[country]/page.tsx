@@ -28,12 +28,12 @@ export async function generateMetadata({
     title: `${cfg.h1} | New Look Impex`,
     description,
     keywords: cfg.keywords,
-    alternates: { canonical: `https://newlookimpex.store/wholesale/${cfg.slug}` },
+    alternates: { canonical: `https://www.newlookimpex.store/wholesale/${cfg.slug}` },
     openGraph: {
       title: `${cfg.h1} — New Look Impex`,
       description,
       type: "website",
-      url: `https://newlookimpex.store/wholesale/${cfg.slug}`,
+      url: `https://www.newlookimpex.store/wholesale/${cfg.slug}`,
     },
   };
 }

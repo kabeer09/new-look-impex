@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Exhibitions & Trade Fairs | New Look Impex",
   description:
     "New Look Impex participates in leading Indian trade exhibitions including IHGF Delhi Fair. Meet us to explore handcrafted brass and copper collections.",
-  alternates: { canonical: "https://newlookimpex.store/exhibitions" },
+  alternates: { canonical: "https://www.newlookimpex.store/exhibitions" },
 };
 
 export default function ExhibitionsPage() {

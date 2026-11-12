@@ -1,6 +1,7 @@
 """Main FastAPI app with all routers."""
 from __future__ import annotations
 import csv, io, json, hashlib
+from urllib.parse import urlparse
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, UploadFile, File
@@ -937,18 +938,24 @@ def sitemap(db: Session = Depends(get_db)):
         urls.append(f"{base}/collections/{col.slug}")
     # static public pages
     urls += [
-        f"{base}/", f"{base}/shop", f"{base}/categories",
+        f"{base}/", f"{base}/products", f"{base}/categories",
         f"{base}/wholesale", f"{base}/customisation", f"{base}/about",
         f"{base}/catalogue", f"{base}/request-quote", f"{base}/contact",
         f"{base}/bulk-orders", f"{base}/export", f"{base}/custom-orders",
         f"{base}/buyer-resources", f"{base}/shipping-export",
         f"{base}/privacy", f"{base}/terms", f"{base}/sitemap",
-        # Dedicated SEO category pages
-        f"{base}/copper-bottles/", f"{base}/copper-water-bottles-wholesale/",
-        f"{base}/copper-kitchenware/", f"{base}/brass-handicrafts/",
-        f"{base}/brass-home-decor/", f"{base}/brass-lanterns/",
-        f"{base}/brass-urli/", f"{base}/brass-diya/",
-        f"{base}/nli-collections/", f"{base}/blog/",
+        f"{base}/craft", f"{base}/exhibitions", f"{base}/gifting",
+        f"{base}/collections", f"{base}/brass-collection",
+        f"{base}/copper-collection", f"{base}/metal-home-decor",
+        f"{base}/urlis", f"{base}/diyas-lanterns",
+        # Dedicated SEO category pages — never with a trailing slash: the
+        # site 308-redirects trailing-slash URLs, which Google then reports
+        # as "Page with redirect" and refuses to index.
+        f"{base}/copper-bottles", f"{base}/copper-water-bottles-wholesale",
+        f"{base}/copper-kitchenware", f"{base}/brass-handicrafts",
+        f"{base}/brass-home-decor", f"{base}/brass-lanterns",
+        f"{base}/brass-urli", f"{base}/brass-diya",
+        f"{base}/nli-collections", f"{base}/blog",
         # Blog posts
         f"{base}/blog/sourcing-brass-decor-moradabad",
         f"{base}/blog/copper-vs-brass-homeware",
@@ -968,13 +975,29 @@ def sitemap(db: Session = Depends(get_db)):
     # top-level regional landing pages (canonical short URLs)
     for slug in ("au", "uae", "uk", "usa", "canada", "europe"):
         urls.append(f"{base}/{slug}")
-    items = "".join(f"<url><loc>{u_}</loc></url>" for u_ in urls)
+    # Normalise every entry to the canonical host (www.newlookimpex.store)
+    # with no trailing slash, de-duplicated. Seeded legacy URLs from the old
+    # vercel host are re-pointed; dead legacy paths are dropped.
+    site_canon = "https://www.newlookimpex.store"
+    dead_paths = {"/brass-urli-wholesale", "/brass-diya-wholesale"}
+    seen, clean = set(), []
+    for u_ in urls:
+        path = urlparse(str(u_)).path or "/"
+        if path != "/" and path.endswith("/"):
+            path = path.rstrip("/")
+        if path in dead_paths:
+            continue
+        full = site_canon + ("/" if path == "/" else path)
+        if full not in seen:
+            seen.add(full)
+            clean.append(full)
+    items = "".join(f"<url><loc>{u_}</loc></url>" for u_ in clean)
     return f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>'
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
-    return f"User-agent: *\nAllow: /\nSitemap: {settings.PUBLIC_SITE_URL.rstrip('/')}/sitemap.xml\n"
+    return "User-agent: *\nAllow: /\nSitemap: https://www.newlookimpex.store/sitemap.xml\n"
 
 
 # ---------- product catalogue PDF ----------

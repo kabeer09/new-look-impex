@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "Copper Water Bottles Wholesale — Manufacturer & Exporter India",
   description:
     "Wholesale copper water bottles from New Look Impex — hand-hammered copper drinkware manufacturer in Moradabad, India. Bulk pricing for retailers, importers and exporters. GSTIN 09AFKPA4462R1ZW.",
-  alternates: { canonical: "https://newlookimpex.store/copper-water-bottles-wholesale/" },
+  alternates: { canonical: "https://www.newlookimpex.store/copper-water-bottles-wholesale" },
   openGraph: {
     title: "Copper Water Bottles Wholesale — Manufacturer India | New Look Impex",
     description: "Wholesale copper water bottles and drinkware — hand-hammered manufacturer from Moradabad, India.",
     type: "website",
-    url: "https://newlookimpex.store/copper-water-bottles-wholesale/",
+    url: "https://www.newlookimpex.store/copper-water-bottles-wholesale",
   },
 };
 

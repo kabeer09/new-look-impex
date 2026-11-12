@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Terms of Enquiry",
   description:
     "Terms of enquiry for New Look Impex wholesale website — RFQ process, quotations, no payment processing on site.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

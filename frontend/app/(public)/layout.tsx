@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "New Look Impex is a Moradabad, Uttar Pradesh based wholesaler of brass and copper handicrafts — urlis, diyas, lanterns, metal home décor and gifting. Request wholesale quotes (RFQ) for bulk orders.",
   keywords:
     "brass handicrafts wholesale, copper handicrafts, Moradabad exporter, brass urli wholesale, diyas bulk, metal home decor wholesale, gifting India",
-  alternates: { canonical: "https://newlookimpex.store/" },
+  // No group-level canonical: pages below declare their own self-canonical.
   openGraph: {
     title: "New Look Impex — Brass & Copper Handicrafts Wholesale",
     description:

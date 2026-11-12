@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Shipping & Export Information",
   description:
     "Shipping and export information for New Look Impex wholesale buyers — terms quoted per order, target countries, no blanket guarantees.",
+  alternates: { canonical: "/shipping-export" },
 };
 
 export default function ShippingExportPage() {
