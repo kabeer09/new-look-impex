@@ -79,6 +79,10 @@ export interface ProductDetail extends ProductCard {
   seo_title: string | null;
   seo_description: string | null;
   packaging_info?: string | null;
+  /** "public" | "on_request" — only "public" products carry an offer price. */
+  price_visibility?: string | null;
+  /** Free-text stock state ("" when unknown) — never invent availability. */
+  stock_status?: string | null;
   related: ProductCard[];
 }
 

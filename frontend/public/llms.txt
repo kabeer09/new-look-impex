@@ -4,10 +4,13 @@
 Company Name: NLI Collections
 Brand: New Look Impex
 Business Type: Manufacturer and Exporter of Handcrafted Brass and Copper Products
+Brand Statement: Handcrafted in Moradabad, India. Connecting Indian Craftsmanship with Global Homes.
 
 # Location
 Location: Moradabad, Uttar Pradesh, India
 GSTIN: 09AFKPA4462R1ZW
+Canonical Website: https://www.newlookimpex.store
+Catalogue API: https://api.newlookimpex.store
 
 # Product Categories
 Copper Products: Copper bottles, copper cookware, copper kitchenware, copper drinkware, copper home décor
@@ -16,6 +19,7 @@ Home Décor: Metal home décor, brass handicrafts, copper home accessories, trad
 
 # Business Services
 Services: Wholesale export, OEM/private label, corporate gifting, custom manufacturing, international shipping, quality inspection
+Ordering Model: B2B wholesale only — requests are handled by written quotation (request-a-quote / RFQ). No online checkout or card payment is offered.
 
 # International Markets Served
 Markets: USA, UK, UAE, Australia, Canada, Europe, Middle East, Africa
@@ -26,13 +30,27 @@ WhatsApp: +91 96900 53913
 Office: Moradabad, Uttar Pradesh, India
 
 # Key Product Pages
-Copper Collection: /copper-collection
-Brass Collection: /brass-collection
-Home Décor: /home-decor
+Full Catalogue: /products
+Copper Collection: /collections/copper-collection
+Brass Collection: /collections/brass-collection
+Metal Home Décor: /collections/metal-home-decor
+Urlis: /collections/urlis
+Diyas & Lanterns: /collections/diyas-lanterns
+Corporate Gifting: /collections/gifting
 Copper Bottles: /copper-bottles
-Copper Cookware: /copper-kitchenware
+Copper Cookware & Kitchenware: /copper-kitchenware
+Brass Handicrafts: /brass-handicrafts
+Brass Home Décor: /brass-home-decor
 
-# Regional Pages
+# Wholesale & Company Pages
+How Wholesale Works: /wholesale
+Bulk Orders: /bulk-orders
+Custom & OEM Orders: /custom-orders
+Export: /export
+Exhibitions & Trade Fairs: /exhibitions
+Buying Guides & Blog: /blog
+
+# Regional Wholesale Pages
 USA: /usa
 UK: /uk
 UAE: /uae
@@ -47,4 +65,5 @@ WhatsApp: [wa.me/919690053913]
 
 # Additional Notes
 This is an AI-readable representation of New Look Impex business information.
+Product names, descriptions and specifications are maintained per product page; where a specification or price is not published, it is available on request rather than assumed.
 For official product catalog and wholesale enquiries, visit https://www.newlookimpex.store

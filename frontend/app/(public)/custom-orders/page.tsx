@@ -6,7 +6,7 @@ import { WholesaleEnquiryForm } from "@/app/(public)/wholesale/WholesaleEnquiryF
 const SITE = "https://www.newlookimpex.store";
 
 export const metadata: Metadata = {
-  title: "Custom Orders — Bespoke Copper & Brass | New Look Impex",
+  title: "Custom Orders — Bespoke Copper & Brass",
   description:
     "Request custom copper and brass pieces from New Look Impex, Moradabad. Share your brief, dimensions and finishes — feasibility and pricing confirmed per order in writing.",
   alternates: { canonical: `${SITE}/custom-orders` },

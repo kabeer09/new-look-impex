@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
 
 export const metadata: Metadata = {
-  title: "Buying Guides & Blog | New Look Impex",
+  title: "Buying Guides & Blog",
   description:
     "Practical buying guides for wholesale brass and copper handicrafts from Moradabad — sourcing tips, styling advice, and export insights.",
   alternates: { canonical: "https://www.newlookimpex.store/blog" },

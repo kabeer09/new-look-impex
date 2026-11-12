@@ -121,6 +121,21 @@ export default function ProductClient({ slug }: { slug: string }) {
   if (product.category) {
     jsonLd.category = product.category.name;
   }
+  // Structured-data offer — only for genuinely public prices (never invent one).
+  if (product.price_visibility === "public" && typeof product.price === "number" && product.price > 0) {
+    const offer: Record<string, unknown> = {
+      "@type": "Offer",
+      price: product.price.toFixed(2),
+      priceCurrency: (product.currency || "INR").toUpperCase(),
+      url: canonical,
+    };
+    // Availability only when the API reports a real stock state.
+    const stock = (product.stock_status || "").toLowerCase();
+    if (stock === "in_stock" || stock === "out_of_stock" || stock === "preorder") {
+      offer.availability = `https://schema.org/${stock === "preorder" ? "PreOrder" : stock === "in_stock" ? "InStock" : "OutOfStock"}`;
+    }
+    jsonLd.offers = offer;
+  }
 
   const breadcrumbLd = {
     "@context": "https://schema.org",

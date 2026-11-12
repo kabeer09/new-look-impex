@@ -17,7 +17,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     // fetch follows 308 slug redirects — canonical/OG always use the CURRENT slug.
     const canonicalSlug = p.canonical_slug || p.slug || params.slug;
     const canonical = `https://www.newlookimpex.store/products/${canonicalSlug}`;
-    const title = p.seo_title || p.name || "Product";
+    const rawTitle = p.seo_title || p.name || "Product";
+    // The layout template already appends " | New Look Impex" — strip it from
+    // the stored title so the rendered <title> never doubles the brand.
+    const title = rawTitle.replace(/\s*\|\s*New Look Impex\s*$/i, "").trim() || rawTitle;
     const description =
       p.seo_description || p.short_description || p.description?.slice(0, 160) || fallback.description;
     const ogImage = p.image?.url
@@ -28,7 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       alternates: { canonical },
       openGraph: {
-        title,
+        title: rawTitle,
         description,
         type: "website",
         url: canonical,

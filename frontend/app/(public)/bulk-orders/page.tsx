@@ -6,7 +6,7 @@ import { WholesaleEnquiryForm } from "@/app/(public)/wholesale/WholesaleEnquiryF
 const SITE = "https://www.newlookimpex.store";
 
 export const metadata: Metadata = {
-  title: "Bulk Orders — Copper & Brass Handicrafts | New Look Impex",
+  title: "Bulk Orders — Copper & Brass Handicrafts",
   description:
     "How bulk and wholesale orders work with New Look Impex, Moradabad. Browse the catalogue, request pricing, receive a written quote with MOQ, lead time and packaging.",
   alternates: { canonical: `${SITE}/bulk-orders` },

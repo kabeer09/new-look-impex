@@ -9,7 +9,8 @@ export function regionalMetadata(cfg: CountryConfig, path: string): Metadata {
   const description = cfg.intro[0].slice(0, 155);
   const url = `${SITE.replace(/\/$/, "")}/${path}`;
   return {
-    title: `${cfg.h1} | New Look Impex`,
+    // layout template appends " | New Look Impex" — keep it out of the value
+    title: cfg.h1,
     description,
     keywords: cfg.keywords,
     alternates: { canonical: url },

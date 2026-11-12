@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/public/Shared";
 
 export const metadata: Metadata = {
-  title: "Exhibitions & Trade Fairs | New Look Impex",
+  title: "Exhibitions & Trade Fairs",
   description:
     "New Look Impex participates in leading Indian trade exhibitions including IHGF Delhi Fair. Meet us to explore handcrafted brass and copper collections.",
   alternates: { canonical: "https://www.newlookimpex.store/exhibitions" },

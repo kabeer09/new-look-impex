@@ -25,7 +25,8 @@ export async function generateMetadata({
   }
   const description = cfg.intro[0]?.slice(0, 155) || "Wholesale copper & brass products";
   return {
-    title: `${cfg.h1} | New Look Impex`,
+    // layout template appends " | New Look Impex" — keep it out of the value
+    title: cfg.h1,
     description,
     keywords: cfg.keywords,
     alternates: { canonical: `https://www.newlookimpex.store/wholesale/${cfg.slug}` },

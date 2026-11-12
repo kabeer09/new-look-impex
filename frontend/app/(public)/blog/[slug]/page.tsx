@@ -139,10 +139,11 @@ const POSTS: Record<string, { title: string; description: string; content: strin
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = POSTS[params.slug];
   if (!post) {
-    return { title: "Blog Post | New Look Impex" };
+    return { title: "Blog Post" };
   }
   return {
-    title: `${post.title} | New Look Impex`,
+    // layout template appends " | New Look Impex" — don't repeat it here
+    title: post.title,
     description: post.description,
     alternates: { canonical: `https://www.newlookimpex.store/blog/${params.slug}` },
     openGraph: {
