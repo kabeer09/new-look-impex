@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { Category, ProductCard as ProductCardType } from "@/lib/types";
+import { HOME_FAQ } from "./home-faq";
 import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
@@ -31,16 +32,16 @@ export const metadata: Metadata = {
   },
 };
 
+/** FAQPage schema generated from the same copy as the visible accordion —
+ *  structured data and on-page content can never drift apart. */
 const FAQ_JSONLD = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: [
-    { "@type": "Question", name: "Do you ship across India and internationally?", acceptedAnswer: { "@type": "Answer", text: "Yes. We handle domestic (pan-India) and export enquiries. Shipping terms, freight and lead time are confirmed in writing per order based on destination and volume." } },
-    { "@type": "Question", name: "What is the minimum order quantity (MOQ)?", acceptedAnswer: { "@type": "Answer", text: "MOQs vary by product and finish. Each product page lists its MOQ; custom or bulk quantities are quoted per enquiry." } },
-    { "@type": "Question", name: "Can I request custom sizes, finishes or bespoke designs?", acceptedAnswer: { "@type": "Answer", text: "Yes. Customisation (size, finish, bespoke design) is quoted like any wholesale order." } },
-    { "@type": "Question", name: "How do I place a bulk / wholesale order?", acceptedAnswer: { "@type": "Answer", text: "Browse the catalogue, add items to your enquiry list with quantities, and submit a Request a Quote. You receive a reference number and a written quotation." } },
-    { "@type": "Question", name: "Are prices listed on the website?", acceptedAnswer: { "@type": "Answer", text: "Pricing is on request (B2B). Every enquiry receives a written per-order quote." } },
-  ],
+  mainEntity: HOME_FAQ.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
 };
 
 const SITE_URL = "https://www.newlookimpex.store";

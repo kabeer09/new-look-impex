@@ -7,6 +7,7 @@ import type { Banner, Category, Collection, ProductCard as ProductCardType } fro
 import { ProductCard } from "@/components/public/ProductCard";
 import { Loading, ErrorBox } from "@/components/public/States";
 import { useRfqCart } from "@/lib/rfq";
+import { HOME_FAQ } from "./home-faq";
 
 const SERVICES = [
   {
@@ -60,16 +61,8 @@ const PROCESS_STEPS = [
   { num: "05", title: "Global Delivery & After-Sales Support", text: "Timely delivery to your destination with ongoing support for repeat orders." },
 ];
 
-const FAQS = [
-  { q: "Do you accept international wholesale orders?", a: "Yes. We handle bulk and export enquiries from buyers worldwide. Each order receives a written quotation with price, MOQ, lead time, and shipping terms." },
-  { q: "What is your minimum order quantity (MOQ)?", a: "MOQs vary by product and finish. Each product page lists its MOQ. Custom and bulk quantities are quoted per enquiry." },
-  { q: "Can products be customized?", a: "Yes. Custom sizes, finishes, engravings, and private labelling are available. Customization is quoted like any wholesale order." },
-  { q: "Do you offer private labelling?", a: "Yes. Private label and OEM manufacturing are available for bulk orders. Discuss your requirements via Request a Quote." },
-  { q: "Can buyers request samples?", a: "Sample availability and terms are confirmed per product on enquiry. Ask for samples when you request a quote." },
-  { q: "What packaging options are available?", a: "Standard export packaging is used. Gift-box presentation is available on selected sets. Custom packaging is quoted per order." },
-  { q: "Which countries do you export to?", a: "We export to USA, UK, UAE, Australia, Canada, Europe, Saudi Arabia, and other international markets." },
-  { q: "How can buyers request a quotation?", a: "Browse the catalogue, add items to your enquiry list with quantities, and submit a Request a Quote. You receive a reference number and a written quotation." },
-];
+/** Visible FAQ accordion — shared with the FAQPage JSON-LD in page.tsx. */
+const FAQS = HOME_FAQ;
 
 const MEDIA_BASE = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/public/media/";
 
@@ -1039,7 +1032,7 @@ export default function HomeClient({
       <section className="section !pt-0" aria-labelledby="footer-cta">
         <div className="container-x">
           <div className="bg-navy text-white p-8 md:p-12 text-center rounded-2xl">
-            <h2 id="footer-cta" className="font-sans font-bold text-2xl md:text-3xl">Sourcing for your store, project or gifting programme?</h2>
+            <h2 id="footer-cta" className="font-sans font-bold text-2xl md:text-3xl">Ready to Source Brass &amp; Copper Products in Bulk?</h2>
             <p className="text-white/70 mt-3 max-w-xl mx-auto">Send an enquiry with the products and quantities you need — we confirm pricing, MOQ and lead time in writing.</p>
             <div className="mt-6 flex flex-wrap gap-3 justify-center">
               <Link href="/wholesale" className="btn bg-white text-navy hover:bg-cream">Wholesale Enquiries</Link>
