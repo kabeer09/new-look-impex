@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { api, BUSINESS_EMAIL, BUSINESS_LOCATION, BUSINESS_PHONES, whatsappLink, BUSINESS_SALES_EMAIL } from "@/lib/api";
 import type { Category, Collection, PublicSettings } from "@/lib/types";
 
@@ -46,6 +47,11 @@ const REGION_LINKS: [string, string][] = [
 ];
 
 export function PublicFooter() {
+  const pathname = usePathname();
+  // The NLI Collections page is the consumer (B2C) brand surface — swap the
+  // wholesale footer CTA and tagline there so wholesale-only messaging stays
+  // on the B2B site only.
+  const isNli = pathname === "/nli-collections" || pathname.startsWith("/nli-collections/");
   const [s, setS] = useState<PublicSettings | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -69,22 +75,41 @@ export function PublicFooter() {
 
   return (
     <footer className="bg-clay-dark text-cream mt-16">
-      {/* Wholesale enquiry CTA */}
+      {/* Enquiry CTA — consumer copy on NLI Collections, wholesale elsewhere */}
       <div className="border-b border-cream/20">
         <div className="container-x py-10 flex flex-col md:flex-row md:items-center gap-6 md:justify-between">
           <div>
-            <h2 className="font-serif font-bold text-2xl text-white">Sourcing for your store, project or gifting programme?</h2>
+            <h2 className="font-serif font-bold text-2xl text-white">
+              {isNli
+                ? "Bring home handcrafted brass & copper from Moradabad"
+                : "Sourcing for your store, project or gifting programme?"}
+            </h2>
             <p className="text-sm text-cream/80 mt-2 max-w-xl">
-              Send an enquiry with the products and quantities you need — we confirm pricing, MOQ and lead time in writing.
+              {isNli
+                ? "Explore the NLI Collections catalogue, or message us about a piece you like — we confirm price and delivery in writing."
+                : "Send an enquiry with the products and quantities you need — we confirm pricing, MOQ and lead time in writing."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3 shrink-0">
-            <Link href="/wholesale" className="btn bg-white text-espresso hover:bg-cream">
-              Wholesale Enquiries
-            </Link>
-            <Link href="/request-quote" className="btn bg-espresso text-cream hover:bg-black">
-              Request a Quote
-            </Link>
+            {isNli ? (
+              <>
+                <Link href="/collections" className="btn bg-white text-espresso hover:bg-cream">
+                  Explore Collections
+                </Link>
+                <Link href="/contact" className="btn bg-espresso text-cream hover:bg-black">
+                  Contact Us
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/wholesale" className="btn bg-white text-espresso hover:bg-cream">
+                  Wholesale Enquiries
+                </Link>
+                <Link href="/request-quote" className="btn bg-espresso text-cream hover:bg-black">
+                  Request a Quote
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -239,7 +264,11 @@ export function PublicFooter() {
           <p>
             © {new Date().getFullYear()} {businessName}. All rights reserved.
           </p>
-          <p>Wholesale enquiries only · Moradabad, Uttar Pradesh, India</p>
+          <p>
+            {isNli
+              ? "Crafted in Moradabad, India | By New Look Impex"
+              : "Wholesale enquiries only · Moradabad, Uttar Pradesh, India"}
+          </p>
           <p className="mt-1">GSTIN: 09AFKPA4462R1ZW</p>
           <a
             href="https://www.google.com/maps/search/New+Look+Impex+Moradabad"

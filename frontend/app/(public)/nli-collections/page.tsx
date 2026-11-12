@@ -2,10 +2,62 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api, mediaUrl } from "@/lib/api";
+import { api, mediaUrl, whatsappLink } from "@/lib/api";
 import type { ProductCard } from "@/lib/types";
 import { Loading, ErrorBox } from "@/components/public/States";
 import { PageHero } from "@/components/public/Shared";
+
+/** Explore section — every href points at a real, live collection slug. */
+const COLLECTION_CARDS: { title: string; copy: string; href: string }[] = [
+  {
+    title: "Brass Home Décor",
+    copy: "Brass decorative items and metal home accents — vases, trays, bowls and wall pieces for living rooms and retail floors.",
+    href: "/collections/metal-home-decor",
+  },
+  {
+    title: "Copper Essentials",
+    copy: "Copper bottles, jugs and drinkware — hand-hammered copper pieces for everyday use and premium gifting.",
+    href: "/collections/copper-collection",
+  },
+  {
+    title: "Brass Tableware",
+    copy: "Brass serveware, dinner sets and kitchenware — handcrafted brass tableware for dining and hospitality.",
+    href: "/collections/brass-kitchen-collection",
+  },
+  {
+    title: "Pooja & Festive",
+    copy: "Diyas, urlis, lanterns and festive décor — traditional Indian brass pieces for pooja and celebration.",
+    href: "/collections/diyas-lanterns",
+  },
+];
+
+/** FAQ — answers reflect the site's real shipping/terms pages (no invented policies). */
+const FAQ: { q: string; a: string }[] = [
+  {
+    q: "What materials are used in NLI Collections products?",
+    a: "NLI Collections pieces are made from solid brass and copper, in hammered, polished, antique, etched and matte finishes. Each product page lists its own material and finish.",
+  },
+  {
+    q: "Are NLI Collections products handmade in India?",
+    a: "Yes — every piece is crafted and hand-finished by artisans in Moradabad, Uttar Pradesh, India, and brought to you under the NLI Collections brand of New Look Impex.",
+  },
+  {
+    q: "How do I care for brass and copper homeware?",
+    a: "Wipe pieces with a soft dry cloth after use and store them away from moisture. To restore shine, use a mild metal polish and avoid harsh chemicals or abrasive scrubbers.",
+  },
+  {
+    q: "Do you ship internationally?",
+    a: "Yes. We ship worldwide — freight, transit time and any import duties are quoted per order and confirmed in writing before production begins.",
+  },
+  {
+    q: "How do I order or get a price for a piece?",
+    a: "Prices are confirmed per order. Add the products you like to a quote request or message us on WhatsApp — we reply in writing with price, availability and delivery terms.",
+  },
+  {
+    q: "Can I buy NLI Collections products as gifts?",
+    a: "Yes — the gifting collection covers home and festive gifting, with gift-ready packaging available. Tell us your requirements when you enquire.",
+  },
+];
 
 export default function NliCollectionsBrandPage() {
   const [products, setProducts] = useState<ProductCard[] | null>(null);
@@ -20,11 +72,33 @@ export default function NliCollectionsBrandPage() {
       .catch((e) => setErr(String(e)));
   }, []);
 
+  const canonical = "https://www.newlookimpex.store/nli-collections";
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.newlookimpex.store/" },
+      { "@type": "ListItem", position: 2, name: "NLI Collections", item: canonical },
+    ],
+  };
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+
       <PageHero
-        title="NLI Collections"
-        subtitle="Premium handcrafted brass and copper home décor by NLI Collections — Moradabad, India"
+        title="NLI Collections — Handcrafted Brass & Copper for Beautiful Homes"
+        subtitle="Premium handcrafted brass and copper home décor — tableware, copper bottles and distinctive gifts from Moradabad, India."
       />
       {/* =====================================================
          HERO SECTION
@@ -34,13 +108,13 @@ export default function NliCollectionsBrandPage() {
           <div className="grid md:grid-cols-[1fr_450px] gap-12 items-center py-16">
             <div>
               <h2 className="font-serif font-bold text-navy text-4xl md:text-5xl mt-4 leading-[1.1]">
-                NLI Collections
+                Timeless Metal Craftsmanship from Moradabad
               </h2>
               <p className="text-clay uppercase tracking-[0.2em] text-xs font-semibold mt-6">
                 New Look Impex • Moradabad, India
               </p>
               <p className="text-gray mt-8 text-lg leading-relaxed max-w-lg">
-                Discover handcrafted brass and copper home décor by NLI Collections. Shop
+                Discover handcrafted brass and copper home décor by NLI Collections. Explore
                 elegant metal tableware, copper bottles, brass serveware and timeless Indian
                 craftsmanship from Moradabad, India.
               </p>
@@ -62,14 +136,14 @@ export default function NliCollectionsBrandPage() {
                 <Link href="/collections" className="btn bg-clay text-cream hover:bg-clay-dark !px-6 !py-3">
                   Explore Collections
                 </Link>
-                <Link href="/collections/best-sellers" className="btn bg-brass text-white hover:bg-brass-dark !px-6 !py-3">
-                  Shop Bestsellers
+                <Link href="/collections/metal-home-decor" className="btn bg-brass text-white hover:bg-brass-dark !px-6 !py-3">
+                  Brass Décor
                 </Link>
-                <Link href="/collections/copper-essentials" className="btn border border-clay text-clay hover:bg-clay/10 !px-6 !py-3">
+                <Link href="/collections/copper-collection" className="btn border border-clay text-clay hover:bg-clay/10 !px-6 !py-3">
                   Copper Essentials
                 </Link>
-                <Link href="/collections/brass-home-decor" className="btn border border-clay text-clay hover:bg-clay/10 !px-6 !py-3">
-                  Brass Décor
+                <Link href="/collections/gifting" className="btn border border-clay text-clay hover:bg-clay/10 !px-6 !py-3">
+                  Gifting
                 </Link>
               </div>
               <p className="mt-4 text-xs text-gold uppercase tracking-wider">
@@ -98,6 +172,41 @@ export default function NliCollectionsBrandPage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+         EXPLORE OUR COLLECTIONS
+         ===================================================== */}
+      <section className="section" aria-labelledby="nli-explore">
+        <div className="container-x">
+          <p className="eyebrow text-clay uppercase tracking-[0.2em] text-xs font-semibold">
+            Shop by Category
+          </p>
+          <h2 id="nli-explore" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+            Explore Our Collections
+          </h2>
+          <p className="text-gray mt-2 max-w-2xl">
+            Four ways into the catalogue — handcrafted brass décor, copper essentials,
+            brass tableware and festive pieces, all from Moradabad, India.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+            {COLLECTION_CARDS.map((c) => (
+              <Link
+                key={c.href}
+                href={c.href}
+                className="group block border border-sand rounded-3xl p-6 bg-white hover:border-brass/50 hover:shadow-lg transition-all"
+              >
+                <h3 className="font-serif font-bold text-espresso text-xl group-hover:text-clay transition-colors">
+                  {c.title}
+                </h3>
+                <p className="text-sm text-gray mt-3 leading-relaxed">{c.copy}</p>
+                <span className="inline-block mt-4 text-[11px] uppercase tracking-wider text-brass-dark font-bold">
+                  View Collection →
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -169,7 +278,7 @@ export default function NliCollectionsBrandPage() {
                     <p className="text-xs text-navy/60 mt-1 font-semibold">
                       {p.material} · {p.finish || "Hand-finished"}
                     </p>
-                    <div className="mt-4 flex items-center justify-between">
+                    <div className="mt-4">
                       {p.price_on_request || p.price == null ? (
                         <span className="text-xs font-bold tracking-wide text-clay uppercase">
                           Price on request
@@ -179,9 +288,6 @@ export default function NliCollectionsBrandPage() {
                           ₹{typeof p.price === "number" ? p.price.toLocaleString() : p.price}
                         </span>
                       )}
-                      <span className="text-[10px] uppercase tracking-wider text-brass-dark font-bold">
-                        MOQ {p.moq || "—"}
-                      </span>
                     </div>
                   </div>
                 </Link>
@@ -192,24 +298,85 @@ export default function NliCollectionsBrandPage() {
       </section>
 
       {/* =====================================================
-         BRAND CONTACT / TRADE CTA
+         CRAFTED IN MORADABAD
+         ===================================================== */}
+      <section className="section bg-cream border-y border-sand" aria-labelledby="nli-crafted">
+        <div className="container-x">
+          <div className="max-w-3xl">
+            <p className="eyebrow text-clay uppercase tracking-[0.2em] text-xs font-semibold">
+              Our Craftsmanship
+            </p>
+            <h2 id="nli-crafted" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+              Crafted in Moradabad, India
+            </h2>
+            <p className="text-gray mt-5 leading-relaxed">
+              Moradabad's artisans have worked brass and copper for generations, and every
+              NLI Collections piece carries that heritage. Pieces are shaped, hammered and
+              hand-finished in Moradabad, Uttar Pradesh, then brought together under the
+              NLI Collections brand by New Look Impex.
+            </p>
+            <p className="text-gray mt-4 leading-relaxed">
+              From hammered copper bottles and polished brass serveware to antique-finish
+              diyas and etched decorative items, the range covers hammered, polished,
+              antique, etched and matte finishes for every style of home — with the
+              material and finish of each piece listed on its own product page.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/craft" className="btn btn-outline btn-sm">
+                Our Story
+              </Link>
+              <Link href="/about" className="btn btn-ghost btn-sm">
+                About New Look Impex
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+         FAQ
+         ===================================================== */}
+      <section className="section" aria-labelledby="nli-faq">
+        <div className="container-x max-w-3xl">
+          <p className="eyebrow text-clay uppercase tracking-[0.2em] text-xs font-semibold">
+            Buyer Questions
+          </p>
+          <h2 id="nli-faq" className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">
+            Frequently Asked Questions
+          </h2>
+          <dl className="mt-8 space-y-6">
+            {FAQ.map((f) => (
+              <div key={f.q} className="border-b border-sand pb-6">
+                <dt className="font-serif font-bold text-espresso text-lg">{f.q}</dt>
+                <dd className="text-gray mt-2 leading-relaxed">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* =====================================================
+         BRAND CONTACT / ENQUIRY CTA
          ===================================================== */}
       <section className="section bg-navy text-white">
         <div className="container-x py-20 text-center rounded-3xl overflow-hidden bg-gradient-to-br from-navy via-navy to-clay-dark">
           <h2 className="font-serif font-bold text-cream text-4xl md:text-5xl mt-2">
-            Source Beautiful Homeware from Moradabad
+            Bring Timeless Indian Craftsmanship Into Your Home
           </h2>
           <p className="text-cream/80 mt-4 max-w-2xl mx-auto text-lg">
-            Retailers, importers, interior designers and corporate buyers — source NLI
-            Collections directly from the manufacturer in Moradabad. Written quotations,
-            bulk MOQ and export documentation on every order.
+            Explore the full collection, or message us about a piece you love — we confirm
+            price, availability and delivery terms in writing. Shipping is quoted worldwide,
+            per order.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <Link href="/request-quote" className="btn bg-gold text-navy hover:bg-cream !px-8 !py-3">
-              Request a Quote
+            <Link href="/collections" className="btn bg-gold text-navy hover:bg-cream !px-8 !py-3">
+              Explore Collections
+            </Link>
+            <Link href="/contact" className="btn border border-white text-white hover:bg-white hover:text-navy !px-8 !py-3">
+              Contact Us
             </Link>
             <a
-              href="https://wa.me/919690053913"
+              href={whatsappLink("Hi NLI Collections, I'd like to know more about your handcrafted brass and copper products.")}
               target="_blank"
               rel="noopener noreferrer"
               className="btn border border-white text-white hover:bg-white hover:text-navy !px-8 !py-3"
@@ -218,7 +385,14 @@ export default function NliCollectionsBrandPage() {
             </a>
           </div>
           <p className="text-cream/60 text-sm mt-8">
-            New Look Impex • Moradabad, Uttar Pradesh 244001, India • GSTIN 09AFKPA4462R1ZW
+            Crafted in Moradabad, India | By New Look Impex
+          </p>
+          <p className="text-cream/50 text-xs mt-2">
+            Trade buyer?{" "}
+            <Link href="/wholesale" className="underline underline-offset-2 hover:text-gold">
+              Wholesale, bulk & export enquiries
+            </Link>{" "}
+            · New Look Impex
           </p>
         </div>
       </section>
