@@ -30,6 +30,13 @@ from .database import get_db
 from .models import User
 from .rate_limiter import rate_limit_check
 
+# Password hashing used by seed.py (fresh installs) and the test suite.
+# Admin sign-in itself is Google OAuth + JWT; these helpers only hash the
+# seeded ADMIN_PASSWORD fallback.
+from passlib.context import CryptContext
+
+pwd_ctx = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
+
 # ---------------------------------------------------------------------------
 # JWT configuration (shared with NextAuth NEXTAUTH_SECRET)
 # ---------------------------------------------------------------------------
