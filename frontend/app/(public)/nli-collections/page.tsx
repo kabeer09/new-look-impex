@@ -38,7 +38,7 @@ const FAQ: { q: string; a: string }[] = [
     a: "NLI Collections pieces are made from solid brass and copper, in hammered, polished, antique, etched and matte finishes. Each product page lists its own material and finish.",
   },
   {
-    q: "Are NLI Collections products handmade in India?",
+    q: "Are NLI Collections products handmade?",
     a: "Yes — every piece is crafted and hand-finished by artisans in Moradabad, Uttar Pradesh, India, and brought to you under the NLI Collections brand of New Look Impex.",
   },
   {

@@ -115,7 +115,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "name": "New Look Impex",
               "description": "Manufacturer and Exporter of Handcrafted Brass and Copper Products",
               "url": "https://www.newlookimpex.store",
-              "logo": "https://www.newlookimpex.store/logo.png",
+              "logo": "https://www.newlookimpex.store/logo-newlookimpex.jpg",
               "address": {
                 "@type": "PostalAddress",
                 "addressLocality": "Moradabad",

@@ -20,7 +20,7 @@ export default function BrassHomeDecorPage() {
       title="Brass Home Décor — Wholesale Manufacturer from Moradabad, India"
       description="New Look Impex manufactures and exports hand-hammered brass home décor — urlis, diyas, lanterns, vases and decorative pieces — from Moradabad, India. Factory-direct wholesale pricing for B2B buyers worldwide."
       h1="Brass Home Décor — Wholesale Manufacturer & Exporter from Moradabad"
-      intro="New Look Impex is a brass products manufacturer based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass home décor including urlis, diyas, lanterns, vases, planters and decorative pieces at factory-direct wholesale prices. Our products are exported to retailers, importers, wholesalers and corporate buyers globally."
+      intro="New Look Impex is a brass products manufacturer based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass home décor including urlis, diyas, lanterns, vases, planters and decorative pieces at wholesale prices quoted per order. Our products are exported to retailers, importers, wholesalers and corporate buyers globally."
       filterParams={{ q: "home decor", page_size: "24" }}
       ctaLabel="Request Brass Home Décor Wholesale Quote"
       ctaHref="/request-quote"

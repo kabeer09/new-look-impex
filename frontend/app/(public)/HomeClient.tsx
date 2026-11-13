@@ -363,7 +363,7 @@ export default function HomeClient({
             id="copper-collection"
             eyebrow="Material"
             title="Copper & Brass Collections"
-            blurb="The best of both metals — hand-hammered copper cookware and planters beside engraved brass kitchenware, urlis and décor. Solid, food-safe, and built to last."
+            blurb="The best of both metals — hand-hammered copper cookware and planters beside engraved brass kitchenware, urlis and décor. Solid, hand-finished, and built to last."
             badge="🤝 Best of Both"
             imgA={toFullUrl(copperAll[4]?.image?.url)}
             imgB={toFullUrl(brassAll[0]?.image?.url)}
@@ -794,7 +794,7 @@ export default function HomeClient({
             <p className="text-gray mt-2 max-w-2xl mx-auto text-sm">
               Choose your metal. From tamba (copper) drinkware to pital ke bartan (brass utensils)
               and kansa (bronze) dinnerware — every piece is hand-hammered by our artisans and
-              factory-direct for wholesale buyers worldwide.
+              supplied wholesale to buyers worldwide.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -879,7 +879,7 @@ export default function HomeClient({
                 </p>
                 <p className="text-gray mt-4 text-sm leading-relaxed">
                   Every cookware piece is <strong className="text-navy">handcrafted</strong> with strict quality checks, and sold
-                  <strong className="text-navy">factory-direct</strong> to retailers, wholesalers, interior designers and
+                  wholesale to retailers, wholesalers, interior designers and
                   corporate importers worldwide. GSTIN-verified exporter: 09AFKPA4462R1ZW.
                 </p>
               </div>

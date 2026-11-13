@@ -53,10 +53,10 @@ const ORG_JSONLD = {
   name: "New Look Impex",
   alternateName: ["NLI Collections", "New Look Impex NLI Collections"],
   url: SITE_URL,
-  logo: `${SITE_URL}/logo.png`,
+  logo: `${SITE_URL}/logo-newlookimpex.jpg`,
   image: `${SITE_URL}/hero-brass-kitchen.jpg`,
   description:
-    "New Look Impex (NLI Collections) is a brass and copper products manufacturer, exporter and wholesale B2B supplier based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass kitchenware & utensils, copper cookware, bottles, jugs, urlis, diyas, lanterns, metal home décor and festive gifting at factory-direct bulk prices to global retailers, importers, distributors, HORECA buyers and corporate gifting programmes.",
+    "New Look Impex (NLI Collections) is a brass and copper products manufacturer, exporter and wholesale B2B supplier based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass kitchenware & utensils, copper cookware, bottles, jugs, urlis, diyas, lanterns, metal home décor and festive gifting at wholesale prices quoted per order to global retailers, importers, distributors, HORECA buyers and corporate gifting programmes.",
   disambiguatingDescription:
     "B2B brass & copper manufacturer, exporter and wholesale supplier. OEM/private label and export orders accepted. GSTIN 09AFKPA4462R1ZW. Based in Moradabad, Uttar Pradesh, India.",
   foundingDate: "2012",
