@@ -96,18 +96,31 @@ Dedicated category landing pages with their own unique metadata:
 - `/wholesale/<country>` duplicates: render identical content, `noindex, follow`,
   canonical → short URL, **absent from sitemap** (`33a8b21`).
 
-## 6. Blog / topical authority (Phase 9 seed) ⚠️ review pending
+## 6. Blog / topical authority (Phase 9) ✅ live
 
-Sitemap-listed articles (all live): `/blog/copper-vs-brass-homeware`,
-`/blog/wholesale-ordering-checklist`, `/blog/seasonal-gifting-programme`,
-`/blog/copper-bottles-wholesale-guide`, `/blog/copper-kitchenware-sourcing-india`,
-`/blog/brass-handicrafts-moradabad-buyer-guide`, `/blog/brass-home-decor-retail-guide`,
-`/blog/brass-lanterns-wholesale-guide`, `/blog/private-label-copper-brass-products`,
-`/blog/questions-ask-indian-handicrafts-exporter`.
+11 articles, all live and sitemap-listed. Each has: unique search-intent
+title, meta description, 3–4 H2 sections of original content, 4 contextual
+internal links (product categories + service pages), an enquiry CTA card,
+visible breadcrumb + date, and **BlogPosting + BreadcrumbList JSON-LD**.
 
-Each should map to one strategy article (sourcing guides, buyer guides, OEM) with
-internal links to the category above. Depth/quality review is the next content
-increment.
+Shared data source: `frontend/app/(public)/blog/posts.ts` (index + detail both
+import it — cannot drift).
+
+| Slug | Strategy article it maps to | Key internal links |
+| --- | --- | --- |
+| `sourcing-brass-decor-moradabad` | 1. How to Source Brass Handicrafts from Moradabad | brass-collection, copper-collection, customisation, request-quote |
+| `copper-vs-brass-homeware` | (buyer education) | copper-collection, brass-collection, copper-bottles |
+| `wholesale-ordering-checklist` | 8. How to Select a Reliable Indian Handicraft Exporter | request-quote, shipping-export, bulk-orders, terms |
+| `seasonal-gifting-programme` | (gifting) | gifting, corporate-gifting, festival-decor |
+| `copper-bottles-wholesale-guide` | 5. Copper Bottle Manufacturing & Customisation Options | copper-bottles, copper-collection, shipping-export |
+| `copper-kitchenware-sourcing-india` | 9. Indian Brass Kitchenware for Wholesale Buyers (copper twin) | copper-kitchenware, customisation |
+| `brass-handicrafts-moradabad-buyer-guide` | 2. Moradabad: India's Brass Handicraft Manufacturing Hub | brass-collection, brass-handicrafts, craft |
+| `brass-home-decor-retail-guide` | 4/6. Wholesale Brass Home Décor / for Retailers | metal-home-decor, urlis, gifting |
+| `brass-lanterns-wholesale-guide` | (lanterns) | diyas-lanterns, brass-lanterns, festival-decor |
+| `private-label-copper-brass-products` | 7. OEM & Private Label Metal Décor Manufacturing | customisation, custom-orders, corporate-gifting |
+| `questions-ask-indian-handicrafts-exporter` | 8. How to Select a Reliable Indian Handicraft Exporter | export, shipping-export, terms, contact |
+
+Status: ✅ `65a7bcf` (structure, schema, links, CTAs + claim cleanup).
 
 ## 7. Product pages (133) ✅ Phase 1 product SEO
 

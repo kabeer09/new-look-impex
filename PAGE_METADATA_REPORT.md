@@ -79,7 +79,7 @@ Status: ✅ `3e9d850` (metadata) + `4ccaf14` (content).
 
 ## G. Legal / utility
 
-`/terms`, `/privacy`, `/shipping-export`, `/sitemap`, `/blog` + 10 articles,
+`/terms`, `/privacy`, `/shipping-export`, `/sitemap`, `/blog` + 11 articles,
 `/wholesale`, `/bulk-orders`, `/custom-orders`, `/buyer-resources`,
 `/exhibitions`, `/craft` — all unique titles verified in full crawl.
 

@@ -73,7 +73,7 @@ Handicraft Manufacturer in Moradabad, India | New Look Impex*).
 | Category landing page depth (intro, FAQ, links) | ✅ fixed `4ccaf14` |
 | Buyer-type separation (export vs wholesale vs retail) | ✅ homepage / `/wholesale` / regional / NLI brand page |
 | Manufacturing evidence (photos, process) | ⚠️ **needs genuine assets from the owner** — cannot be fabricated |
-| Blog / topical authority | ⚠️ 10 articles seeded in sitemap; depth review pending |
+| Blog / topical authority | ✅ 11 articles structured with H2 sections, internal links, CTAs, BlogPosting schema (`65a7bcf`) |
 | Backlinks / directories (Priority 5 of the strategy) | ⚠️ owner action — requires real industry listings |
 
 ## 6. Method notes

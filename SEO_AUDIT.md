@@ -72,10 +72,15 @@
 
 ## 6. Known limitations / manual follow-up
 
-1. **Google Search Console** — sitemap submission and performance tracking require
-   owner access; not claimed as done. Track: impressions, clicks, queries, avg.
-   position, indexed pages, country split.
-2. **GA4** — needs the property ID wired in by the owner.
+1. **Google Search Console** — prep complete (HTML verification file
+   `google34d4c8e34e2e9884.html` serves 200; robots.txt declares the sitemap;
+   sitemap verified at 208 URLs). Adding the property and submitting the
+   sitemap happens in the owner's GSC UI — **not claimed as done**. Track
+   afterwards: impressions, clicks, queries, avg. position, indexed pages,
+   country split.
+2. **GA4** — Google Tag Manager is installed in the root layout
+   (`GTM-PFWKB7XW`, `GTM-M4GDWFQT` with dataLayer/gtag stub). The GA4 property
+   attaches inside the owner's GTM container; confirm data receipt there.
 3. **Test suite** — local backend pytest has pre-existing failures unrelated to
    SEO work (`app.auth._hits` removed but referenced by old fixtures; missing
    source images in `tests/` for the image-catalogue fixture). Sitemap/category
@@ -84,3 +89,9 @@
    `KEYWORD_MAPPING.md` are intent-based, not volume-validated.
 5. **Core Web Vitals** — measure in PageSpeed Insights / GSC after deploy; no
    claims made here.
+6. **Manufacturing evidence** — process copy and the four genuine registration/
+   industry logos are live on `/about` (`5e3b340`); workshop photography and
+   video must come from the owner (cannot be fabricated).
+7. **Post-audit fix** — Organization schema referenced a 404 `/logo.png`;
+   corrected to `/logo-newlookimpex.jpg` (200) in `65a7bcf`, along with removal
+   of unverified `factory-direct` / `food-safe` claims site-wide.

@@ -122,6 +122,88 @@
 
 ---
 
+## Phase 9 — Content & topical authority (blog depth)
+
+### `65a7bcf` — Structured blog articles
+- New shared `blog/posts.ts`: single source of truth for all **11 articles**
+  (title, description, date, H2 sections, internal links) — index and detail
+  pages both import it, so listing/detail can never drift.
+- Every article rewritten into **3–4 H2 sections** (original content, no
+  competitor copy), each with:
+  - contextual **internal links** to real product categories + service pages
+    (4 cards/section set: "Related ranges & resources"),
+  - an **enquiry CTA card** (Request Wholesale Quote / Request Catalogue / Contact),
+  - visible breadcrumb nav + published date.
+- Article pages now emit **BlogPosting + BreadcrumbList JSON-LD** (datePublished
+  from the shared module, Organization author/publisher with the real logo URL).
+- Unknown slug → `noindex` absolute title (was indexable "Blog Post" title).
+- `/blog` index gained a bottom RFQ CTA block.
+- Also in this commit:
+  - **Removed unverified `factory-direct` claims** (10 occurrences: homepage
+    Organization description, HomeClient ×2, 7 landing-page intros) — Phase 4
+    rule: don't claim factory-direct unless verified. Replaced with
+    "wholesale prices quoted per order".
+  - **Removed `food-safe` claim** from HomeClient metals blurb.
+  - **Fixed broken logo in Organization schema** — `/logo.png` 404'd in
+    layout.tsx + homepage schema; now `/logo-newlookimpex.jpg` (200-verified).
+  - NLI FAQ question "handmade in India" → "handmade" (banned substring),
+    answer unchanged.
+  - Deleted stale `nli-collections/page.tsx.bak` (held a "pure copper" claim).
+- Verified live: 11/11 articles — BlogPosting+BreadcrumbList schema valid,
+  7–8 H2s each, related links, CTA, unique titles, banned-claim scan clean;
+  homepage logo 200; `verify_blog.py` ALL PASS.
+
+---
+
+## Phase 4 / Priority 3 — Manufacturing credibility
+
+### `5e3b340` — About page credibility upgrade
+- New "How the pieces are made" section: honest process description
+  (hand-hammered, joined, filed, finished — matching catalogue language),
+  linking `/craft` (heritage) and `/customisation` (bespoke/OEM). No invented
+  factory size, headcount or capacity.
+- New **"Registrations & industry bodies"** strip using the four genuine logo
+  assets already supplied by the business in `public/` (previously unused):
+  ODOP Uttar Pradesh, EPCH, UP Export Promotion Bureau, Ministry of MSME —
+  factual captions naming each body, **no certification/accreditation claims**
+  in copy.
+- Removed superlative "Leading … Manufacturer" heading (the exact anti-pattern
+  flagged in `COMPETITOR_ANALYSIS.md`).
+
+### `9b4853c` — Product page conversion (Phase 8)
+- Added **Custom manufacturing** CTA to the product enquiry card.
+- Phase 8 audit result (no redesign): RFQ form already collects buyer name,
+  company, business email, country, phone, product selection + quantities,
+  target price, delivery timeframe, customisation notes, consent (Turnstile
+  protected) → `/api/rfq` backend. Product pages carry Request Pricing,
+  Request a quote, WhatsApp (prefilled SKU), Full catalogue, MOQ in spec table,
+  Wholesale/Export links. Contact, customisation and wholesale pages all POST
+  to `/api/public/enquiries`.
+
+---
+
+## Phase 10 — Search Console & analytics (prep — owner completes in UI)
+
+Verified ready (no claims of submission/verification made):
+- **GSC HTML verification file** `google34d4c8e34e2e9884.html` serves **200** —
+  owner adds the property in GSC and verification completes via file method.
+- **`robots.txt`**: valid, `Sitemap: https://www.newlookimpex.store/sitemap.xml`
+  declared; llms.txt reference as comment.
+- **`sitemap.xml`**: 208 URLs, verified scope (products, categories, collections,
+  static, regional short URLs, 11 blog articles; hidden categories and
+  `/wholesale/*` duplicates excluded).
+- **GTM installed** in root layout: `GTM-PFWKB7XW` + `GTM-M4GDWFQT` (head
+  scripts + body noscript iframes) with `gtag()` dataLayer stub — GA4 property
+  attaches inside the owner's GTM container.
+- **`llms.txt`** serves 200.
+- Backend already tracks: RFQ submissions, enquiries by country/source,
+  WhatsApp/quote button clicks, product views (`/admin/analytics`).
+- ⏳ Owner: create/confirm GSC property → submit sitemap → watch
+  impressions/clicks/queries/position + country split; confirm GA4 receiving
+  in GTM preview.
+
+---
+
 ## 📄 Deliverable documents (this commit)
 
 | Document | Contents |
@@ -138,16 +220,17 @@
 
 ## Pending — owner actions (⏳, not claimed as done)
 
-1. **Google Search Console**: property verification + sitemap submission +
-   performance tracking (impressions, clicks, queries, position, country split).
-2. **GA4**: property ID wiring.
+1. **Google Search Console**: add the property in the GSC UI (HTML verification
+   file already serves 200) → submit `sitemap.xml` → track impressions, clicks,
+   queries, average position, indexed pages, country split.
+2. **GA4**: confirm the property inside the owner's GTM container
+   (`GTM-PFWKB7XW` / `GTM-M4GDWFQT`) receives data.
 3. **Keyword volumes**: validate intent-based priorities in Keyword Planner/GSC.
-4. **Manufacturing credibility**: genuine factory photos/process documentation
-   from the owner — cannot be fabricated.
+4. **Factory photographs/video**: genuine assets only — the About page now uses
+   the four real registration/industry logos supplied in `public/`; add
+   workshop/process photography when the owner has it (cannot be fabricated).
 5. **Authority building (Priority 5)**: real industry directory / trade
    association listings.
-6. **Blog depth review**: 10 seeded articles exist in sitemap; editorial depth
-   pass is the next content increment.
 
 ## Verification summary (all green at final state)
 
@@ -158,5 +241,6 @@
 | `verify_regional2.py` | ALL PASS — 6 regional + `/wholesale/*` + homepage B2B integrity |
 | `verify_hreflang.py` | ALL PASS — reciprocal cluster, clean non-regional pages |
 | `verify_cats.py` / `verify_cats2.py` | category pages: editorial/FAQ/schema/breadcrumbs/links, banned-claim scan clean |
+| `verify_blog.py` | 11 blog articles: BlogPosting+BreadcrumbList valid, H2 sections, internal links, CTA, unique titles, banned-claim scan; homepage logo 200; NLI FAQ fix |
 | `tsc --noEmit` | 0 errors at every step |
 | `npm run build` | success at every step |

@@ -34,8 +34,9 @@ middleware (host/redirect handling) · no CDN-level rewrites beyond Vercel defau
 | LocalBusiness / Manufacturer / WholesaleStore | homepage | GSTIN, Moradabad location |
 | WebSite | homepage | |
 | FAQPage | homepage (8), `/nli-collections` (6), categories (3 each), regional (per-market FAQs) | **generated from the same source as visible copy** — can never drift |
-| BreadcrumbList | categories, products, regional, NLI brand | visible breadcrumb nav added alongside |
+| BreadcrumbList | categories, products, regional, NLI brand, blog articles | visible breadcrumb nav added alongside |
 | Product + Offer | product detail pages | only with genuine price/availability; RFQ products omit price rather than invent it |
+| BlogPosting (Article) | all 11 `/blog/*` articles | headline, description, datePublished/dateModified, Organization author/publisher, logo URL **verified 200** (`65a7bcf` fixed a 404 `/logo.png` reference) |
 | Merchant feed | `/merchant/products.xml` | `e50b408` |
 
 Explicitly NOT used: AggregateRating, reviews, awards, certifications,
@@ -45,7 +46,7 @@ shipping guarantees — no genuine data exists.
 
 - Source: `backend/app/main.py` `/sitemap.xml` (dynamic from DB + static list).
 - Contains: 133 published products, 14 categories (hidden excluded),
-  collections, ~40 static/regional/blog pages, 6 regional short URLs.
+  collections, static/regional pages (incl. 11 blog articles), 6 regional short URLs.
 - Excludes: hidden categories, `/wholesale/*` duplicates, drafts, legacy dead paths.
 - Frontend also exposes `/sitemap` (HTML index page for users).
 - Verified live: excludes the 3 soft-404s, includes products/categories/RFQ (`p2_verify2.txt`).
