@@ -1,0 +1,162 @@
+# Implementation Changelog — SEO Project (New Look Impex)
+
+> Chronological record of every SEO change, in commit order. All commits pushed
+> to `master` (Vercel deploys the frontend, Render the backend from the same
+> push). Verification scripts live in `%LOCALAPPDATA%\Temp\opencode\`.
+
+## Legend
+
+✅ live & verified · ⏳ pending owner action · 📄 doc deliverable (this commit)
+
+---
+
+## Phase 1 — Product SEO infrastructure
+
+### `d14d13a` — Safe PATCH endpoints for product SEO content
+- **Backend**: `PATCH /api/products/{id}` accepts `name`, `slug`,
+  `short_description`, `description`, `seo_title`, `seo_description`,
+  image `alt_text` — server-side validation, JWT-protected (HS256, admin
+  allowlist `newlookimpex130@gmail.com` unchanged).
+- Slug renames automatically create **308 redirects** (old URL → new URL).
+- Product audit backup taken before edits.
+- Tests: PATCH endpoint coverage added.
+
+### `1f2db3c` — Product SEO content pass + doubled-title fix
+- Unique SEO titles/descriptions written across published products (133).
+- Fixed brand-name doubling in product titles (`… | New Look Impex | New Look Impex`).
+- Added **Offers JSON-LD** where price/availability are genuine; RFQ-only
+  products omit price rather than inventing one.
+
+### `d54d3ea` — robots.txt spec compliance (Lighthouse SEO 1.0)
+- llms.txt reference moved into a comment (spec-invalid as a directive).
+- Lighthouse SEO score: **1.0**.
+
+---
+
+## Phase 2 — Homepage (B2B Priority 1)
+
+### `6ae1f25` — NLI Collections B2C brand page
+- Absolute title `NLI Collections | Premium Brass, Copper & Home Décor` (56 ch).
+- New H1 `NLI Collections — Handcrafted Brass & Copper for Beautiful Homes`.
+- 4 real collection CTAs (verified against API — replaced soft-404 links).
+- FAQPage schema: 6 Q&As; BreadcrumbList added; Organization retained. **No
+  Product schema on a brand page.**
+- Path-aware footer: consumer CTA on `/nli-collections`, wholesale elsewhere;
+  "Crafted in Moradabad, India | By New Look Impex" attribution.
+- MOQ badges and wholesale-only messaging removed from the B2C page.
+
+### `8698ea4` — B2B homepage optimisation
+- Title → `Brass & Copper Handicraft Manufacturer in Moradabad, India | New Look Impex` (75 ch, absolute).
+- Meta → 160 ch (was 304 ch keyword-stuffed).
+- Single keyword H1: `Brass & Copper Handicraft Manufacturer and Exporter in Moradabad, India`.
+- **Removed** Autumn Sale ticker, "FLAT 25% OFF", discount popup, fake
+  "✓ Verified order" toasts, "Free shipping above $5,000", superlative "Best".
+- Sale machinery removed cut ~13 KB first-load JS.
+- Server-side rendered **12 category + 92 product links** into prerendered HTML.
+- User's 10 primary B2B keywords mapped across title/meta/H1/H2s.
+
+### `e4efc40` — Homepage FAQ schema sync
+- FAQPage schema now generated from shared `home-faq.ts` — **8/8 Q&As match
+  the visible FAQ** (was 5 schema vs 8 visible).
+- Deduplicated repeated H2.
+
+---
+
+## Priority 2 — Duplicate titles & indexing directives
+
+### `3e9d850` — Unique metadata for 28 pages + hidden-category handling
+- **11 static `layout.tsx` metadata files** rewritten (unique titles + descriptions).
+- `categories/[slug]/layout.tsx` rewritten with dynamic `generateMetadata`
+  (17 slugs, hand-written `CATEGORY_META`, admin `seo_title` still overrides).
+- `/about` and `/export` brand-doubling fixed.
+- Hidden slugs (`brass-handicrafts`, `copper-handicrafts`, `metal-home-decor`)
+  marked `noindex, follow` — API 404s them.
+- **Backend**: `HIDDEN_CATEGORIES` extracted to one shared constant used by
+  public list endpoint, detail endpoint (404s) and **sitemap** (excludes) —
+  fixes 3 soft-404 URLs.
+- Verified: `verify_sitemap_change.py` **13/13 PASS**; `verify_p2.py` —
+  29 titles unique, 0 doubling, 208-URL sweep 0 duplicate groups.
+
+### `33a8b21` — Regional duplicate consolidation + bug fixes
+- `/wholesale/[country]` now renders the **full `CountryPage`** (was debug stub
+  showing "Slug: usa") with `canonical → /usa` etc. and `noindex, follow`.
+- Sitemap drops all `/wholesale/*` duplicates (only short URLs listed).
+- **Fixed live bug**: `/au` passed `slug="australia"` to `CountryPage` but config
+  key is `au` → page rendered **empty, no H1**. Now `slug="au"`.
+- `/contact` title deduped → `Contact — Wholesale & Export Enquiries, Moradabad`.
+- Also removed banned "food-safe" claim from `copper-jugs-pitchers` meta.
+
+---
+
+## Phase 3/5 — Content depth (crawlable HTML)
+
+### `4ccaf14` — Category pages server-rendered with editorial depth
+- `categories/[slug]/page.tsx` converted **client → server component** (ISR 300 s).
+- New `category-editorial.ts`: original per-slug copy for 14 slugs — intro
+  paragraphs, 3 FAQs, related-range internal links. No banned claims.
+- New `CategoryProducts.tsx` (client) keeps "load more" pagination; receives
+  server-fetched page-1 products as props.
+- Every category page now has **in HTML**: H1, editorial H2, visible FAQ,
+  FAQPage JSON-LD, BreadcrumbList JSON-LD + visible breadcrumb nav, related
+  links, RFQ CTA, page-1 product links.
+- FAQ schema generated from the same source as visible FAQ (cannot drift).
+- Verified live: editorial, FAQ, schema, breadcrumbs, 0 loading placeholders,
+  banned-claim scan clean (`verify_cats.py`, `verify_cats2.py`).
+
+### `01f5e48` — Regional pages depth
+- New `regional-products.ts` server-fetches and filters products per market.
+- All 6 short pages (`/usa /uk /uae /au /canada /europe`) + `/wholesale/[country]`
+  became async server pages passing `initialProducts`.
+- `CountryPage.tsx`: emits **FAQPage + BreadcrumbList JSON-LD** from shared
+  country config (same source as visible copy), visible breadcrumb nav,
+  accepts server products (analytics-only effect when provided).
+- Verified: 6/6 pages — 36 crawlable product links each, 3 schema types,
+  single H1, no debug text, no loading placeholder (`verify_regional2.py` ALL PASS).
+
+### `71bd99c` — International hreflang cluster
+- `regional-meta.ts`: `REGIONAL_LANGUAGES` reciprocal 6-page cluster
+  (`en-us en-gb en-ae en-au en-ca en-eu`) added to `alternates.languages`.
+- Deliberately **no x-default**; **not** applied to homepage or NLI Collections.
+- Verified live: 6 tags on each market page, 0 tags on `/`, `/nli-collections`,
+  `/about` (`verify_hreflang.py` ALL PASS).
+
+---
+
+## 📄 Deliverable documents (this commit)
+
+| Document | Contents |
+| --- | --- |
+| `SEO_AUDIT.md` | Business facts, 10 critical issues found & fixed (with commits), technical baseline, homepage/NLI before→after, known limitations |
+| `COMPETITOR_ANALYSIS.md` | All 15 reference sites fetched live (14 reachable; United Handicrafts unreachable), structural lessons adopted, anti-patterns rejected, keyword opportunities, remaining gaps |
+| `KEYWORD_MAPPING.md` | Every important page → intent → primary/secondary keywords → title/meta/H1 → internal links → status (homepage, NLI, 17 categories, services, 6 regional, blog, products) |
+| `PAGE_METADATA_REPORT.md` | Per-page metadata record for all page groups, indexing-directive summary, verification method |
+| `TECHNICAL_SEO_REPORT.md` | Crawlability, titles/canonicals, structured data, sitemap, redirects, headings, images, CWV status, verification tooling, test-suite honesty |
+| `INTERNATIONAL_SEO_STRATEGY.md` | Market architecture, hreflang design decisions, per-market keyword targets, anti-doorway safeguards, what is deliberately not localized, owner actions |
+| `IMPLEMENTATION_CHANGELOG.md` | This file |
+
+---
+
+## Pending — owner actions (⏳, not claimed as done)
+
+1. **Google Search Console**: property verification + sitemap submission +
+   performance tracking (impressions, clicks, queries, position, country split).
+2. **GA4**: property ID wiring.
+3. **Keyword volumes**: validate intent-based priorities in Keyword Planner/GSC.
+4. **Manufacturing credibility**: genuine factory photos/process documentation
+   from the owner — cannot be fabricated.
+5. **Authority building (Priority 5)**: real industry directory / trade
+   association listings.
+6. **Blog depth review**: 10 seeded articles exist in sitemap; editorial depth
+   pass is the next content increment.
+
+## Verification summary (all green at final state)
+
+| Script | Result |
+| --- | --- |
+| `verify_p2.py` | ALL PASS — 29 unique titles, no doubling, noindex slugs, canonicals, sitemap scope, 208-URL sweep 0 dup groups |
+| `verify_sitemap_change.py` | 13/13 PASS |
+| `verify_regional2.py` | ALL PASS — 6 regional + `/wholesale/*` + homepage B2B integrity |
+| `verify_hreflang.py` | ALL PASS — reciprocal cluster, clean non-regional pages |
+| `verify_cats.py` / `verify_cats2.py` | category pages: editorial/FAQ/schema/breadcrumbs/links, banned-claim scan clean |
+| `tsc --noEmit` | 0 errors at every step |
+| `npm run build` | success at every step |
