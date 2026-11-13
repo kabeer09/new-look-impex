@@ -28,12 +28,18 @@ function GalleryImage({ url, alt, eager }: { url: string; alt: string; eager?: b
   );
 }
 
-export default function ProductClient({ slug }: { slug: string }) {
+export default function ProductClient({
+  slug,
+  initialProduct = null,
+}: {
+  slug: string;
+  initialProduct?: ProductDetail | null;
+}) {
   const router = useRouter();
   const cart = useRfqCart();
   const wishlist = useWishlist();
   const recentlyViewed = useRecentlyViewed();
-  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [product, setProduct] = useState<ProductDetail | null>(initialProduct);
   const [err, setErr] = useState("");
   const [notFound, setNotFound] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
@@ -42,6 +48,19 @@ export default function ProductClient({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (!slug) return;
+    if (initialProduct) {
+      // Server-rendered product (crawlable HTML) — adopt it and only run the
+      // client-side extras: analytics and recently-viewed.
+      setProduct(initialProduct);
+      setErr("");
+      setNotFound(false);
+      setImgIdx(0);
+      const parsedInit = parseInt(String(initialProduct.moq ?? ""), 10);
+      setQty(Number.isFinite(parsedInit) && parsedInit > 0 ? parsedInit : 1);
+      trackEvent({ event_type: "product_view", product_id: initialProduct.id });
+      recentlyViewed.add(initialProduct.id);
+      return;
+    }
     setProduct(null);
     setErr("");
     setNotFound(false);
@@ -58,6 +77,7 @@ export default function ProductClient({ slug }: { slug: string }) {
         if (String(e).startsWith("404")) setNotFound(true);
         else setErr(String(e));
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   const addToEnquiry = () => {
