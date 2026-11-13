@@ -4,7 +4,7 @@ import { PageHero } from "@/components/public/Shared";
 import { WhatsAppLink } from "@/components/public/WhatsAppLink";
 
 export const metadata: Metadata = {
-  title: "About New Look Impex",
+  title: "About Us — Brass & Copper Manufacturer, Moradabad",
   description:
     "New Look Impex is a Moradabad, Uttar Pradesh based manufacturer and exporter of brass and copper handicrafts — urlis, diyas, lanterns, metal home décor and gifting.",
   alternates: { canonical: "/about" },

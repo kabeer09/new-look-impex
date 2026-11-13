@@ -6,7 +6,7 @@ import { WholesaleEnquiryForm } from "@/app/(public)/wholesale/WholesaleEnquiryF
 const SITE = "https://www.newlookimpex.store";
 
 export const metadata: Metadata = {
-  title: "Export — Copper & Brass Handicrafts from India | New Look Impex",
+  title: "Export — Copper & Brass Handicrafts from India",
   description:
     "Export enquiries welcome from New Look Impex, Moradabad, India. Written per-order quotations covering product, packaging, Incoterms and shipping. No fixed delivery claims.",
   alternates: { canonical: `${SITE}/export` },

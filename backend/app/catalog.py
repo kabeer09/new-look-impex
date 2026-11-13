@@ -29,6 +29,12 @@ from .schemas import (CategoryIn, CollectionIn, ImagePatch, ProductIn, ProductPa
 from .text import slugify
 from . import media_store
 
+# Category names whose public detail endpoint intentionally 404s: they are
+# served instead by dedicated SEO pages (/brass-handicrafts, /metal-home-decor).
+# The public list endpoint, the detail endpoint and the sitemap must all agree
+# on this set, otherwise the sitemap advertises soft-404 URLs.
+HIDDEN_CATEGORIES = {"copper handicrafts", "brass handicrafts", "metal home décor", "metal home decor"}
+
 router = APIRouter()
 
 NOW = lambda: datetime.now(timezone.utc).replace(tzinfo=None)  # noqa: E731
@@ -1215,7 +1221,6 @@ def public_product_detail(slug: str, db: Session = Depends(get_db)):
 
 @router.get("/api/public/categories")
 def public_categories(db: Session = Depends(get_db)):
-    HIDDEN_CATEGORIES = {"copper handicrafts", "brass handicrafts", "metal home décor", "metal home decor"}
     rows = db.query(models.Category).filter(
         models.Category.status == "published",
         ~func.lower(models.Category.name).in_(HIDDEN_CATEGORIES)) \
@@ -1238,7 +1243,7 @@ def public_category_detail(slug: str, page: int = Query(1, ge=1),
     c = db.query(models.Category).filter(
         func.lower(models.Category.slug) == slug.strip().lower(),
         models.Category.status == "published").first()
-    if not c or c.name.strip().lower() in {"copper handicrafts", "brass handicrafts", "metal home décor", "metal home decor"}:
+    if not c or c.name.strip().lower() in HIDDEN_CATEGORIES:
         raise HTTPException(404, "Category not found")
     qry = db.query(models.Product).filter(models.Product.category_id == c.id,
                                           models.Product.status == "published")

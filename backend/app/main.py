@@ -30,7 +30,7 @@ from .audit_engine import audit_url, fetch_and_audit
 from .recommender import add_recommendation, generate_from_keyword
 from .llm import llm_configured, keyword_ideas, generate
 from .seed import seed, SEED_KEYWORDS
-from .catalog import router as catalog_router
+from .catalog import HIDDEN_CATEGORIES, router as catalog_router
 from .rfq import router as rfq_router
 from .buyers import router as buyers_router
 from .settings_api import router as settings_router
@@ -933,6 +933,10 @@ def sitemap(db: Session = Depends(get_db)):
     for p in db.query(models.Product).filter(models.Product.status == "published").limit(2000).all():
         urls.append(f"{base}/products/{p.slug}")
     for c in db.query(models.Category).filter(models.Category.status == "published").limit(500).all():
+        # Categories hidden from the public API (served by dedicated SEO pages)
+        # must not be advertised here — Google would report soft 404s.
+        if c.name.strip().lower() in HIDDEN_CATEGORIES:
+            continue
         urls.append(f"{base}/categories/{c.slug}")
     for col in db.query(models.Collection).filter(models.Collection.status == "published").limit(500).all():
         urls.append(f"{base}/collections/{col.slug}")
