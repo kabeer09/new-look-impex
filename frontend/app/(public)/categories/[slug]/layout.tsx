@@ -23,7 +23,7 @@ const CATEGORY_META: Record<string, CatMeta> = {
   "copper-jugs-pitchers": {
     title: "Copper Jugs & Pitchers — Manufacturer & Supplier",
     description:
-      "Wholesale copper jugs and pitchers — food-safe and hand-finished in Moradabad, India. Bulk and export supply for retailers and importers.",
+      "Wholesale copper jugs and pitchers — hand-hammered and hand-finished in Moradabad, India. Bulk and export supply for retailers and importers.",
   },
   "copper-mugs-tumblers": {
     title: "Copper Mugs & Tumblers — Wholesale Manufacturer",
