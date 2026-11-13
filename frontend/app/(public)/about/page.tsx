@@ -100,7 +100,7 @@ export default function AboutPage() {
           <h2 className="font-serif font-bold text-navy text-2xl">Copper &amp; Brass Products Manufacturer in India</h2>
           <p className="text-gray leading-relaxed">
             Founded with a vision of promoting wellness through the benefits of copper and brass, New Look Impex (NLI Collections)
-            is a leading manufacturer and exporter of traditional copper, brass, bronze, and silver-plated utensils and handicrafts.
+            is a manufacturer and exporter of traditional copper, brass, bronze, and silver-plated utensils and handicrafts.
             Inspired by Indian heritage, we offer a rich range of handcrafted and spiritual products rooted in Indian craftsmanship.
           </p>
           <p className="text-gray leading-relaxed">

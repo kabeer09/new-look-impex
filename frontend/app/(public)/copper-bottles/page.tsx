@@ -18,7 +18,7 @@ export default function CopperBottlesPage() {
   return (
     <DedicatedCategoryPage
       title="Copper Bottles — Wholesale Manufacturer from Moradabad, India"
-      description="New Look Impex manufactures and exports hand-hammered copper bottles, jugs, tumblers and drinkware from Moradabad, Uttar Pradesh. Factory-direct wholesale pricing for B2B buyers worldwide."
+      description="New Look Impex manufactures and exports hand-hammered copper bottles, jugs, tumblers and drinkware from Moradabad, Uttar Pradesh. Wholesale pricing quoted per order for B2B buyers worldwide."
       h1="Copper Bottles — Wholesale Manufacturer & Exporter from Moradabad"
       intro="New Look Impex is a brass and copper products manufacturer based in Moradabad, India. We supply hand-hammered copper bottles, water bottles, jugs and tumblers at wholesale prices quoted per order. Every piece is crafted by skilled artisans and exported globally to retailers, importers, wholesalers and corporate gifting programmes."
       filterParams={{ material: "Copper", q: "bottle", page_size: "24" }}

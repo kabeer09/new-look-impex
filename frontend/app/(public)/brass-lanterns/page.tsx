@@ -18,7 +18,7 @@ export default function BrassLanternsPage() {
   return (
     <DedicatedCategoryPage
       title="Brass Lanterns — Wholesale Manufacturer from Moradabad, India"
-      description="New Look Impex manufactures and exports hand-hammered brass lanterns, diyas and festive lighting from Moradabad, India. Factory-direct wholesale pricing for B2B buyers worldwide."
+      description="New Look Impex manufactures and exports hand-hammered brass lanterns, diyas and festive lighting from Moradabad, India. Wholesale pricing quoted per order for B2B buyers worldwide."
       h1="Brass Lanterns — Wholesale Manufacturer & Exporter from Moradabad"
       intro="New Look Impex is a brass products manufacturer based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass lanterns, diyas and festive lighting at wholesale prices quoted per order. Our products are exported to retailers, importers, wholesalers and corporate buyers globally."
       filterParams={{ q: "lantern", page_size: "24" }}

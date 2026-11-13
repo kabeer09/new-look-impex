@@ -54,7 +54,7 @@ const SERVICES = [
 ];
 
 const PROCESS_STEPS = [
-  { num: "01", title: "Consultation & Requirement Analysis", text: "Share your product requirements, quantities, and destination. We analyze and recommend the best solutions." },
+  { num: "01", title: "Consultation & Requirement Analysis", text: "Share your product requirements, quantities, and destination. We analyze and recommend suitable solutions." },
   { num: "02", title: "Sampling & Written Quotation", text: "Samples, specifications, pricing, MOQ and lead time are confirmed in writing before production begins." },
   { num: "03", title: "Rigorous Quality Inspection", text: "Multi-stage quality checks covering material, dimensions, finish, and packaging." },
   { num: "04", title: "Documentation & Secure Freight", text: "Complete export documentation and secure freight coordination with tracking." },
@@ -363,7 +363,7 @@ export default function HomeClient({
             id="copper-collection"
             eyebrow="Material"
             title="Copper & Brass Collections"
-            blurb="The best of both metals — hand-hammered copper cookware and planters beside engraved brass kitchenware, urlis and décor. Solid, hand-finished, and built to last."
+            blurb="Copper and brass side by side — hand-hammered copper cookware and planters beside engraved brass kitchenware, urlis and décor. Solid, hand-finished, and built to last."
             badge="🤝 Best of Both"
             imgA={toFullUrl(copperAll[4]?.image?.url)}
             imgB={toFullUrl(brassAll[0]?.image?.url)}
@@ -889,8 +889,8 @@ export default function HomeClient({
                   <p className="text-navy text-xs mt-1">Artisans crafting each piece by hand in Moradabad</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-sand shadow-sm">
-                  <div className="text-gold font-bold text-xs uppercase tracking-wider">Factory Direct</div>
-                  <p className="text-navy text-xs mt-1">Wholesale prices, no middlemen, bulk MOQ options</p>
+                  <div className="text-gold font-bold text-xs uppercase tracking-wider">Bulk Wholesale</div>
+                  <p className="text-navy text-xs mt-1">Written quotations per order, bulk MOQ options</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-sand shadow-sm">
                   <div className="text-gold font-bold text-xs uppercase tracking-wider">GSTIN Verified</div>

@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "New Look Impex — Brass & Copper Manufacturer, Exporter & Wholesale B2B Supplier",
     description:
-      "Factory-direct brass & copper products from Moradabad, India — utensils, kitchenware, cookware, décor and festive gifting for global B2B buyers. Manufacturer, exporter and wholesale supplier with written quotations and export logistics.",
+      "Brass & copper products from Moradabad, India — utensils, kitchenware, cookware, décor and festive gifting for global B2B buyers. Manufacturer, exporter and wholesale supplier with written quotations and export logistics.",
     type: "website",
     url: "https://www.newlookimpex.store",
     siteName: "New Look Impex",
