@@ -400,6 +400,7 @@ export default function ProductClient({ slug }: { slug: string }) {
                 WhatsApp enquiry
               </a>
               <Link href="/request-quote" className="btn btn-primary">Request a quote</Link>
+              <Link href="/customisation" className="btn btn-ghost">Custom manufacturing</Link>
             </div>
           </div>
         </div>
