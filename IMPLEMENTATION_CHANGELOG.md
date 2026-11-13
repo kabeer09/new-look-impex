@@ -180,6 +180,24 @@
   Wholesale/Export links. Contact, customisation and wholesale pages all POST
   to `/api/public/enquiries`.
 
+### `c207c3f` — Full-site banned-claims sweep (208/208 clean)
+A case-insensitive claim sweep of every sitemap URL found 43 pages with banned
+phrases — all in copy the earlier case-sensitive greps could not see plus DB
+product descriptions:
+- **Frontend**: root-layout default meta description ("Factory-direct …"),
+  homepage "Factory Direct" badge + two superlative blurbs ("the best"),
+  `/about` "leading manufacturer" sentence, and 7 landing-page meta
+  descriptions ("Factory-direct wholesale pricing") → neutral factual wording.
+- **Database** (6 product descriptions via the JWT-protected PATCH endpoint,
+  `description` field only, phrase-level subtractions — nothing invented):
+  3 × "pure copper" → "copper", 1 × "leading manufacturer" removed,
+  2 × "food-safe/food safety … documentation" clause removed. Verified clean
+  by re-reading each product publicly after the write.
+- Why 43 pages were affected: related-product descriptions are serialized
+  into every product/category/regional page's server payload — 6 dirty DB
+  descriptions leaked across 35+ pages. After the fix + ISR revalidation,
+  a full sweep of all 208 sitemap URLs reports **0 hits**.
+
 ---
 
 ## Phase 10 — Search Console & analytics (prep — owner completes in UI)
@@ -242,5 +260,7 @@ Verified ready (no claims of submission/verification made):
 | `verify_hreflang.py` | ALL PASS — reciprocal cluster, clean non-regional pages |
 | `verify_cats.py` / `verify_cats2.py` | category pages: editorial/FAQ/schema/breadcrumbs/links, banned-claim scan clean |
 | `verify_blog.py` | 11 blog articles: BlogPosting+BreadcrumbList valid, H2 sections, internal links, CTA, unique titles, banned-claim scan; homepage logo 200; NLI FAQ fix |
+| `claims_full.py` | full 208-URL banned-claim sweep — **0 hits** (was 43 pages before `c207c3f`) |
+| `deep_scan.py` | source-level scan: 0 frontend code hits, 0 product-field hits, 0 category/collection hits |
 | `tsc --noEmit` | 0 errors at every step |
 | `npm run build` | success at every step |
