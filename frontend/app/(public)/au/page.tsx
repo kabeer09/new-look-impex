@@ -6,5 +6,5 @@ import { CountryPage } from "@/app/(public)/wholesale/[country]/CountryPage";
 export const metadata: Metadata = regionalMetadata(COUNTRIES.au, "au");
 
 export default function AustraliaRegionalPage() {
-  return <CountryPage slug="australia" />;
+  return <CountryPage slug="au" />;
 }

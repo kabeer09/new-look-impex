@@ -973,10 +973,10 @@ def sitemap(db: Session = Depends(get_db)):
         f"{base}/blog/private-label-copper-brass-products",
         f"{base}/blog/questions-ask-indian-handicrafts-exporter",
     ]
-    # country buyer pages (curated, unique content each — see wholesale/[country])
-    for slug in ("usa", "uk", "uae", "australia", "canada", "europe"):
-        urls.append(f"{base}/wholesale/{slug}")
-    # top-level regional landing pages (canonical short URLs)
+    # Regional country pages exist at their canonical short URLs only
+    # (/usa, /uk, …). The /wholesale/<country> duplicates render the same
+    # content with canonical pointing at the short URL and are noindexed —
+    # they are deliberately not advertised in the sitemap.
     for slug in ("au", "uae", "uk", "usa", "canada", "europe"):
         urls.append(f"{base}/{slug}")
     # Normalise every entry to the canonical host (www.newlookimpex.store)

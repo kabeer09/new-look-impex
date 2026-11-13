@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact New Look Impex — Moradabad Manufacturer",
+  title: "Contact — Wholesale & Export Enquiries, Moradabad",
   description:
     "Contact New Look Impex for wholesale and export enquiries — email, phone and WhatsApp. Moradabad, Uttar Pradesh, India. GSTIN 09AFKPA4462R1ZW.",
   alternates: { canonical: "/contact" },
