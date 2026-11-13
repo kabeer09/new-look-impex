@@ -28,6 +28,18 @@ export default function AboutPage() {
               before any order is confirmed.
             </p>
 
+            <h2 className="font-serif font-bold text-navy text-2xl mt-8">How the pieces are made</h2>
+            <p className="text-gray">
+              Moradabad metalcraft begins with sheet metal cut and shaped to each design, then
+              hand-hammered, joined, filed and finished by artisans — the hand-hammering described
+              across our catalogue. Finishes such as polished, hammered, antiqued, etched and matte
+              are applied and checked piece by piece before packing. Our{" "}
+              <Link className="link" href="/craft">craft page</Link> covers the Moradabad heritage
+              behind the work, and{" "}
+              <Link className="link" href="/customisation">custom manufacturing</Link> covers bespoke
+              sizes, finishes, engraving and private label enquiries.
+            </p>
+
             <h2 className="font-serif font-bold text-navy text-2xl mt-8">Our product ranges</h2>
             <ul className="grid sm:grid-cols-2 gap-3 text-sm">
               {[
@@ -85,7 +97,7 @@ export default function AboutPage() {
       {/* Leading Manufacturer Section */}
       <div className="container-x section !pt-0">
         <div className="card space-y-4">
-          <h2 className="font-serif font-bold text-navy text-2xl">Leading Copper &amp; Brass Products Manufacturer in India</h2>
+          <h2 className="font-serif font-bold text-navy text-2xl">Copper &amp; Brass Products Manufacturer in India</h2>
           <p className="text-gray leading-relaxed">
             Founded with a vision of promoting wellness through the benefits of copper and brass, New Look Impex (NLI Collections)
             is a leading manufacturer and exporter of traditional copper, brass, bronze, and silver-plated utensils and handicrafts.
@@ -134,6 +146,37 @@ export default function AboutPage() {
           <p className="text-center text-gray font-semibold mt-4">
             New Look Impex – Indian Craftsmanship. Global Connections. Timeless Collections.
           </p>
+        </div>
+      </div>
+
+      {/* Registrations & industry bodies — genuine logo assets supplied by the
+          business. Captions name each body factually; no certification or
+          accreditation claims are made in copy. */}
+      <div className="container-x section !pt-0">
+        <div className="card">
+          <h2 className="font-serif font-bold text-navy text-2xl">Registrations &amp; industry bodies</h2>
+          <p className="text-gray text-sm mt-2 max-w-3xl">
+            Associated with the government and industry bodies that support handicraft exporters
+            from Uttar Pradesh:
+          </p>
+          <ul className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 items-center">
+            {[
+              { src: "/logo-gst.png", alt: "ODOP — One District One Product, Government of Uttar Pradesh" },
+              { src: "/logo-epch.png", alt: "EPCH — Export Promotion Council for Handicrafts" },
+              { src: "/logo-up-epb.jpg", alt: "Export Promotion Bureau, Government of Uttar Pradesh" },
+              { src: "/logo-odop.jpg", alt: "Ministry of MSME, Government of India" },
+            ].map((l) => (
+              <li key={l.src} className="flex flex-col items-center text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={l.src}
+                  alt={l.alt}
+                  loading="lazy"
+                  className="max-h-20 w-auto object-contain"
+                />
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </>
