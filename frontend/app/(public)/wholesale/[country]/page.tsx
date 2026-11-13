@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { COUNTRIES } from "./country-data";
 import { CountryPage } from "./CountryPage";
+import { fetchRegionalProducts } from "./regional-products";
 
 // Country slugs for the 6 supported regions
 const COUNTRY_SLUGS = Object.keys(COUNTRIES) as string[];
@@ -55,12 +56,13 @@ export async function generateMetadata({
   };
 }
 
-export default function WholesaleCountryPage({ params }: { params: { country: string } }) {
+export default async function WholesaleCountryPage({ params }: { params: { country: string } }) {
   const country = params.country as keyof typeof COUNTRIES;
   const cfg = COUNTRIES[country];
   if (!cfg) {
     return <div>Wholesale country page</div>;
   }
   // Same full content as the short regional URL — canonical there.
-  return <CountryPage slug={cfg.slug} />;
+  const products = await fetchRegionalProducts(cfg.slug);
+  return <CountryPage slug={cfg.slug} initialProducts={products} />;
 }

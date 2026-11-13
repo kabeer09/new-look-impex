@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { COUNTRIES } from "@/app/(public)/wholesale/[country]/country-data";
 import { regionalMetadata } from "@/app/(public)/wholesale/[country]/regional-meta";
 import { CountryPage } from "@/app/(public)/wholesale/[country]/CountryPage";
+import { fetchRegionalProducts } from "@/app/(public)/wholesale/[country]/regional-products";
 
 export const metadata: Metadata = regionalMetadata(COUNTRIES.europe, "europe");
+export const revalidate = 300;
 
-export default function EuropeRegionalPage() {
-  return <CountryPage slug="europe" />;
+export default async function EuropeRegionalPage() {
+  const products = await fetchRegionalProducts("europe");
+  return <CountryPage slug="europe" initialProducts={products} />;
 }

@@ -9,13 +9,26 @@ import { Loading, ErrorBox } from "@/components/public/States";
 import type { CountryConfig } from "./country-data";
 import { COUNTRIES } from "./country-data";
 
-export function CountryPage({ slug }: { slug: string }) {
+const SITE = "https://www.newlookimpex.store";
+
+export function CountryPage({
+  slug,
+  initialProducts = null,
+}: {
+  slug: string;
+  initialProducts?: ProductCard[] | null;
+}) {
   const cfg = COUNTRIES[slug];
-  const [products, setProducts] = useState<ProductCard[] | null>(null);
+  const [products, setProducts] = useState<ProductCard[] | null>(initialProducts);
   const [err, setErr] = useState("");
 
   useEffect(() => {
     if (!cfg) return;
+    if (initialProducts !== null) {
+      // Server already provided the crawlable list — only fire analytics.
+      trackEvent({ event_type: "product_view", country: cfg.name });
+      return;
+    }
     api<{ items: ProductCard[] }>("/api/public/products?page_size=100&sort=featured")
       .then((d) => {
         const items = (d.items || []).filter(
@@ -25,14 +38,43 @@ export function CountryPage({ slug }: { slug: string }) {
         trackEvent({ event_type: "product_view", country: cfg.name });
       })
       .catch((e) => setErr(String(e)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   if (!cfg) return null;
 
+  const canonical = `${SITE}/${slug === "australia" ? "au" : slug}`;
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: `Wholesale ${cfg.name}`, item: canonical },
+    ],
+  };
+  // FAQPage schema generated from the same visible copy — never drifts.
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: cfg.faqs.map(([q, a]) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+
       <section className="bg-cream border-b border-clay/15">
         <div className="container-x py-12 md:py-16">
+          <nav className="text-xs text-gray mb-3" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-navy">Home</Link>
+            <span className="mx-1">/</span>
+            <span className="text-charcoal">Wholesale · {cfg.name}</span>
+          </nav>
           <p className="eyebrow text-clay">Wholesale · {cfg.name}</p>
           <h1 className="page-title mt-2">{cfg.h1}</h1>
         </div>
