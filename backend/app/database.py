@@ -50,7 +50,7 @@ def ensure_schema() -> None:
             for col, ddl in (
                 ("source", "VARCHAR(32) DEFAULT ''"),
                 ("permission", "VARCHAR(512) DEFAULT ''"),
-                ("is_concept", "BOOLEAN DEFAULT 0"),
+                ("is_concept", "BOOLEAN DEFAULT FALSE"),
             ):
                 if col not in existing_pi:
                     conn.execute(text(f"ALTER TABLE product_images ADD COLUMN {col} {ddl}"))
@@ -61,8 +61,8 @@ def ensure_schema() -> None:
                 ("alt_text", "VARCHAR(512) DEFAULT ''"),
                 ("source", "VARCHAR(32) DEFAULT ''"),
                 ("permission", "VARCHAR(512) DEFAULT ''"),
-                ("has_thumb", "BOOLEAN DEFAULT 0"),
-                ("has_webp", "BOOLEAN DEFAULT 0"),
+                ("has_thumb", "BOOLEAN DEFAULT FALSE"),
+                ("has_webp", "BOOLEAN DEFAULT FALSE"),
             ):
                 if col not in existing_mf:
                     conn.execute(text(f"ALTER TABLE media_files ADD COLUMN {col} {ddl}"))
@@ -125,7 +125,7 @@ def ensure_schema() -> None:
         # banners: optional start/end scheduling
         if "banners" in insp.get_table_names():
             existing_b = {c["name"] for c in insp.get_columns("banners")}
-            for col, ddl in (("start_at", "DATETIME"), ("end_at", "DATETIME")):
+            for col, ddl in (("start_at", "TIMESTAMP"), ("end_at", "TIMESTAMP")):
                 if col not in existing_b:
                     conn.execute(text(f"ALTER TABLE banners ADD COLUMN {col} {ddl}"))
         # discount_codes: distinguish admin-managed codes from auto-synced ones
