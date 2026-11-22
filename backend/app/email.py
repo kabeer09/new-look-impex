@@ -7,7 +7,35 @@ from .config import settings
 
 
 def email_configured() -> bool:
+    if (settings.EMAIL_PROVIDER or "smtp").lower() == "resend":
+        return bool(settings.RESEND_API_KEY and settings.EMAIL_FROM)
     return bool(settings.SMTP_HOST and settings.SMTP_USER)
+
+
+def _send_https(to_list: list[str], subject: str, text: str, html: str | None) -> tuple[bool, str]:
+    """Send through an HTTPS email API (works where SMTP ports are blocked)."""
+    import httpx
+    provider = (settings.EMAIL_PROVIDER or "smtp").lower()
+    if provider == "resend":
+        if not settings.RESEND_API_KEY:
+            return False, "RESEND_API_KEY not set"
+        payload = {
+            "from": settings.EMAIL_FROM,
+            "to": to_list,
+            "subject": subject,
+            "text": text,
+        }
+        if html:
+            payload["html"] = html
+        try:
+            r = httpx.post("https://api.resend.com/emails", json=payload, timeout=30,
+                           headers={"Authorization": f"Bearer {settings.RESEND_API_KEY}"})
+            if r.status_code in (200, 201):
+                return True, "sent (resend)"
+            return False, f"resend HTTP {r.status_code}: {r.text[:180]}"
+        except Exception as e:
+            return False, f"resend failed: {type(e).__name__}: {str(e)[:180]}"
+    return False, f"unknown EMAIL_PROVIDER: {provider}"
 
 
 def recipients(value) -> list[str]:
@@ -28,10 +56,13 @@ def send_email(to, subject: str, body: str, html: str | None = None) -> tuple[bo
     """Send via configured SMTP. `to` may be a string, comma-separated string or
     list. Never raises — returns success flag + safe detail."""
     if not email_configured():
-        return False, "SMTP not configured"
+        return False, "Email provider not configured"
     to_list = recipients(to)
     if not to_list:
         return False, "no recipients"
+    if (settings.EMAIL_PROVIDER or "smtp").lower() != "smtp":
+        return _send_https(to_list + recipients(settings.EMAIL_CC) + recipients(settings.EMAIL_BCC),
+                           subject, body, html)
     try:
         msg = EmailMessage()
         msg["From"] = settings.SMTP_USER
@@ -236,9 +267,18 @@ def send_campaign_batch(to_list: list[str], subject: str, html: str, text: str) 
     """Send one campaign email to many recipients over a single SMTP connection.
     Returns (sent_ok, failed, detail) — honest counts, never raises."""
     if not email_configured():
-        return 0, len(to_list), "SMTP not configured"
+        return 0, len(to_list), "Email provider not configured"
     cc_list = recipients(settings.EMAIL_CC)
     bcc_list = recipients(settings.EMAIL_BCC)
+    if (settings.EMAIL_PROVIDER or "smtp").lower() != "smtp":
+        sent = failed = 0
+        for to in to_list:
+            ok, detail = _send_https([to] + cc_list + bcc_list, subject, text, html)
+            if ok:
+                sent += 1
+            else:
+                failed += 1
+        return sent, failed, detail
     sent = failed = 0
     try:
         port = settings.SMTP_PORT or 587

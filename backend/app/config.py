@@ -81,6 +81,11 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASS: str = ""
     SMTP_TLS: str = ""
+    # HTTPS email provider (needed on hosts that block outbound SMTP, e.g. Render free).
+    # "smtp" (default) | "resend"
+    EMAIL_PROVIDER: str = "smtp"
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "New Look Impex <no-reply@newlookimpex.store>"
 
     # Media storage: local (dev default) or s3 (any S3-compatible object
     # storage, e.g. AWS S3 or Supabase Storage via its S3 endpoint).
