@@ -51,6 +51,7 @@ CSP_DIRECTIVES = [
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     f"img-src 'self' data: https://{SUPABASE_MEDIA_HOST} https://*.supabase.co https://www.google.com https://www.gstatic.com",
+    f"media-src 'self' https://api.newlookimpex.store https://{SUPABASE_MEDIA_HOST} https://*.supabase.co",
     "connect-src 'self' https://api.newlookimpex.store https://www.google.com https://www.googletagmanager.com https://wa.me",
     "frame-ancestors 'none'",
     "base-uri 'self'",
