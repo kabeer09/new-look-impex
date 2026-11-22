@@ -27,3 +27,5 @@ incoming/products/*
 !incoming/products/README.md
 incoming/banners/*
 !incoming/banners/README.md
+
+.vercel

@@ -158,11 +158,11 @@ async function fetchHomeData(): Promise<{
 }> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const [cats, feats] = await Promise.allSettled([
-    fetch(`${API_BASE}/api/public/categories`, { next: { revalidate: 60 } }).then((r) =>
+    fetch(`${API_BASE}/api/public/categories`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(8000) }).then((r) =>
       r.ok ? r.json() : Promise.reject(new Error(String(r.status)))
     ),
     fetch(`${API_BASE}/api/public/products?sort=featured&page_size=24`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 60 }, signal: AbortSignal.timeout(8000),
     }).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
   ]);
   return {
@@ -183,7 +183,7 @@ export default async function HomePage() {
   let faqs: { q: string; a: string }[] = HOME_FAQ;
   try {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    const r = await fetch(`${API_BASE}/api/public/site-content`, { next: { revalidate: 60 } });
+    const r = await fetch(`${API_BASE}/api/public/site-content`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(8000) });
     if (r.ok) {
       const c = await r.json();
       if (Array.isArray(c?.home_faq) && c.home_faq.length) faqs = c.home_faq;

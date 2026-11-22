@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Many country pages fetch the public API during static generation. Fail-fast
+  // fetch timeouts keep each page quick; this is a safety net for slow builds.
+  staticPageGenerationTimeout: 180,
   images: {
     domains: ["luqgcacxkcrmhsdopjyl.supabase.co"],
   },

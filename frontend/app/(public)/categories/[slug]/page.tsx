@@ -26,7 +26,7 @@ async function fetchCategory(slug: string): Promise<FetchResult> {
   try {
     const r = await fetch(
       `${API}/api/public/categories/${encodeURIComponent(slug)}?page_size=24`,
-      { next: { revalidate: 300 } }
+      { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) }
     );
     if (r.status === 404) return { status: "404" };
     if (!r.ok) return { status: "unavailable" };

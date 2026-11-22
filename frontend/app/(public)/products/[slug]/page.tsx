@@ -24,7 +24,7 @@ async function fetchProduct(slug: string): Promise<FetchResult> {
   const url = `${API}/api/public/products/${encodeURIComponent(slug)}`;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const r = await fetch(url, { next: { revalidate: 300 } });
+      const r = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) });
       if (r.status === 404) return { status: "404" };
       if (r.ok) return { status: "ok", data: await r.json() };
     } catch {

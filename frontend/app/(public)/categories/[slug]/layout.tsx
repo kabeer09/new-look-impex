@@ -118,7 +118,7 @@ async function fetchCategory(slug: string): Promise<{
 } | null> {
   try {
     const r = await fetch(`${API}/api/public/categories/${encodeURIComponent(slug)}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 3600 }, signal: AbortSignal.timeout(8000),
     });
     if (!r.ok) return null;
     return await r.json();

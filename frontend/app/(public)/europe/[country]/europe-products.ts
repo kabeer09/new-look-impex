@@ -12,6 +12,9 @@ export async function fetchEuropeProducts(slug: string): Promise<ProductCard[] |
   try {
     const r = await fetch(`${API}/api/public/products?page_size=100&sort=featured`, {
       next: { revalidate: 300 },
+      // Fail fast during static generation: the client fetches again at runtime,
+      // so a slow backend must never block the whole build.
+      signal: AbortSignal.timeout(8000),
     });
     if (!r.ok) return null;
     const d = await r.json();

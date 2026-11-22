@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
   try {
     const r = await fetch(`${API}/api/public/collections/${encodeURIComponent(params.slug)}`, {
-      next: { revalidate: 300 },
+      next: { revalidate: 300 }, signal: AbortSignal.timeout(8000),
     });
     if (!r.ok) return fallback;
     const c = await r.json();
