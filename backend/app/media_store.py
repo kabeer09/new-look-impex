@@ -213,7 +213,8 @@ def read_file(filename: str, variant: str = "") -> tuple[bytes | None, str]:
     ext = p.suffix.lower()
     ctype = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
              "webp": "image/webp", "gif": "image/gif",
-             "pdf": "application/pdf"}.get(ext.lstrip("."), "application/octet-stream")
+             "pdf": "application/pdf", "mp4": "video/mp4",
+             "webm": "video/webm"}.get(ext.lstrip("."), "application/octet-stream")
     return p.read_bytes(), ctype
 
 
