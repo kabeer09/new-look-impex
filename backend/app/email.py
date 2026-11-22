@@ -48,15 +48,30 @@ def send_email(to, subject: str, body: str, html: str | None = None) -> tuple[bo
             msg.add_alternative(html, subtype="html")
         port = settings.SMTP_PORT or 587
         use_tls = str(settings.SMTP_TLS).lower() in ("1", "true", "yes") if settings.SMTP_TLS else port != 465
-        with smtplib.SMTP(settings.SMTP_HOST, port, timeout=30) as s:
-            if use_tls:
-                s.starttls()
-            if settings.SMTP_PASS:
-                s.login(settings.SMTP_USER, settings.SMTP_PASS)
-            s.send_message(msg)
-        return True, "sent"
+        # Some hosts (e.g. Render free tier) block outbound 587 — try implicit
+        # SSL on 465 as a fallback before giving up.
+        attempts = [(settings.SMTP_HOST, port, use_tls)]
+        if port == 587:
+            attempts.append((settings.SMTP_HOST, 465, False))
+        last_error = "no attempt"
+        for smtp_host, smtp_port, do_tls in attempts:
+            try:
+                if smtp_port == 465 and not do_tls:
+                    s = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30)
+                else:
+                    s = smtplib.SMTP(smtp_host, smtp_port, timeout=30)
+                with s:
+                    if do_tls:
+                        s.starttls()
+                    if settings.SMTP_PASS:
+                        s.login(settings.SMTP_USER, settings.SMTP_PASS)
+                    s.send_message(msg)
+                return True, "sent"
+            except Exception as e:
+                last_error = f"{type(e).__name__}: {str(e)[:180]}"
+        return False, f"send failed: {last_error}"
     except Exception as e:
-        return False, f"send failed: {type(e).__name__}"
+        return False, f"send failed: {type(e).__name__}: {str(e)[:180]}"
 
 
 _BRAND_SIGNOFF = (
