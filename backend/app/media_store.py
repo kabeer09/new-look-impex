@@ -146,7 +146,7 @@ def save_file(original_name: str, content: bytes, content_type: str = "",
                 s3.put_object(Bucket=bucket, Key=_webp_name(name), Body=webp,
                               ContentType="image/webp")
         except Exception as e:
-            raise ValueError(f"Object storage upload failed: {type(e).__name__}")
+            raise ValueError(f"Object storage upload failed: {type(e).__name__}: {e}")
     else:
         ensure_dir()
         (MEDIA_DIR / name).write_bytes(content)
@@ -176,7 +176,7 @@ def save_bytes(filename: str, content: bytes, content_type: str = "") -> dict:
                 s3.put_object(Bucket=bucket, Key=_webp_name(filename),
                               Body=webp, ContentType="image/webp")
         except Exception as e:
-            raise ValueError(f"Object storage upload failed: {type(e).__name__}")
+            raise ValueError(f"Object storage upload failed: {type(e).__name__}: {e}")
     else:
         ensure_dir()
         (MEDIA_DIR / filename).write_bytes(content)
