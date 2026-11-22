@@ -385,6 +385,7 @@ def list_messages(sid: int, db: Session = Depends(get_db), u=Depends(require_rol
 @router.post("/api/ai-manager/upload")
 async def upload(file: UploadFile = File(...), rights: str = Form("own"),
                  db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+  try:
     content = await file.read()
     if not content:
         raise HTTPException(400, "Empty file")
@@ -400,6 +401,10 @@ async def upload(file: UploadFile = File(...), rights: str = Form("own"),
     db.commit()
     return {"url": public_url(meta["filename"]), "filename": meta["filename"],
             "content_type": file.content_type or ""}
+  except HTTPException:
+    raise
+  except Exception as e:
+    raise HTTPException(500, f"upload error: {type(e).__name__}: {str(e)[:300]}")
 
 
 @router.post("/api/ai-manager/chat")
