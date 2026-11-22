@@ -181,16 +181,20 @@ async function fetchHomeData(): Promise<{
 
 export default async function HomePage() {
   const { categories, featured } = await fetchHomeData();
-  // FAQ copy is editable in Site Control; fall back to the site default.
+  // Site content (hero, FAQ, etc.) is editable in the AI Manager / Site Control.
+  // Pass the hero down so the new video/headline are in the very first HTML load,
+  // not only after the client-side fetch finishes.
   let faqs: { q: string; a: string }[] = HOME_FAQ;
+  let initialHero: Record<string, any> | null = null;
   try {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    const r = await fetch(`${API_BASE}/api/public/site-content`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(8000) });
+    const r = await fetch(`${API_BASE}/api/public/site-content`, { signal: AbortSignal.timeout(8000) });
     if (r.ok) {
       const c = await r.json();
       if (Array.isArray(c?.home_faq) && c.home_faq.length) faqs = c.home_faq;
+      if (c?.hero && typeof c.hero === "object") initialHero = c.hero;
     }
-  } catch { /* keep default FAQ */ }
+  } catch { /* keep defaults */ }
   return (
     <>
       <script
@@ -205,7 +209,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonld(faqs)) }}
       />
-      <HomeClient initialCategories={categories} initialFeatured={featured} />
+      <HomeClient initialCategories={categories} initialFeatured={featured} initialHero={initialHero} />
     </>
   );
 }

@@ -638,9 +638,11 @@ function NliCollectionsSection({ cards = GALLERY_CARDS }: { cards?: GalleryCardD
 export default function HomeClient({
   initialCategories = null,
   initialFeatured = null,
+  initialHero = null,
 }: {
   initialCategories?: Category[] | null;
   initialFeatured?: ProductCardType[] | null;
+  initialHero?: Record<string, any> | null;
 }) {
   const [categories, setCategories] = useState<Category[] | null>(initialCategories);
   const [featured, setFeatured] = useState<ProductCardType[] | null>(initialFeatured);
@@ -654,7 +656,9 @@ export default function HomeClient({
 
   // Admin-editable content. Each section falls back to the site default when
   // nothing has been customised in Site Control.
-  const [content, setContent] = useState<Record<string, any>>({});
+  const [content, setContent] = useState<Record<string, any>>(
+    initialHero ? { hero: initialHero } : {}
+  );
   const [faqs, setFaqs] = useState<{ q: string; a: string }[]>(HOME_FAQ);
   const [banners, setBanners] = useState<Banner[]>([]);
   useEffect(() => {
