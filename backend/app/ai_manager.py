@@ -82,7 +82,7 @@ def _revalidate(paths: list[str]) -> None:
         httpx.post(
             f"{site}/api/revalidate",
             json={"paths": sorted(set(paths))},
-            headers={"x-revalidate-secret": settings.SECRET_KEY},
+            headers={"x-revalidate-secret": settings.REVALIDATE_SECRET},
             timeout=10,
         )
     except Exception:

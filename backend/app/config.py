@@ -74,6 +74,8 @@ class Settings(BaseSettings):
     # Optional hidden/visible copies of every outgoing email (comma-separated).
     EMAIL_CC: str = ""
     EMAIL_BCC: str = ""
+    # Shared with the frontend's REVALIDATE_SECRET for on-demand cache purges.
+    REVALIDATE_SECRET: str = "nli-revalidate-2026-secure"
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
