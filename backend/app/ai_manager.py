@@ -302,6 +302,13 @@ def _run_tool(db: Session, name: str, params: dict, session_id: int, email: str,
         row = db.query(models.SiteContent).filter(models.SiteContent.key == key).first()
         proposed = {"key": key, "value": params.get("value"), "label": params.get("label")}
         previous = {"key": key, "value": _j(row.value) if row else None}
+        # Merge partial object updates (e.g. "replace the hero video") so other
+        # fields such as headline/subline are preserved. Rollback still restores
+        # the original previous value exactly.
+        if isinstance(previous.get("value"), dict) and isinstance(proposed.get("value"), dict):
+            merged = dict(previous["value"])
+            merged.update(proposed["value"])
+            proposed["value"] = merged
         entity, entity_id, label = "site_content", str(row.id) if row else None, f"Update site content: {key}"
     elif name == "create_banner":
         if not str(params.get("image_url") or "").strip():
