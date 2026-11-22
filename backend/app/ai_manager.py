@@ -12,6 +12,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
+import httpx
 
 from . import models
 from .auth import require_role
@@ -63,6 +64,44 @@ def _j(value: Any, default=None):
 
 def _dump(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, default=str)
+
+
+def _revalidate(paths: list[str]) -> None:
+    """Ask the frontend to purge cached pages after a publish/rollback.
+
+    Best-effort and non-fatal: a cache miss only delays visibility, never
+    corrupts content. The secret is the shared server-side NEXTAUTH_SECRET.
+    """
+    paths = [p for p in paths if p and p.startswith("/")]
+    if not paths:
+        return
+    site = (settings.PUBLIC_SITE_URL or "").rstrip("/")
+    if not site:
+        return
+    try:
+        httpx.post(
+            f"{site}/api/revalidate",
+            json={"paths": sorted(set(paths))},
+            headers={"x-revalidate-secret": settings.SECRET_KEY},
+            timeout=10,
+        )
+    except Exception:
+        pass
+
+
+def _paths_for_change(entity_type: str, proposed: dict, entity_id: str = "") -> list[str]:
+    if entity_type in ("site_content", "banner"):
+        return ["/"]
+    if entity_type == "product":
+        paths = ["/products", "/products?page=1"]
+        if proposed.get("path"):
+            paths.append(str(proposed["path"]))
+        if proposed.get("slug"):
+            paths.append(f"/products/{proposed['slug']}")
+        return paths
+    if entity_type == "seo_page":
+        return [str(proposed.get("path") or "/")]
+    return ["/"]
 
 
 def _extract_json(text: str) -> dict:
@@ -296,6 +335,7 @@ def _run_tool(db: Session, name: str, params: dict, session_id: int, email: str,
         new_id = _apply_change(db, entity, proposed, entity_id)
         change.entity_id = new_id
         change.published_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        _revalidate(_paths_for_change(entity, proposed, new_id))
     db.commit()
     return {"ok": True, "published": publish, "change_id": change.id,
             "label": label, "proposed": proposed,
@@ -464,6 +504,7 @@ def publish_change(cid: int, db: Session = Depends(get_db), u=Depends(require_ro
                                   tool="publish_change", params_json=_dump({"change_id": cid}),
                                   result_json=_dump({"entity": new_id}), status="completed"))
         db.commit()
+        _revalidate(_paths_for_change(row.entity_type, _j(row.proposed_json, {}), str(new_id)))
         return {"published": cid, "entity_id": new_id}
     except Exception as e:
         db.rollback()
@@ -497,6 +538,7 @@ def rollback_change(cid: int, db: Session = Depends(get_db), u=Depends(require_r
                                   tool="rollback_change", params_json=_dump({"change_id": cid}),
                                   result_json="{}", status="reverted"))
         db.commit()
+        _revalidate(_paths_for_change(row.entity_type, _j(row.proposed_json, {}), row.entity_id or ""))
         return {"rolled_back": cid}
     except Exception as e:
         db.rollback()
