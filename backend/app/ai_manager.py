@@ -389,7 +389,10 @@ async def upload(file: UploadFile = File(...), rights: str = Form("own"),
     if not content:
         raise HTTPException(400, "Empty file")
     rs = validate_rights(rights or "own")
-    meta = save_file(file.filename or "upload.bin", content, file.content_type or "application/octet-stream")
+    try:
+        meta = save_file(file.filename or "upload.bin", content, file.content_type or "application/octet-stream")
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     db.add(models.MediaFile(filename=meta["filename"], original_name=(file.filename or "")[:255],
                             content_type=file.content_type or "", size=len(content),
                             source="AI Website Manager", permission=rs,

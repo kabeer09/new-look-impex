@@ -19,8 +19,10 @@ from pathlib import Path
 from .config import settings
 
 MEDIA_DIR = Path(__file__).resolve().parent.parent / "media"
-ALLOWED_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf"}
+ALLOWED_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".mp4", ".webm"}
 ALLOWED_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+ALLOWED_VIDEO_EXT = {".mp4", ".webm"}
+VIDEO_MIME = {".mp4": "video/mp4", ".webm": "video/webm"}
 MAX_BYTES = 8 * 1024 * 1024  # 8 MB per file
 THUMB_MAX = 800  # px on the long edge
 
