@@ -144,7 +144,9 @@ const WEBSITE_JSONLD = {
   },
 };
 
-export const revalidate = 60; // ISR: revalidate every 60 seconds
+// Render per request so AI Manager content edits (hero headline/video, FAQ,
+// site content) appear on the live site immediately without a redeploy.
+export const dynamic = "force-dynamic";
 
 /**
  * Server-side prefetch of the homepage's category and featured-product data so
