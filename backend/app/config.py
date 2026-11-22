@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     LLM_API_KEY: str = ""
     LLM_API_BASE: str = ""
 
+    # Optional FX provider override for indicative display rates (Phase 6).
+    # Empty => built-in default (open.er-api.com, no key required).
+    FX_PROVIDER_URL: str = ""
+
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/integrations/google/callback"
@@ -67,6 +71,9 @@ class Settings(BaseSettings):
 
     N8N_WEBHOOK_TOKEN: str = "change-me-n8n-token"
     ENQUIRY_NOTIFY_EMAIL: str = "newlookimpex130@gmail.com"
+    # Optional hidden/visible copies of every outgoing email (comma-separated).
+    EMAIL_CC: str = ""
+    EMAIL_BCC: str = ""
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""

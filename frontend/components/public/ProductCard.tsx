@@ -5,7 +5,8 @@ import { mediaUrl, cardSrcSet, whatsappLink } from "@/lib/api";
 import type { ProductCard as ProductCardType } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
 import { useWishlist } from "@/hooks/useWishlist";
-import { formatPrice } from "./States";
+import { useCompare } from "@/hooks/useCompare";
+import { useMarket } from "@/lib/market";
 
 function Monogram({ name }: { name: string }) {
   const letter = name.trim().charAt(0).toUpperCase() || "N";
@@ -22,7 +23,10 @@ function Monogram({ name }: { name: string }) {
 export function ProductCard({ product }: { product: ProductCardType }) {
   const cart = useRfqCart();
   const wishlist = useWishlist();
+  const compare = useCompare();
+  const { money, quoteIn } = useMarket();
   const [added, setAdded] = useState(false);
+  const [compareHint, setCompareHint] = useState(false);
   const img = product.image;
   const isConcept = Boolean(img?.is_concept);
 
@@ -40,6 +44,7 @@ export function ProductCard({ product }: { product: ProductCardType }) {
 
   const meta = [product.category?.name, product.material, product.finish].filter(Boolean).join(" · ");
   const showPrice = !product.price_on_request && product.price != null;
+  const priced = showPrice ? money(product.price, product.currency) : null;
   const moqText = product.moq ? `MOQ: ${product.moq}` : null;
 
   return (
@@ -47,7 +52,6 @@ export function ProductCard({ product }: { product: ProductCardType }) {
       <Link
         href={`/products/${product.slug}`}
         className="relative block aspect-[4/3] bg-cream overflow-hidden"
-        aria-label={product.name}
         tabIndex={-1}
       >
         {img?.url ? (
@@ -69,7 +73,7 @@ export function ProductCard({ product }: { product: ProductCardType }) {
         {isConcept && (
           <span className="absolute bottom-2 left-2 badge !bg-navy/90 !text-ivory">Concept imagery</span>
         )}
-        {product.featured && <span className="absolute top-2 left-2 badge !bg-clay !text-cream">Featured</span>}
+        {product.featured && <span className="absolute top-2 left-2 badge !bg-clay-dark !text-cream">Featured</span>}
         <button
           type="button"
           onClick={(e) => { e.preventDefault(); wishlist.toggle(product.id); }}
@@ -89,10 +93,17 @@ export function ProductCard({ product }: { product: ProductCardType }) {
         {meta && <p className="text-xs text-gray">{meta}</p>}
         {product.short_description && <p className="text-sm text-gray line-clamp-2">{product.short_description}</p>}
         <div className="mt-auto pt-2">
-          {showPrice ? (
-            <p className="text-lg font-bold text-espresso">{formatPrice(product.price, product.currency)}</p>
+          {priced && priced.ok ? (
+            <>
+              <p className="text-lg font-bold text-espresso">{priced.text}</p>
+              {priced.converted && priced.date && (
+                <p className="text-[10px] leading-snug text-gray">
+                  Indicative conversion · rate date {priced.date}
+                </p>
+              )}
+            </>
           ) : (
-            <p className="text-xs font-semibold tracking-wide text-clay uppercase">Price on request</p>
+            <p className="text-xs font-semibold tracking-wide text-clay-dark uppercase">{quoteIn}</p>
           )}
           {moqText && (
             <p className="text-[10px] uppercase tracking-wider text-navy/60 font-bold mb-1">{moqText}</p>
@@ -105,13 +116,38 @@ export function ProductCard({ product }: { product: ProductCardType }) {
               {added ? "Added ✓" : "Add to Enquiry"}
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              const ok = compare.toggle({ id: product.id, slug: product.slug, name: product.name });
+              if (!ok) {
+                setCompareHint(true);
+                window.setTimeout(() => setCompareHint(false), 2200);
+              }
+            }}
+            aria-pressed={compare.has(product.id)}
+            aria-label={compare.has(product.id) ? "In compare — remove from comparison" : "Compare — add to comparison"}
+            className={`mt-2 flex w-full items-center justify-center gap-1.5 border px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] transition-colors ${
+              compare.has(product.id)
+                ? "border-navy bg-navy text-cream"
+                : "border-navy/25 text-navy hover:border-navy hover:bg-navy/5"
+            }`}
+          >
+            <span aria-hidden="true">{compare.has(product.id) ? "✓" : "⊞"}</span>
+            {compare.has(product.id) ? "In compare" : "Compare"}
+          </button>
+          {compareHint && (
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-clay">
+              Compare holds up to 4 products — remove one first.
+            </p>
+          )}
           <a
             href={whatsappLink(
               `Hi, I'm interested in "${product.name}"${product.sku ? ` (SKU ${product.sku})` : ""}. Please share wholesale pricing and MOQ details.`
             )}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 block w-full text-center text-[11px] font-bold uppercase tracking-wider text-gold underline underline-offset-4 hover:text-clay"
+            className="mt-2 block w-full text-center text-[11px] font-bold uppercase tracking-wider text-gold-ink underline underline-offset-4 hover:text-clay-dark"
           >
             💬 WhatsApp Enquiry
           </a>

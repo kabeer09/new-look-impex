@@ -25,7 +25,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
       "Custom packaging and private label options for UK retailers and importers",
       "Written quotations with MOQ, lead time and shipping terms confirmed before production",
     ],
-    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "brass-home-decor", "brass-lanterns", "brass-urli", "brass-diya"],
+    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "decorative-bowls"],
     faqs: [
       ["Do you ship copper and brassware to the UK?", "Yes. We export handcrafted copper and brass products from Moradabad, India to buyers across the United Kingdom. Every order is quoted individually with shipping, customs documentation and delivery terms confirmed before production."],
       ["What is the minimum order quantity for UK buyers?", "MOQs vary by product and finish. Each product page lists its MOQ; custom and bulk quantities are quoted per enquiry."],
@@ -49,7 +49,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
       "Custom packaging and private label options for UAE retailers and corporate buyers",
       "Written quotations with MOQ, lead time and shipping terms confirmed before production",
     ],
-    categories: ["copper-bottles", "copper-jugs-pitchers", "brass-kitchenware", "corporate-gifting", "brass-home-decor"],
+    categories: ["copper-bottles", "copper-jugs-pitchers", "brass-kitchenware", "copper-kitchenware", "decorative-bowls"],
     faqs: [
       ["Do you ship copper and brassware to the UAE?", "Yes. We export handcrafted copper and brass products from Moradabad, India to buyers across the UAE including Dubai, Abu Dhabi, Sharjah and all Emirates. Every order receives a written quotation with shipping and documentation details."],
       ["What is the MOQ for UAE buyers?", "MOQs vary by product and finish. Each product page lists its MOQ; custom and bulk quantities are quoted per enquiry."],
@@ -73,7 +73,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
       "Custom packaging and private label options for US retailers and importers",
       "Written quotations with MOQ, lead time and shipping terms confirmed before production",
     ],
-    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "brass-home-decor", "brass-lanterns"],
+    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "decorative-bowls"],
     faqs: [
       ["Do you ship copper and brassware to the USA?", "Yes. We export handcrafted copper and brass products from Moradabad, India to buyers across the United States. Every order receives a written quotation with shipping and documentation details."],
       ["What is the MOQ for US buyers?", "MOQs vary by product and finish. Each product page lists its MOQ; custom and bulk quantities are quoted per enquiry."],
@@ -97,7 +97,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
       "Custom packaging and private label options for Australian retailers and importers",
       "Written quotations with MOQ, lead time and shipping terms confirmed before production",
     ],
-    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "brass-home-decor", "brass-lanterns"],
+    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "decorative-bowls"],
     faqs: [
       ["Do you ship copper and brassware to Australia?", "Yes. We export handcrafted copper and brass products from Moradabad, India to buyers across Australia. Every order receives a written quotation with shipping and documentation details."],
       ["What is the MOQ for Australian buyers?", "MOQs vary by product and finish. Each product page lists its MOQ; custom and bulk quantities are quoted per enquiry."],
@@ -121,7 +121,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
       "Custom packaging and private label options for Canadian retailers and importers",
       "Written quotations with MOQ, lead time and shipping terms confirmed before production",
     ],
-    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "brass-home-decor", "brass-lanterns"],
+    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "decorative-bowls"],
     faqs: [
       ["Do you ship copper and brassware to Canada?", "Yes. We export handcrafted copper and brass products from Moradabad, India to buyers across Canada. Every order receives a written quotation with shipping and documentation details."],
       ["What is the MOQ for Canadian buyers?", "MOQs vary by product and finish. Each product page lists its MOQ; custom and bulk quantities are quoted per enquiry."],
@@ -145,7 +145,7 @@ export const COUNTRIES: Record<string, CountryConfig> = {
       "Custom packaging and private label options for European retailers and importers",
       "Written quotations with MOQ, lead time and shipping terms confirmed before production",
     ],
-    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "brass-home-decor", "brass-lanterns", "brass-urli", "brass-diya"],
+    categories: ["copper-bottles", "copper-kitchenware", "brass-kitchenware", "decorative-bowls"],
     faqs: [
       ["Do you ship copper and brassware to Europe?", "Yes. We export handcrafted copper and brass products from Moradabad, India to buyers across Europe. Every order receives a written quotation with shipping and documentation details."],
       ["What is the MOQ for European buyers?", "MOQs vary by product and finish. Each product page lists its MOQ; custom and bulk quantities are quoted per enquiry."],
@@ -153,5 +153,77 @@ export const COUNTRIES: Record<string, CountryConfig> = {
       ["How long does shipping to Europe take?", "Shipping times depend on order size and destination. We confirm delivery timelines in your written quotation before production."],
     ],
     keywords: "copperware wholesale Europe, brassware manufacturer India Europe, copper kitchenware wholesale Germany, brass kitchenware wholesale Netherlands, copper bottle importer France, brass cookware supplier Italy, Indian copper utensils exporter Europe, brass cutlery wholesale EU",
+  },
+  "saudi-arabia": {
+    slug: "saudi-arabia",
+    name: "Saudi Arabia",
+    h1: "Wholesale Copper & Brassware Manufacturer & Exporter Saudi Arabia",
+    intro: [
+      "New Look Impex supplies hand-hammered copper and brass products to retailers, hospitality groups and gifting companies across the Kingdom of Saudi Arabia. From gift-boxed copper drinkware and brass serveware to lanterns, urlis and festive décor, our Moradabad-made collections serve buyers in Riyadh, Jeddah, Dammam, Makkah, Madinah and across the Kingdom.",
+      "Every Saudi enquiry receives a written quotation covering product specifications, finish options, quantity, packaging and shipping terms before production. We handle export documentation and ship from Moradabad, India, with all terms confirmed in writing.",
+    ],
+    bullets: [
+      "Gift-boxed copper bottle and jug sets for Ramadan, Eid and corporate gifting programmes",
+      "Brass lanterns, urlis and decorative pieces for majlis and hospitality styling",
+      "Hammered brass serveware and tabletop pieces for hotels and restaurants",
+      "Custom packaging and private label options for Saudi retailers and corporate buyers",
+      "Written quotations with MOQ, lead time and shipping terms confirmed before production",
+    ],
+    categories: ["copper-bottles", "brass-kitchenware", "copper-kitchenware", "decorative-bowls"],
+    faqs: [
+      ["Do you ship copper and brassware to Saudi Arabia?", "Yes. We export handcrafted copper and brass products from Moradabad, India to buyers across the Kingdom of Saudi Arabia. Every order receives a written quotation with shipping and documentation details."],
+      ["Can you supply gifting for Ramadan and Eid?", "Yes. Gift-boxed copper and brass sets, lanterns and decorative pieces are quoted for seasonal and corporate gifting programmes. Share your requirements in the enquiry."],
+      ["Do you offer custom packaging for Saudi retailers?", "Yes. Custom packaging and private labelling are quoted like any wholesale order; packaging options are confirmed in the written quotation."],
+      ["What is the minimum order quantity for Saudi buyers?", "MOQs vary by product and finish. Each product page lists its MOQ; custom and bulk quantities are quoted per enquiry."],
+    ],
+    keywords: "copperware wholesale Saudi Arabia, brassware supplier Saudi Arabia, copper bottles wholesale Riyadh, brass lanterns supplier Jeddah, brass serveware wholesale KSA, gift sets wholesale Saudi Arabia, Indian handicrafts exporter Saudi Arabia",
+  },
+  japan: {
+    slug: "japan",
+    name: "Japan",
+    h1: "Handcrafted Brass & Copperware Manufacturer for Japan",
+    intro: [
+      "New Look Impex supplies handcrafted brass and copperware to retailers, design studios and gift buyers in Japan. Our Moradabad-made range — clean-lined brass décor, hammered copper drinkware, decorative bowls and urlis — suits buyers looking for artisan metal pieces with considered, understated finishes.",
+      "Every Japanese enquiry receives an individual written quotation covering specification, finish, quantity, packaging and shipping terms before production. We export from Moradabad, India with documentation handled per order.",
+    ],
+    bullets: [
+      "Minimalist brass décor, bowls and urlis for Japanese homeware and lifestyle retailers",
+      "Hand-hammered copper drinkware and kitchenware for premium retail collections",
+      "Small decorative accents and gift items for seasonal and gifting programmes",
+      "Custom finishes and packaging quoted per enquiry",
+      "Written quotations with MOQ, lead time and shipping terms confirmed before production",
+    ],
+    categories: ["decorative-bowls", "copper-bottles", "copper-kitchenware"],
+    faqs: [
+      ["Do you supply brass and copperware to Japan?", "Yes. We export handcrafted brass and copper products from Moradabad, India to buyers in Japan, quoted individually per order."],
+      ["Are understated finishes available for Japanese retailers?", "Finish and specification options are discussed per enquiry and confirmed in the written quotation; nothing is assumed."],
+      ["Can you support small gift and lifestyle items?", "Yes. Share the product types and quantities you need and we will quote them together in one written quotation."],
+      ["How is the minimum order quantity set?", "MOQs vary by product and finish and are listed on each product page; custom and bulk quantities are quoted per enquiry."],
+    ],
+    keywords: "handcrafted brassware supplier Japan, copperware wholesale Japan, minimalist brass decor Japan, Indian metal handicrafts exporter Japan, brass bowls wholesale Japan, hammered copper drinkware supplier Japan",
+  },
+  singapore: {
+    slug: "singapore",
+    name: "Singapore",
+    h1: "Wholesale Brass & Copper Décor Supplier for Singapore",
+    intro: [
+      "New Look Impex supplies handcrafted brass and copper décor to retailers, hospitality groups and corporate gifting buyers in Singapore. Our Moradabad-made collections — brass lanterns, decorative bowls, urlis and hammered copperware — serve buyers looking for distinctive metal pieces for retail, hotels and gifting programmes.",
+      "Every Singapore enquiry receives an individual written quotation covering specification, finish, quantity, packaging and shipping terms before production. We export from Moradabad, India with documentation handled per order.",
+    ],
+    bullets: [
+      "Brass lanterns, urlis and decorative pieces for Singapore homeware and hospitality buyers",
+      "Hammered copper drinkware and serveware for retail and gifting collections",
+      "Corporate gifting options with custom packaging and private labelling quoted per enquiry",
+      "Mixed-category orders quoted together for distributors and importers",
+      "Written quotations with MOQ, lead time and shipping terms confirmed before production",
+    ],
+    categories: ["decorative-bowls", "copper-kitchenware", "copper-bottles"],
+    faqs: [
+      ["Do you supply brass and copper décor to Singapore?", "Yes. We export handcrafted brass and copper products from Moradabad, India to buyers in Singapore, quoted individually per order."],
+      ["Can you support hospitality and corporate gifting orders?", "Yes. Hospitality tabletop pieces and gift-boxed sets are quoted per enquiry with packaging options confirmed in writing."],
+      ["Do you offer private label for Singapore retailers?", "Private labelling and custom packaging are quoted like any wholesale order."],
+      ["How is the minimum order quantity set?", "MOQs vary by product and finish and are listed on each product page; custom and bulk quantities are quoted per enquiry."],
+    ],
+    keywords: "brass decor wholesale Singapore, copperware supplier Singapore, brass lanterns wholesale Singapore, corporate gifting supplier Singapore, Indian handicrafts exporter Singapore, metal home decor wholesale Singapore",
   },
 };

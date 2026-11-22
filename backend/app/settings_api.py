@@ -13,11 +13,13 @@ router = APIRouter()
 # Keys exposed to the public site (announcement bar, contact info, etc.)
 PUBLIC_KEYS = {
     "business_name": "New Look Impex",
-    "location": "Moradabad, Uttar Pradesh, India",
-    "business_address": "Moradabad, Uttar Pradesh, India",
+    "location": "Ganga Mandir, Thana Nagphani Road, Kisrol, Moradabad – 244001, Uttar Pradesh, India",
+    "business_address": "Ganga Mandir, Thana Nagphani Road, Kisrol, Moradabad – 244001, Uttar Pradesh, India",
     "business_email": "newlookimpex@gmail.com",
-    "business_phones": "+91 8218251238, +91 7500441239",
-    "whatsapp_number": "918218251238",
+    # Verified public contact set (SEO_AUDIT.md): one sales phone, one
+    # WhatsApp Business line. Keep in sync with frontend/lib/api.ts.
+    "business_phones": "+91 9808588603",
+    "whatsapp_number": "919690053913",
     "social_links": "",  # JSON object, e.g. {"instagram":"https://…","linkedin":"https://…"}
     "default_seo_title": "New Look Impex | Copper & Brass Handicrafts from Moradabad, India",
     "default_seo_description": "Wholesale copper kitchenware, brass handicrafts and metal home décor from Moradabad, India. Browse our catalogue and request a quote for bulk and international sourcing.",

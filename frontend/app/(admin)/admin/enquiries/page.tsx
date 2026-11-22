@@ -15,6 +15,8 @@ interface Lead {
   country?: string;
   product_interest?: string;
   quantity?: string;
+  /** Currency the buyer asked to be quoted in (metadata — never a price). */
+  preferred_currency?: string;
   status: string;
   score?: number;
   notes?: string;
@@ -203,6 +205,10 @@ export default function AdminEnquiries() {
               <div><span className="text-gray">Phone:</span> {detail.phone || "—"}</div>
               <div><span className="text-gray">Product:</span> {detail.product ? detail.product.name : (detail.product_interest || "—")}</div>
               <div><span className="text-gray">Quantity:</span> {detail.quantity || "—"}</div>
+              <div>
+                <span className="text-gray">Quote currency:</span>{" "}
+                {detail.preferred_currency || "—"}
+              </div>
               <div><span className="text-gray">Source:</span> {detail.source || "website"}</div>
               <div><span className="text-gray">Campaign:</span> {detail.campaign || "—"}</div>
               <div><span className="text-gray">Landing page:</span> {detail.landing_page || "—"}</div>

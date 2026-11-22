@@ -228,7 +228,8 @@ def build_descriptions(name: str, facts: dict) -> dict:
 # IndiaMART-style B2B keyword generation (spec §6)
 # ---------------------------------------------------------------------------
 
-TARGET_COUNTRIES = ["USA", "UK", "UAE", "Australia", "Canada"]
+TARGET_COUNTRIES = ["USA", "UK", "UAE", "Australia", "Canada",
+                    "Saudi Arabia", "Japan", "Singapore", "Switzerland"]
 
 
 def _core_keywords(name: str, facts: dict) -> list[str]:

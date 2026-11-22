@@ -41,13 +41,11 @@ export function DedicatedCategoryPage({
 
   return (
     <>
+      {/* One H1 only: the hero owns it. The body keeps the fuller intro as a
+          lead paragraph — no repeated title or duplicate description. */}
       <PageHero title={h1} subtitle={description} />
       <div className="container-x section">
-        <div className="text-center mb-10">
-          <p className="eyebrow text-clay uppercase tracking-[0.2em] text-xs font-semibold">Category</p>
-          <h1 className="font-serif font-bold text-navy text-3xl md:text-4xl mt-2">{h1}</h1>
-          <p className="text-gray mt-4 max-w-3xl mx-auto text-sm leading-relaxed">{intro}</p>
-        </div>
+        <p className="text-gray mt-0 mb-10 max-w-3xl text-sm leading-relaxed">{intro}</p>
 
         {err && <ErrorBox error={err} />}
         {loading && <Loading label="Loading products…" />}

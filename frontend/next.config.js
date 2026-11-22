@@ -17,6 +17,39 @@ const nextConfig = {
         destination: "/brass-diya",
         permanent: true,
       },
+      // Short market aliases — buyers type /us, /ca and /eu far more often
+      // than the canonical /usa, /canada and /europe paths. Permanent (308)
+      // so the alias consolidates onto one indexable URL instead of forking.
+      {
+        source: "/us",
+        destination: "/usa",
+        permanent: true,
+      },
+      {
+        source: "/ca",
+        destination: "/canada",
+        permanent: true,
+      },
+      {
+        source: "/eu",
+        destination: "/europe",
+        permanent: true,
+      },
+      {
+        source: "/gb",
+        destination: "/uk",
+        permanent: true,
+      },
+      {
+        source: "/australia",
+        destination: "/au",
+        permanent: true,
+      },
+      {
+        source: "/uae/dubai",
+        destination: "/uae",
+        permanent: true,
+      },
     ];
   },
 };

@@ -73,8 +73,12 @@ export default function PrivacyPage() {
             </p>
           </section>
           <p className="text-xs text-gray">Last updated: {new Date().toISOString().slice(0, 10)}</p>
-          <p>
-            <Link className="link" href="/contact">Contact us</Link> · <Link className="link" href="/terms">Terms of enquiry</Link>
+          <p className="flex flex-wrap gap-x-2 gap-y-1">
+            <Link className="link" href="/contact">Contact us</Link> ·{" "}
+            <Link className="link" href="/terms">Terms of enquiry</Link> ·{" "}
+            <Link className="link" href="/shipping-policy">Shipping</Link> ·{" "}
+            <Link className="link" href="/return-policy">Returns</Link> ·{" "}
+            <Link className="link" href="/payment-policy">Payments</Link>
           </p>
         </div>
       </div>

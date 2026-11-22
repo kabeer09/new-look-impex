@@ -4,7 +4,10 @@ import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
 import { Loading } from "@/components/public/States";
 import { api, trackEvent } from "@/lib/api";
+import { useLeadMarket } from "@/lib/market";
 import { useRfqCart } from "@/lib/rfq";
+import { useRfqDraft } from "@/hooks/useRfqDraft";
+import { ASSISTANT_BRIEF_KEY, openNliChat } from "@/lib/assistant";
 import { useWhatsappNumber } from "@/hooks/useWhatsapp";
 import type { PublicSettings, RfqSubmitResult } from "@/lib/types";
 
@@ -58,6 +61,56 @@ export default function RequestQuotePage() {
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const turnstileRef = useRef<any>(null);
   const waDigits = waNumber.replace(/\D/g, "");
+  const lead = useLeadMarket();
+  const draft = useRfqDraft();
+
+  // Restore an unfinished enquiry the buyer left behind. The RFQ cart lives in
+  // its own localStorage key, so this only re-fills the details form; fields
+  // are merged one-shot so a later manual edit is never overwritten.
+  useEffect(() => {
+    if (!draft.restored) return;
+    setForm((f) => {
+      const next = { ...f };
+      let changed = false;
+      (Object.keys(next) as (keyof typeof next)[]).forEach((k) => {
+        if (k === "consent") return; // never re-tick consent on the buyer's behalf
+        const v = draft.restored?.[k as keyof typeof draft.restored];
+        if (!next[k] && typeof v === "string" && v) {
+          (next as any)[k] = v;
+          changed = true;
+        }
+      });
+      return changed ? next : f;
+    });
+  }, [draft.restored]);
+
+  // Pre-fill the buyer's market once the country field is ready — but only
+  // when the value is a real option (select mode) or the field is free text.
+  useEffect(() => {
+    if (!lead.country) return;
+    setForm((f) => {
+      if (f.country) {
+        if (countries.length > 0 && !countries.includes(f.country)) return { ...f, country: "" };
+        return f;
+      }
+      if (countries.length > 0 && !countries.includes(lead.country)) return f;
+      return { ...f, country: lead.country };
+    });
+  }, [lead.country, countries]);
+
+  // Live-chat hand-off: carry what the buyer told the assistant into
+  // "additional requirements" once, then clear the key so it never overwrites
+  // a field the buyer has already typed into.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(ASSISTANT_BRIEF_KEY);
+      if (!raw) return;
+      localStorage.removeItem(ASSISTANT_BRIEF_KEY);
+      setForm((f) => (f.additional_requirements ? f : { ...f, additional_requirements: raw }));
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
 
   const onTurnstileVerify = useCallback((token: string) => {
     setTurnstileToken(token);
@@ -66,6 +119,24 @@ export default function RequestQuotePage() {
   const onTurnstileExpire = useCallback(() => {
     setTurnstileToken("");
   }, []);
+
+  // Abandoned-RFQ recovery: autosave form + cart as the buyer types (the hook
+  // debounces the server call and skips half-empty forms).
+  useEffect(() => {
+    if (result) return; // never re-save after a successful send
+    draft.save(
+      form,
+      cart.items.map((i) => ({
+        product_id: i.product_id,
+        product_name: i.product_name,
+        quantity: String(i.quantity),
+        unit: i.unit || "",
+        notes: i.notes || "",
+      }))
+    );
+    // `save` is stable; re-run when the form or cart actually changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, cart.items, result]);
 
   /** Pre-submit option: send the current selection without submitting the form. */
   const waSelectionLink = (() => {
@@ -103,6 +174,8 @@ export default function RequestQuotePage() {
         method: "POST",
         body: JSON.stringify({
           ...form,
+          preferred_currency: lead.preferred_currency,
+          draft_key: draft.draftKey,
           phone: form.phone || undefined,
           target_price: form.target_price || undefined,
           delivery_timeframe: form.delivery_timeframe || undefined,
@@ -122,6 +195,7 @@ export default function RequestQuotePage() {
       setWaLink(`https://wa.me/${waDigits}?text=${encodeURIComponent(finalText)}`);
       setResult(res);
       cart.clear();
+      draft.markSent();
       setTurnstileToken("");
       if (turnstileRef.current) {
         turnstileRef.current.reset();
@@ -138,8 +212,35 @@ export default function RequestQuotePage() {
       <PageHero
         title="Request a Wholesale Quote"
         subtitle="Submit a request for quotation (RFQ) — receive a written quote with MOQ, lead time and packaging."
-      />
+      >
+        <p className="text-sm text-gray max-w-2xl">
+          Not sure what to ask for? Tap the{" "}
+          <button
+            type="button"
+            className="link"
+            onClick={() => openNliChat()}
+          >
+            live chat assistant
+          </button>{" "}
+          in the corner — it asks a couple of quick questions and fills this form in for you.
+        </p>
+      </PageHero>
       <div className="container-x section">
+        {draft.restored && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-gold/50 bg-champagne/40 px-4 py-3">
+            <p className="text-sm text-espresso">
+              <strong>We saved your progress.</strong> Your unfinished quotation request was restored —
+              pick up where you left off.
+            </p>
+            <button
+              type="button"
+              onClick={draft.discardRestored}
+              className="text-[11px] font-bold uppercase tracking-wider text-gray hover:text-clay"
+            >
+              Discard &amp; start fresh
+            </button>
+          </div>
+        )}
         {result ? (
           <div className="max-w-2xl">
             <div className="card border-green-200">

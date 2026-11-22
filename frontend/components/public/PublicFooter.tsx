@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { api, BUSINESS_EMAIL, BUSINESS_LOCATION, BUSINESS_PHONES, whatsappLink, BUSINESS_SALES_EMAIL } from "@/lib/api";
 import type { Category, Collection, PublicSettings } from "@/lib/types";
+import { MarketFields } from "./MarketControls";
 
 const COMPANY_LINKS: [string, string][] = [
   ["About Us", "/about"],
@@ -43,6 +44,10 @@ const REGION_LINKS: [string, string][] = [
   ["United Kingdom", "/uk"],
   ["United States", "/usa"],
   ["Canada", "/canada"],
+  ["Saudi Arabia", "/saudi-arabia"],
+  ["Japan", "/japan"],
+  ["Singapore", "/singapore"],
+  ["Switzerland", "/europe/switzerland"],
   ["Europe", "/europe"],
 ];
 
@@ -55,6 +60,27 @@ export function PublicFooter() {
   const [s, setS] = useState<PublicSettings | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [companyLinks, setCompanyLinks] = useState<[string, string][]>(COMPANY_LINKS);
+  const [shopLinks, setShopLinks] = useState<[string, string][]>(SHOP_LINKS);
+  const [guideLinks, setGuideLinks] = useState<[string, string][]>(GUIDE_LINKS);
+  const [regionLinks, setRegionLinks] = useState<[string, string][]>(REGION_LINKS);
+
+  useEffect(() => {
+    api<Record<string, any>>("/api/public/site-content")
+      .then((c) => {
+        const apply = (key: string, setter: (v: [string, string][]) => void) => {
+          const rows = c?.[key];
+          if (Array.isArray(rows) && rows.length) {
+            setter(rows.map((r: any) => [String(r.label || ""), String(r.href || "/")]));
+          }
+        };
+        apply("footer_company", setCompanyLinks);
+        apply("footer_shop", setShopLinks);
+        apply("footer_guides", setGuideLinks);
+        apply("footer_regions", setRegionLinks);
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     api<PublicSettings>("/api/public/settings")
@@ -74,12 +100,12 @@ export function PublicFooter() {
   const location = s?.location || BUSINESS_LOCATION;
 
   return (
-    <footer className="bg-clay-dark text-cream mt-16">
+    <footer className="bg-editorial-dark text-cream mt-16">
       {/* Enquiry CTA — consumer copy on NLI Collections, wholesale elsewhere */}
       <div className="border-b border-cream/20">
         <div className="container-x py-10 flex flex-col md:flex-row md:items-center gap-6 md:justify-between">
           <div>
-            <h2 className="font-serif font-bold text-2xl text-white">
+            <h2 className="font-cormorant font-medium text-2xl text-white">
               {isNli
                 ? "Bring home handcrafted brass & copper from Moradabad"
                 : "Sourcing for your store, project or gifting programme?"}
@@ -114,10 +140,26 @@ export function PublicFooter() {
         </div>
       </div>
 
+      {/* Destination & currency — the manual override for geo detection */}
+      <div className="border-b border-cream/15">
+        <div className="container-x flex flex-col gap-4 py-6 md:flex-row md:items-start md:justify-between">
+          <div className="max-w-md">
+            <h3 className="font-cormorant text-xl text-white">Destination &amp; currency</h3>
+            <p className="mt-1 text-sm text-cream/70">
+              Choose where you buy and which currency to view. Converted prices are indicative
+              and dated — every order is confirmed by a written quotation.
+            </p>
+          </div>
+          <div className="w-full md:w-auto md:min-w-[24rem]">
+            <MarketFields idPrefix="ftr" tone="dark" />
+          </div>
+        </div>
+      </div>
+
       <div className="container-x py-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-7 gap-8">
           <div>
-            <h2 className="font-serif font-bold text-xl text-white">{businessName}</h2>
+            <h2 className="font-cormorant font-medium text-2xl text-white">{businessName}</h2>
             <p className="text-sm text-cream/80 mt-3">{location}</p>
             <ul className="text-sm text-cream/80 mt-3 space-y-1.5">
               <li>
@@ -144,7 +186,7 @@ export function PublicFooter() {
                 </a>
               </li>
               <li>
-                <span className="text-xs text-gray">Sales WhatsApp: +91 9808588603</span>
+                <span className="text-xs text-cream/70">Sales WhatsApp: +91 9808588603</span>
               </li>
             </ul>
           </div>
@@ -203,19 +245,28 @@ export function PublicFooter() {
           <nav aria-label="Company">
             <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Company</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
-              {COMPANY_LINKS.map(([label, href]) => (
+              {companyLinks.map(([label, href]) => (
                 <li key={href}>
                   <Link href={href} className="hover:text-white">
                     {label}
                   </Link>
                 </li>
               ))}
-              <li className="pt-2 flex gap-4">
+              <li className="pt-2 flex flex-wrap gap-x-4 gap-y-1">
                 <Link href="/privacy" className="hover:text-white">
                   Privacy
                 </Link>
                 <Link href="/terms" className="hover:text-white">
                   Terms
+                </Link>
+                <Link href="/shipping-policy" className="hover:text-white">
+                  Shipping
+                </Link>
+                <Link href="/return-policy" className="hover:text-white">
+                  Returns
+                </Link>
+                <Link href="/payment-policy" className="hover:text-white">
+                  Payments
                 </Link>
               </li>
             </ul>
@@ -224,7 +275,7 @@ export function PublicFooter() {
           <nav aria-label="Buy by region">
             <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Buy by region</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
-              {REGION_LINKS.map(([label, href]) => (
+              {regionLinks.map(([label, href]) => (
                 <li key={href}>
                   <Link href={href} className="hover:text-white">
                     {label}
@@ -237,8 +288,8 @@ export function PublicFooter() {
           <nav aria-label="Shop now">
             <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Shop now</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
-              {SHOP_LINKS.map(([label, href]) => (
-                <li key={href}>
+              {shopLinks.map(([label, href]) => (
+                <li key={`${label}-${href}`}>
                   <Link href={href} className="hover:text-white">
                     {label}
                   </Link>
@@ -250,7 +301,7 @@ export function PublicFooter() {
           <nav aria-label="Guides & resources">
             <h3 className="text-cream font-semibold text-sm uppercase tracking-wider">Guides & resources</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-cream/80">
-              {GUIDE_LINKS.map(([label, href]) => (
+              {guideLinks.map(([label, href]) => (
                 <li key={href}>
                   <Link href={href} className="hover:text-white">
                     {label}
@@ -279,6 +330,12 @@ export function PublicFooter() {
             Google Business Profile
           </a>
           <div className="mt-3 flex gap-3">
+            <a href="https://www.facebook.com/profile.php?id=100083216147871" target="_blank" rel="noopener noreferrer" className="text-cream/60 hover:text-gold-light transition-colors" aria-label="Facebook">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/></svg>
+            </a>
+            <a href="https://www.linkedin.com/in/new-look-impex-b1b473218/" target="_blank" rel="noopener noreferrer" className="text-cream/60 hover:text-gold-light transition-colors" aria-label="LinkedIn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+            </a>
             <a href="https://www.instagram.com/nli_collections_india" target="_blank" rel="noopener noreferrer" className="text-cream/60 hover:text-gold-light transition-colors" aria-label="Instagram">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
             </a>

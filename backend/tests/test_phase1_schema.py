@@ -1,5 +1,6 @@
 """Phase-1 schema tests: B2B product fields, lead (enquiry) reference/phone,
 CSV import/export round-trip with external ids, and admin SEO pages."""
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -16,6 +17,16 @@ db.close()
 
 c = TestClient(app)
 H: dict = {}  # auth removed
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    """Public form endpoints are rate-limited per IP by middleware (5/10 min);
+    earlier modules share that budget, so clear the buckets before each test."""
+    from app.rate_limiter import _memory_hits
+    _memory_hits.clear()
+    yield
+    _memory_hits.clear()
 
 
 # ---------- B2B product fields ----------

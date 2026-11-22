@@ -80,18 +80,25 @@ def check_once() -> dict:
     if not email_configured():
         out["skip"] = "SMTP not configured"
         return out
-    camp = active_campaign()
-    if camp["ends_label"] == "always on":
-        out["skip"] = "evergreen campaign — no blasts"
-        return out
-    now = datetime.utcnow()
-    ends = datetime.fromisoformat(camp["ends_at"])
-    seconds_left = (ends - now).total_seconds()
-    if seconds_left <= 0:
-        out["skip"] = "window already closed"
-        return out
     db = SessionLocal()
     try:
+        from .site_control import automation_enabled, resolve_campaign
+        if not automation_enabled(db, "campaign_mailer"):
+            out["skip"] = "Disabled in Site Control — no emails sent"
+            return out
+        camp, admin_campaign = resolve_campaign(db)
+        if not camp:
+            out["skip"] = "no active campaign"
+            return out
+        if camp["ends_label"] == "always on" or not camp.get("ends_at"):
+            out["skip"] = "evergreen campaign — no blasts"
+            return out
+        now = datetime.utcnow()
+        ends = datetime.fromisoformat(camp["ends_at"])
+        seconds_left = (ends - now).total_seconds()
+        if seconds_left <= 0:
+            out["skip"] = "window already closed"
+            return out
         if (r := _blast(db, f"{camp['code']}:announcement", camp, "announcement")):
             out["sent"].append(r)
         if seconds_left <= REMINDER_WINDOW_SECONDS:

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import type { CountryConfig } from "./country-data";
+import { marketMetaDescription } from "@/lib/country-seo";
 
 const SITE = "https://www.newlookimpex.store";
 
 /**
- * hreflang cluster for the six market-specific regional pages.
+ * hreflang cluster for the market-specific regional pages.
  *
  * These are genuinely localized equivalents of the same page type (each has
  * its own market intro, buyer bullets, FAQs and category emphasis), so they
@@ -19,13 +20,15 @@ const REGIONAL_LANGUAGES: Record<string, string> = {
   "en-ae": "/uae",
   "en-au": "/au",
   "en-ca": "/canada",
-  "en-eu": "/europe",
+  "en-sa": "/saudi-arabia",
+  "en-jp": "/japan",
+  "en-sg": "/singapore",
 };
 
 /** Metadata for a top-level regional page (canonical = the short /xx path).
  *  Reuses the shared country config so copy stays in one place. */
 export function regionalMetadata(cfg: CountryConfig, path: string): Metadata {
-  const description = cfg.intro[0].slice(0, 155);
+  const description = marketMetaDescription(cfg.h1, cfg.bullets);
   const url = `${SITE.replace(/\/$/, "")}/${path}`;
   return {
     // layout template appends " | New Look Impex" — keep it out of the value

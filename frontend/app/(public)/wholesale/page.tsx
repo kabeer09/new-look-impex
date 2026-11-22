@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
+import { ChatCTA } from "@/components/public/ChatCTA";
 import { WholesaleEnquiryForm } from "./WholesaleEnquiryForm";
 
 export const metadata: Metadata = {
@@ -93,6 +94,7 @@ export default function WholesalePage() {
               <div className="flex gap-2 mt-4 flex-wrap">
                 <Link href="/products" className="btn btn-outline btn-sm">Browse catalogue</Link>
                 <Link href="/request-quote" className="btn btn-primary btn-sm">Start an RFQ</Link>
+                <ChatCTA className="btn btn-ghost btn-sm">Chat with our assistant</ChatCTA>
               </div>
             </div>
           </div>

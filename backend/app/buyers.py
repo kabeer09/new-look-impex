@@ -41,7 +41,8 @@ def _qualify(company: str, website: str, category: str,
     text = f"{company} {website} {category} {relevance}".lower()
     country_l = (country or "").lower()
     target = country_l in {"australia", "united states", "united kingdom",
-                           "united arab emirates", "canada", "india", "usa", "uk", "uae"}
+                           "united arab emirates", "canada", "india", "usa", "uk", "uae",
+                           "saudi arabia", "japan", "singapore", "switzerland"}
     prod_hits = sum(1 for s in PRODUCT_SIGNALS if s in text)
     b2b_hits = sum(1 for s in B2B_SIGNALS if s in text)
     factors: dict = {}
@@ -320,7 +321,7 @@ def _outreach_draft(b: models.Buyer, db: Session) -> dict:
         f"Would you be interested in a wholesale quotation or our product catalogue? "
         f"You can request a quote or download the catalogue from our website, or simply "
         f"reply to this email.\n\n"
-        f"Best regards,\nNew Look Impex\nnewlookimpex@gmail.com | +91 8218251238\n"
+        f"Best regards,\nNew Look Impex\nnewlookimpex@gmail.com | +91 9808588603\n"
         f"(Moradabad, Uttar Pradesh, India)")
     if llm_configured():
         res = generate(prompt, max_tokens=600)

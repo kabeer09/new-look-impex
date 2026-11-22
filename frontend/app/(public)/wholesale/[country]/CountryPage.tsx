@@ -5,9 +5,13 @@ import { api, trackEvent } from "@/lib/api";
 import type { ProductCard } from "@/lib/types";
 import { ProductGrid } from "@/components/public/Shared";
 import { Loading, ErrorBox } from "@/components/public/States";
+import { MarketHero, MarketGallery } from "@/components/public/MarketVisuals";
+import { getMarketVisual } from "@/lib/market-visuals";
+import { useMarket } from "@/lib/market";
 
 import type { CountryConfig } from "./country-data";
 import { COUNTRIES } from "./country-data";
+import { EUROPE_COUNTRIES } from "@/app/(public)/europe/[country]/europe-data";
 
 const SITE = "https://www.newlookimpex.store";
 
@@ -21,6 +25,9 @@ export function CountryPage({
   const cfg = COUNTRIES[slug];
   const [products, setProducts] = useState<ProductCard[] | null>(initialProducts);
   const [err, setErr] = useState("");
+  // Honest quote wording: "Request Wholesale Quote in USD" follows the
+  // buyer's chosen currency, never a converted figure.
+  const { quoteIn } = useMarket();
 
   useEffect(() => {
     if (!cfg) return;
@@ -42,6 +49,7 @@ export function CountryPage({
   }, [slug]);
 
   if (!cfg) return null;
+  const visual = getMarketVisual(slug);
 
   const canonical = `${SITE}/${slug === "australia" ? "au" : slug}`;
   const breadcrumbLd = {
@@ -62,25 +70,44 @@ export function CountryPage({
       acceptedAnswer: { "@type": "Answer", text: a },
     })),
   };
+  // Market-specific WebPage signal for Google — makes the served country explicit.
+  const webpageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: cfg.h1,
+    description: cfg.intro[0]?.slice(0, 160),
+    url: canonical,
+    inLanguage: "en",
+    areaServed: { "@type": "Country", name: cfg.name },
+    about: { "@type": "Thing", name: cfg.bullets[0] },
+    mentions: cfg.categories.map((c) => ({ "@type": "Thing", name: c })),
+    primaryImageOfPage: { "@type": "ImageObject", url: `${SITE}${visual.hero}` },
+    isPartOf: { "@type": "WebSite", name: "New Look Impex", url: SITE },
+  };
+  const currentPath = slug === "australia" ? "/au" : `/${slug}`;
+  const otherMarkets = [
+    ...Object.values(COUNTRIES)
+      .filter((c) => c.slug !== "europe")
+      .map((c) => ({ name: c.name, href: `/${c.slug}` })),
+    ...EUROPE_COUNTRIES.map((c) => ({ name: c.name, href: `/europe/${c.slug}` })),
+  ].filter((m) => m.href !== currentPath);
 
   return (
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageLd) }} />
 
-      <section className="bg-cream border-b border-clay/15">
-        <div className="container-x py-12 md:py-16">
-          <nav className="text-xs text-gray mb-3" aria-label="Breadcrumb">
-            <Link href="/" className="hover:text-navy">Home</Link>
-            <span className="mx-1">/</span>
-            <span className="text-charcoal">Wholesale · {cfg.name}</span>
-          </nav>
-          <p className="eyebrow text-clay">Wholesale · {cfg.name}</p>
-          <h1 className="page-title mt-2">{cfg.h1}</h1>
-        </div>
-      </section>
+      <MarketHero
+        visual={visual}
+        eyebrow={`Wholesale · ${cfg.name}`}
+        h1={cfg.h1}
+        intro={cfg.intro[0]}
+        breadcrumb={<><Link href="/" className="hover:text-navy">Home</Link><span className="mx-1">/</span><span className="text-charcoal">Wholesale · {cfg.name}</span></>}
+        ctas={<><Link href="/request-quote" className="btn btn-clay">{quoteIn}</Link><Link href="/products" className="btn btn-ghost">Browse the Catalogue</Link></>}
+      />
       <div className="container-x section max-w-4xl">
-        {cfg.intro.map((p, i) => (
+        {cfg.intro.slice(1).map((p, i) => (
           <p key={i} className="text-gray mt-4 first:mt-0 leading-relaxed">{p}</p>
         ))}
         <ul className="mt-6 space-y-2">
@@ -91,6 +118,7 @@ export function CountryPage({
             </li>
           ))}
         </ul>
+        <MarketGallery images={visual.gallery} name={cfg.name} theme={visual.theme} />
         <h2 className="font-serif font-bold text-espresso text-2xl mt-10">Relevant products</h2>
         <div className="mt-4">
           {err && <ErrorBox error={err} retry={() => window.location.reload()} />}
@@ -113,12 +141,29 @@ export function CountryPage({
         </div>
         <div className="mt-10 flex flex-wrap gap-3">
           <Link href="/request-quote" className="btn btn-clay">
-            Request a Wholesale Quote
+            {quoteIn}
           </Link>
           <Link href="/products" className="btn btn-ghost">
             Browse the Catalogue
           </Link>
         </div>
+
+        <section className="mt-12 border-t border-clay/20 pt-8">
+          <h2 className="font-serif font-bold text-espresso text-xl">Other markets we serve</h2>
+          <p className="text-sm text-gray mt-2">
+            Country-specific wholesale guidance for buyers in other markets.
+          </p>
+          <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {otherMarkets.map((m) => (
+              <li key={m.href}>
+                <Link href={m.href} className="text-sm text-navy hover:text-clay underline underline-offset-2">
+                  {m.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
       </div>
     </div>
   );

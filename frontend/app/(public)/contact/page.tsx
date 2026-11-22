@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { PageHero } from "@/components/public/Shared";
 import { api, trackEvent, BUSINESS_EMAIL, BUSINESS_PHONES, whatsappUrl, BUSINESS_LOCATION } from "@/lib/api";
+import { useLeadMarket } from "@/lib/market";
 import type { EnquiryInput, PublicSettings } from "@/lib/types";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
@@ -14,6 +15,14 @@ export default function ContactPage() {
   const [form, setForm] = useState<EnquiryInput>({ name: "", email: "", country: "", product_interest: "", message: "" });
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const turnstileRef = useRef<any>(null);
+  const lead = useLeadMarket();
+
+  // Pre-fill the buyer's market when they have not typed a country yet.
+  useEffect(() => {
+    if (!lead.country) return;
+    setForm((f) => (f.country ? f : { ...f, country: lead.country }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lead.country]);
 
   // Contact details come from settings when available; known constants are the fallback.
   useEffect(() => {
@@ -42,7 +51,14 @@ export default function ContactPage() {
         setSending(false);
         return;
       }
-      await api("/api/public/enquiries", { method: "POST", body: JSON.stringify({ ...form, website_url: "" }) });
+      await api("/api/public/enquiries", {
+        method: "POST",
+        body: JSON.stringify({
+          ...form,
+          preferred_currency: lead.preferred_currency,
+          website_url: "",
+        }),
+      });
       trackEvent({ event_type: "contact_click" });
       setSent("Thank you — your enquiry has been received. We will respond by email.");
       setForm({ name: "", email: "", country: "", product_interest: "", message: "" });

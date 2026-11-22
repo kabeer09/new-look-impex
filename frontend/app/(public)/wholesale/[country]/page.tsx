@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { COUNTRIES } from "./country-data";
+import { marketMetaDescription } from "@/lib/country-seo";
 import { CountryPage } from "./CountryPage";
 import { fetchRegionalProducts } from "./regional-products";
 
@@ -21,6 +22,9 @@ const SHORT_URL: Record<string, string> = {
   au: "/au",
   canada: "/canada",
   europe: "/europe",
+  "saudi-arabia": "/saudi-arabia",
+  japan: "/japan",
+  singapore: "/singapore",
 };
 
 export async function generateMetadata({
@@ -35,7 +39,7 @@ export async function generateMetadata({
       robots: { index: false, follow: false },
     };
   }
-  const description = cfg.intro[0]?.slice(0, 155) || "Wholesale copper & brass products";
+  const description = marketMetaDescription(cfg.h1, cfg.bullets);
   const shortPath = SHORT_URL[params.country] || `/wholesale/${cfg.slug}`;
   return {
     // layout template appends " | New Look Impex" — keep it out of the value

@@ -6,7 +6,8 @@ import { api, mediaUrl, cardSrcSet, trackEvent, whatsappLink } from "@/lib/api";
 import type { ProductDetail } from "@/lib/types";
 import { useRfqCart } from "@/lib/rfq";
 import { useWishlist } from "@/hooks/useWishlist";
-import { Loading, ErrorBox, EmptyState, formatPrice } from "@/components/public/States";
+import { useMarket } from "@/lib/market";
+import { Loading, ErrorBox, EmptyState } from "@/components/public/States";
 import { ProductGrid } from "@/components/public/Shared";
 import { Reviews } from "@/components/public/Reviews";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -39,6 +40,7 @@ export default function ProductClient({
   const cart = useRfqCart();
   const wishlist = useWishlist();
   const recentlyViewed = useRecentlyViewed();
+  const { money, quoteIn } = useMarket();
   const [product, setProduct] = useState<ProductDetail | null>(initialProduct);
   const [err, setErr] = useState("");
   const [notFound, setNotFound] = useState(false);
@@ -106,8 +108,17 @@ export default function ProductClient({
   ) as { url: string; alt_text: string | null; is_concept?: boolean | null }[];
   const main = images[imgIdx] || null;
   const mainIsConcept = Boolean(main?.is_concept);
-  const priceLine =
-    product.price_on_request || product.price == null ? null : formatPrice(product.price, product.currency);
+  const priceM =
+    product.price_on_request || product.price == null ? null : money(product.price, product.currency);
+  const priceLine = priceM && priceM.ok ? priceM.text : null;
+
+  /** Variant table cell — a figure only when it can be shown honestly. */
+  const variantPriceText = (v: { price?: number | null }): string => {
+    if (product.price_on_request || v.price == null) return quoteIn;
+    const m = money(v.price, product.currency);
+    if (!m.ok) return quoteIn;
+    return m.converted && m.date ? `${m.text} (indicative · ${m.date})` : m.text;
+  };
 
   // Only verified attributes — skip anything unset.
   const specs: [string, string][] = ([
@@ -243,10 +254,17 @@ export default function ProductClient({
 
             <div className="mt-4">
               {priceLine ? (
-                <p className="text-3xl font-bold text-navy">{priceLine}</p>
+                <>
+                  <p className="text-3xl font-bold text-navy">{priceLine}</p>
+                  {priceM?.converted && priceM.date && (
+                    <p className="mt-1 text-xs text-gray">
+                      Indicative conversion · provider rate date {priceM.date}
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="card-flat !bg-ivory !border-brass/40">
-                  <p className="font-semibold text-navy">Pricing on request — enquire for a wholesale quote</p>
+                  <p className="font-semibold text-navy">{quoteIn}</p>
                   <p className="text-xs text-gray mt-1">Prices are quoted per order based on quantity, finish and destination.</p>
                 </div>
               )}
@@ -338,7 +356,7 @@ export default function ProductClient({
                       <tr key={i}>
                         <td>{v.name}</td>
                         <td>{v.sku || "—"}</td>
-                        <td>{product.price_on_request || v.price == null ? "On request" : formatPrice(v.price, product.currency)}</td>
+                        <td>{variantPriceText(v)}</td>
                         <td>{v.moq ?? product.moq ?? "—"}</td>
                       </tr>
                     ))}

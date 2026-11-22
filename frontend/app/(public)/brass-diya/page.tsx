@@ -21,13 +21,13 @@ export default function BrassDiyasPage() {
       description="New Look Impex manufactures and exports hand-hammered brass diyas, oil lamps and festive lighting from Moradabad, India. Wholesale pricing quoted per order for B2B buyers worldwide."
       h1="Brass Diyas — Wholesale Manufacturer & Exporter from Moradabad"
       intro="New Look Impex is a brass products manufacturer based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass diyas, oil lamps and traditional festive lighting at wholesale prices quoted per order. Our products are exported to retailers, importers, wholesalers and corporate buyers globally."
-      filterParams={{ q: "diya", page_size: "24" }}
+      filterParams={{ q: "diya", page_size: "100" }}
       ctaLabel="Request Brass Diyas Wholesale Quote"
       ctaHref="/request-quote"
       relatedLinks={[
-        { label: "Brass Lanterns", href: "/brass-lanterns/" },
-        { label: "Brass Urlis & Diyas", href: "/brass-urli/" },
-        { label: "Brass Handicrafts", href: "/brass-handicrafts/" },
+        { label: "Brass Lanterns", href: "/brass-lanterns" },
+        { label: "Brass Urlis & Diyas", href: "/brass-urli" },
+        { label: "Brass Handicrafts", href: "/brass-handicrafts" },
       ]}
       faqs={[
         {

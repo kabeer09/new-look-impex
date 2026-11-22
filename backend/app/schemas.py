@@ -99,6 +99,7 @@ class EnquiryPublicIn(_NullCoercing):
     product_id: Optional[int] = None
     product_interest: str = ""
     quantity: str = ""
+    preferred_currency: str = ""  # buyer's quotation currency preference (USD/AED/GBP/…)
     message: str = Field(min_length=5)
     consent: bool = False
     landing_page: str = ""
@@ -229,13 +230,54 @@ class RFQIn(_NullCoercing):
     target_price: str = ""
     delivery_timeframe: str = ""
     additional_requirements: str = ""
+    # Currency the buyer would like the quotation in (metadata only — the
+    # backend never converts or rewrites prices; allowlisted before saving).
+    preferred_currency: str = ""
     consent: bool = False
     items: list[RFQItemIn] = Field(min_length=1)
+    # Anonymous per-browser draft key (localStorage) — when present, the matching
+    # abandoned-RFQ draft is marked "sent" so it leaves the follow-up queue.
+    draft_key: str = ""
 
 
 class RFQStatusIn(_NullCoercing):
     status: str
     notes: str = ""
+
+
+class RfqDraftItemIn(_NullCoercing):
+    """Loose cart snapshot — drafts save mid-typing, so nothing is required."""
+
+    product_id: Optional[int] = None
+    product_name: str = Field(default="", max_length=512)
+    quantity: str = Field(default="", max_length=128)
+    unit: str = Field(default="", max_length=64)
+    notes: str = Field(default="", max_length=2000)
+
+
+class RfqDraftIn(_NullCoercing):
+    """Autosaved RFQ form state (abandoned-RFQ recovery).
+
+    Every field is optional: the form saves while the buyer types, often before
+    a single required field is complete. `draft_key` is an anonymous per-browser
+    id generated client-side (localStorage) — no account and no IP is stored.
+    """
+
+    draft_key: str = Field(min_length=8, max_length=64)
+    full_name: str = Field(default="", max_length=255)
+    business_email: str = Field(default="", max_length=255)  # may be mid-typing — not EmailStr
+    company_name: str = Field(default="", max_length=255)
+    country: str = Field(default="", max_length=128)
+    phone: str = Field(default="", max_length=64)
+    target_price: str = Field(default="", max_length=128)
+    delivery_timeframe: str = Field(default="", max_length=128)
+    additional_requirements: str = Field(default="", max_length=5000)
+    preferred_currency: str = ""
+    items: list[RfqDraftItemIn] = Field(default_factory=list, max_length=100)
+
+
+class RfqDraftStatusIn(_NullCoercing):
+    status: str  # open | dismissed (admin marks a stale draft as handled)
 
 
 class BuyerIn(_NullCoercing):

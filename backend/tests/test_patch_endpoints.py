@@ -13,7 +13,7 @@ os.environ.setdefault("ADMIN_EMAIL", "newlookimpex130@gmail.com")
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app import models  # noqa: E402
-from app.auth import create_access_token  # noqa: E402
+from app.auth import create_access_token, ADMIN_EMAIL  # noqa: E402
 from app.database import SessionLocal, engine, Base  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -21,7 +21,7 @@ from app.main import app  # noqa: E402
 def test_patch_endpoints():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
-    TOKEN = create_access_token("newlookimpex130@gmail.com", "admin", 1)
+    TOKEN = create_access_token(ADMIN_EMAIL, "admin", 1)
     H = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
     client = TestClient(app)
     failures = []
@@ -34,8 +34,8 @@ def test_patch_endpoints():
     try:
         # Admin user required by require_role
         if not db.query(models.User).filter(
-                models.User.email == "newlookimpex130@gmail.com").first():
-            db.add(models.User(email="newlookimpex130@gmail.com", password_hash="",
+                models.User.email == ADMIN_EMAIL).first():
+            db.add(models.User(email=ADMIN_EMAIL, password_hash="",
                                role="admin", is_active=True))
             db.commit()
 

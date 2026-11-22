@@ -190,8 +190,11 @@ def ensure_discount_codes(db, camps: list) -> None:
             if not code:
                 continue
             row = db.query(DiscountCode).filter(DiscountCode.code == code).first()
+            if row is not None and getattr(row, "source", "manual") != "campaign":
+                # Admin-managed coupon with this code — never overwrite it.
+                continue
             if row is None:
-                row = DiscountCode(code=code)
+                row = DiscountCode(code=code, source="campaign")
                 db.add(row)
             row.description = c.get("description") or f"{c.get('name', code)} — flat {c.get('percent', 0)}% OFF"
             row.discount_type = "percent"

@@ -21,6 +21,8 @@ class BannerIn(_NullCoercing):
     cta_link: str = ""
     sort_order: int = 0
     is_active: bool = True
+    start_at: str = ""
+    end_at: str = ""
 
 
 def _out(b: models.Banner) -> dict:
@@ -28,15 +30,34 @@ def _out(b: models.Banner) -> dict:
             "subtitle": b.subtitle, "image_url": b.image_url,
             "cta_text": b.cta_text, "cta_link": b.cta_link,
             "sort_order": b.sort_order, "is_active": b.is_active,
+        "start_at": b.start_at.isoformat() if getattr(b, "start_at", None) else None,
+        "end_at": b.end_at.isoformat() if getattr(b, "end_at", None) else None,
             "created_at": b.created_at.isoformat() if b.created_at else None}
+
+
+def _apply_dates(b, body):
+    from datetime import datetime
+    for field, value in (("start_at", getattr(body, "start_at", "")), ("end_at", getattr(body, "end_at", ""))):
+        if not value:
+            setattr(b, field, None)
+        else:
+            try:
+                setattr(b, field, datetime.fromisoformat(str(value).replace("Z", "+00:00")).replace(tzinfo=None))
+            except ValueError:
+                setattr(b, field, None)
 
 
 @router.get("/api/public/banners")
 def public_banners(placement: str = "home_hero", db: Session = Depends(get_db)):
+    from datetime import datetime
+    now = datetime.utcnow()
     rows = db.query(models.Banner).filter(
         models.Banner.placement == placement,
         models.Banner.is_active == True).order_by(  # noqa: E712
         models.Banner.sort_order, models.Banner.id).all()
+    rows = [b for b in rows
+            if (not getattr(b, "start_at", None) or b.start_at <= now)
+            and (not getattr(b, "end_at", None) or b.end_at >= now)]
     return {"items": [_out(b) for b in rows]}
 
 
@@ -59,6 +80,7 @@ def create_banner(body: BannerIn, db: Session = Depends(get_db),
                       cta_text=body.cta_text.strip()[:128],
                       cta_link=body.cta_link.strip()[:512],
                       sort_order=body.sort_order, is_active=body.is_active)
+    _apply_dates(b, body)
     db.add(b); db.commit(); db.refresh(b)
     return _out(b)
 
@@ -78,6 +100,7 @@ def update_banner(bid: int, body: BannerIn, db: Session = Depends(get_db),
     b.cta_link = body.cta_link.strip()[:512]
     b.sort_order = body.sort_order
     b.is_active = body.is_active
+    _apply_dates(b, body)
     db.commit(); db.refresh(b)
     return _out(b)
 

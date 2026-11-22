@@ -67,15 +67,24 @@ export const metadata: Metadata = {
   },
 };
 
-import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
+import { Plus_Jakarta_Sans, Playfair_Display, Cormorant_Garamond, Inter } from "next/font/google";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-cormorant",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+  // GA4 stream measurement ID. Override via NEXT_PUBLIC_GA4_MEASUREMENT_ID if needed.
+  const ga4Id = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID || "G-0DP6C543VP";
   return (
-    <html lang="en-IN" className={`${jakarta.variable} ${playfair.variable}`}>
+    <html lang="en-IN" className={`${jakarta.variable} ${playfair.variable} ${cormorant.variable} ${inter.variable}`}>
       <head>
         {/* Google Tag Manager */}
         <script
@@ -97,12 +106,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })(window,document,'script','GTM-M4GDWFQT');`,
           }}
         />
-        {/* Google Tag Manager gtag.js */}
+        {/* Google Analytics 4 — direct gtag.js.
+            The previous snippet only defined gtag() and never called
+            gtag('config', ...), so no GA4 property received any data. */}
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`} />
         <script
           dangerouslySetInnerHTML={{
             __html: `window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());`,
+            gtag('js', new Date());
+            gtag('config', ${JSON.stringify(ga4Id)}, { send_page_view: true });`,
           }}
         />
         {/* Organization Schema (JSON-LD) - Validated via Google Rich Results Test */}
@@ -118,16 +131,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "logo": "https://www.newlookimpex.store/logo-newlookimpex.jpg",
               "address": {
                 "@type": "PostalAddress",
+                "streetAddress": "Ganga Mandir, Thana Nagphani Road, Kisrol",
                 "addressLocality": "Moradabad",
                 "addressRegion": "Uttar Pradesh",
                 "addressCountry": "India",
                 "postalCode": "244001"
               },
-              "telephone": "+91 8218251238",
+              "telephone": "+91 9808588603",
               "email": "newlookimpex130@gmail.com",
               "sameAs": [
-                "https://facebook.com/newlookimpex",
-                "https://instagram.com/newlookimpex_india"
+                "https://www.facebook.com/profile.php?id=100083216147871",
+                "https://www.linkedin.com/in/new-look-impex-b1b473218/",
+                "https://www.instagram.com/nli_collections_india",
+                "https://www.youtube.com/@nlicollections"
               ]
             }, null, 2)
           }}

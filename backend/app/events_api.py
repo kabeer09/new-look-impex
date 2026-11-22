@@ -14,7 +14,8 @@ from .schemas import EventIn
 router = APIRouter()
 
 ALLOWED_EVENTS = {"product_view", "rfq_add", "rfq_submit",
-                    "catalogue_download", "contact_click", "whatsapp_click"}
+                    "catalogue_download", "contact_click", "whatsapp_click",
+                    "assistant_complete"}
 
 
 @router.post("/api/public/events", status_code=202)

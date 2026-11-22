@@ -21,11 +21,11 @@ export default function CopperKitchenwarePage() {
       description="New Look Impex manufactures and exports hand-hammered copper kitchenware — cookware, pots, pans, serveware and tabletop pieces — from Moradabad, India. Wholesale pricing quoted per order for B2B buyers worldwide."
       h1="Copper Kitchenware — Wholesale Manufacturer & Exporter from Moradabad"
       intro="New Look Impex is a brass and copper products manufacturer based in Moradabad, Uttar Pradesh, India. We supply hand-hammered copper kitchenware including cookware, pots, pans, serveware and tabletop pieces at wholesale prices quoted per order. Our products are exported to retailers, importers, wholesalers and corporate buyers globally."
-      filterParams={{ material: "Copper", q: "kitchenware", page_size: "24" }}
+      filterParams={{ material: "Copper", q: "kitchenware", page_size: "100" }}
       ctaLabel="Request Copper Kitchenware Wholesale Quote"
       ctaHref="/request-quote"
       relatedLinks={[
-        { label: "Copper Bottles", href: "/copper-bottles/" },
+        { label: "Copper Bottles", href: "/copper-bottles" },
         { label: "Brass Kitchenware", href: "/products?material=Brass" },
         { label: "Copper Drinkware", href: "/products?material=Copper" },
       ]}

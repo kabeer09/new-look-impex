@@ -6,7 +6,10 @@ import pytest
 from app.main import app
 from app.database import Base, engine, SessionLocal
 from app import models
-from app.auth import hash_pw, _hits as _rate_hits
+from app.auth import hash_pw
+# The in-memory rate-limit buckets live in rate_limiter (auth only re-exports
+# the rate_limit function), so reset them from there.
+from app.rate_limiter import _memory_hits as _rate_hits
 
 Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)

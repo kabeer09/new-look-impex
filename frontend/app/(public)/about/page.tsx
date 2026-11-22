@@ -75,8 +75,7 @@ export default function AboutPage() {
                 <li>
                   <a className="link" href="mailto:newlookimpex@gmail.com">newlookimpex@gmail.com</a>
                 </li>
-                <li>+91 8218251238</li>
-                <li>+91 7500441239</li>
+                <li>+91 9808588603</li>
                 <li>
                   <WhatsAppLink className="link">
                     WhatsApp us

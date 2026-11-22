@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHero } from "@/components/public/Shared";
 import { api, trackEvent } from "@/lib/api";
+import { useLeadMarket } from "@/lib/market";
 import type { EnquiryInput } from "@/lib/types";
 
 export default function CustomisationPage() {
@@ -9,6 +10,14 @@ export default function CustomisationPage() {
   const [err, setErr] = useState("");
   const [sending, setSending] = useState(false);
   const [form, setForm] = useState<EnquiryInput>({ name: "", email: "", country: "", product_interest: "Custom / OEM", message: "" });
+  const lead = useLeadMarket();
+
+  // Pre-fill the buyer's market when they have not typed a country yet.
+  useEffect(() => {
+    if (!lead.country) return;
+    setForm((f) => (f.country ? f : { ...f, country: lead.country }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lead.country]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +25,10 @@ export default function CustomisationPage() {
     setSent("");
     setSending(true);
     try {
-      await api("/api/public/enquiries", { method: "POST", body: JSON.stringify(form) });
+      await api("/api/public/enquiries", {
+        method: "POST",
+        body: JSON.stringify({ ...form, preferred_currency: lead.preferred_currency }),
+      });
       trackEvent({ event_type: "contact_click" });
       setSent("Thank you — your customisation enquiry has been received. We will quote it like a wholesale order.");
       setForm({ name: "", email: "", country: "", product_interest: "Custom / OEM", message: "" });

@@ -1,69 +1,50 @@
-# New Look Impex — AI-Readable Company Information
+# New Look Impex
 
-# Official Company Identity
-Company Name: NLI Collections
-Brand: New Look Impex
-Business Type: Manufacturer and Exporter of Handcrafted Brass and Copper Products
-Brand Statement: Handcrafted in Moradabad, India. Connecting Indian Craftsmanship with Global Homes.
+> Brass & copper handicraft manufacturer and exporter based in Moradabad, Uttar Pradesh, India. Wholesale and B2B enquiries only — prices, MOQ, lead times and shipping are confirmed per written quotation. No public retail prices.
 
-# Location
-Location: Moradabad, Uttar Pradesh, India
-GSTIN: 09AFKPA4462R1ZW
-Canonical Website: https://www.newlookimpex.store
-Catalogue API: https://api.newlookimpex.store
+## About
 
-# Product Categories
-Copper Products: Copper bottles, copper cookware, copper kitchenware, copper drinkware, copper home décor
-Brass Products: Brass urlis, brass diyas, brass lanterns, brass trays, brass decorative items, brass cookware
-Home Décor: Metal home décor, brass handicrafts, copper home accessories, traditional Indian metalware
+New Look Impex (brand: NLI Collections) manufactures handcrafted brass and copper products: urlis, diyas, lanterns, brass kitchenware, copper bottles and drinkware, decorative bowls, gift sets and metal home décor. Buyers are importers, retailers, distributors, hospitality groups and corporate gifting programmes worldwide. The company does not claim unverifiable certifications, rankings, "pure/food-safe" material claims or fixed delivery times.
 
-# Business Services
-Services: Wholesale export, OEM/private label, corporate gifting, custom manufacturing, international shipping, quality inspection
-Ordering Model: B2B wholesale only — requests are handled by written quotation (request-a-quote / RFQ). No online checkout or card payment is offered.
+Wholesale enquiries: newlookimpex130@gmail.com · Phone/WhatsApp: +91 9808588603 · GSTIN: 09AFKPA4462R1ZW. Website: https://www.newlookimpex.store
 
-# International Markets Served
-Markets: USA, UK, UAE, Australia, Canada, Europe, Middle East, Africa
+## How to use this site
 
-# Contact Information
-Contact Email: newlookimpex130@gmail.com
-WhatsApp: +91 96900 53913
-Office: Moradabad, Uttar Pradesh, India
+- `/products` — full published catalogue with filters
+- `/request-quote` — RFQ form; each submission receives a reference number
+- `/wholesale` — wholesale buyer guide
+- `/sitemap.xml` — all indexable URLs
+- Country pages below give market-specific product focus, buyer guidance and FAQs. Each has unique copy and `WebPage` schema with `areaServed`.
 
-# Key Product Pages
-Full Catalogue: /products
-Copper Collection: /collections/copper-collection
-Brass Collection: /collections/brass-collection
-Metal Home Décor: /collections/metal-home-decor
-Urlis: /collections/urlis
-Diyas & Lanterns: /collections/diyas-lanterns
-Corporate Gifting: /collections/gifting
-Copper Bottles: /copper-bottles
-Copper Cookware & Kitchenware: /copper-kitchenware
-Brass Handicrafts: /brass-handicrafts
-Brass Home Décor: /brass-home-decor
+## Market pages (30)
 
-# Wholesale & Company Pages
-How Wholesale Works: /wholesale
-Bulk Orders: /bulk-orders
-Custom & OEM Orders: /custom-orders
-Export: /export
-Exhibitions & Trade Fairs: /exhibitions
-Buying Guides & Blog: /blog
-
-# Regional Wholesale Pages
-USA: /usa
-UK: /uk
-UAE: /uae
-Australia: /au
-Canada: /canada
-Europe: /europe
-
-# Official Social Links
-Facebook: [facebook.com/newlookimpex]
-Instagram: [instagram.com/newlookimpex]
-WhatsApp: [wa.me/919690053913]
-
-# Additional Notes
-This is an AI-readable representation of New Look Impex business information.
-Product names, descriptions and specifications are maintained per product page; where a specification or price is not published, it is available on request rather than assumed.
-For official product catalog and wholesale enquiries, visit https://www.newlookimpex.store
+- [USA](https://www.newlookimpex.store/usa) — brass décor, candle holders, table décor, copperware
+- [United Kingdom](https://www.newlookimpex.store/uk) — home décor, brass accessories, gifting, copper bottles
+- [Germany](https://www.newlookimpex.store/europe/germany) — premium metal décor, sustainable products, kitchenware
+- [UAE](https://www.newlookimpex.store/uae) — luxury décor, lanterns, gifting, Islamic décor
+- [France](https://www.newlookimpex.store/europe/france) — luxury décor, artistic brass products, candleholders
+- [Netherlands](https://www.newlookimpex.store/europe/netherlands) — home décor, wholesale, import distribution
+- [Italy](https://www.newlookimpex.store/europe/italy) — premium decorative metalware, design products
+- [Australia](https://www.newlookimpex.store/au) — home décor, copperware, lifestyle products
+- [Canada](https://www.newlookimpex.store/canada) — brass décor, copper kitchenware, gifting
+- [Spain](https://www.newlookimpex.store/europe/spain) — decorative metal products, lanterns, home accessories
+- [Belgium](https://www.newlookimpex.store/europe/belgium) — wholesale décor, metal accessories
+- [Saudi Arabia](https://www.newlookimpex.store/saudi-arabia) — luxury décor, lanterns, Ramadan/Eid products
+- [Japan](https://www.newlookimpex.store/japan) — minimalist brass décor, handmade products
+- [Switzerland](https://www.newlookimpex.store/europe/switzerland) — premium décor and luxury gifting
+- [Sweden](https://www.newlookimpex.store/europe/sweden) — minimalist, sustainable home décor
+- [Denmark](https://www.newlookimpex.store/europe/denmark) — Nordic-style brass accessories
+- [Norway](https://www.newlookimpex.store/europe/norway) — premium interior décor
+- [Poland](https://www.newlookimpex.store/europe/poland) — wholesale metal décor and home accessories
+- [South Africa](https://www.newlookimpex.store/south-africa) — decorative products and hospitality supplies
+- [Singapore](https://www.newlookimpex.store/singapore) — premium décor, gifting, hospitality
+- [New Zealand](https://www.newlookimpex.store/new-zealand) — copperware, handmade décor
+- [South Korea](https://www.newlookimpex.store/south-korea) — modern brass décor, design accessories
+- [Turkey](https://www.newlookimpex.store/turkey) — decorative metal products, lanterns
+- [Mexico](https://www.newlookimpex.store/mexico) — metal décor, tableware, wholesale
+- [Brazil](https://www.newlookimpex.store/brazil) — home décor, decorative metalware
+- [Ireland](https://www.newlookimpex.store/europe/ireland) — home accessories, gifting
+- [Austria](https://www.newlookimpex.store/europe/austria) — premium metal décor
+- [Portugal](https://www.newlookimpex.store/europe/portugal) — decorative metal products
+- [Greece](https://www.newlookimpex.store/europe/greece) — Mediterranean décor, lanterns
+- [Qatar](https://www.newlookimpex.store/qatar) — luxury décor, hospitality, gifting

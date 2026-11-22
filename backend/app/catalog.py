@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from . import models
 from . import campaigns as nli_campaigns
+from . import site_control as nli_site_control
 from .auth import current_user, require_role, rate_limit
 from .email import (campaign_email_html, campaign_email_text, email_configured,
                     send_customer_ack, send_campaign_batch, send_email,
@@ -132,6 +133,14 @@ def public_active_campaign(db: Session = Depends(get_db)):
     """Live seasonal campaign — rotates automatically by date (Halloween,
     Black Friday, Christmas, Mother's Day, …) and self-syncs its discount
     code into discount_codes. No manual work needed, ever."""
+    # Admin-managed campaigns (with start/end scheduling) take priority over
+    # the built-in recurring calendar. Auto-syncing only touches codes it owns.
+    camp, admin_managed = nli_site_control.resolve_campaign(db)
+    if admin_managed:
+        if camp:
+            nli_campaigns.ensure_discount_codes(db, [camp])
+        return camp or {"code": "", "name": "", "percent": 0, "tagline": "", "blurb": "",
+                        "emoji": "", "cta": "", "ends_label": "none", "starts_at": None, "ends_at": None}
     camp = nli_campaigns.active_campaign()
     nli_campaigns.sync_if_changed(db, camp)
     return camp
@@ -197,9 +206,44 @@ def create_discount(body: dict, db: Session = Depends(get_db), u=Depends(require
         discount_value=float(body.get("value") or 0),
         min_order_qty=int(body.get("min_order_qty") or 0),
         max_uses=int(body.get("max_uses") or 0),
-        is_active=bool(body.get("is_active", True)))
+        is_active=bool(body.get("is_active", True)),
+        source="manual")
+    for k in ("starts_at", "expires_at"):
+        if body.get(k):
+            try:
+                setattr(d, k, datetime.fromisoformat(str(body[k]).replace("Z", "+00:00")).replace(tzinfo=None))
+            except ValueError:
+                pass
     db.add(d); db.commit(); db.refresh(d)
     return {"id": d.id, "code": d.code}
+
+
+@router.put("/api/discounts/{did}")
+def update_discount(did: int, body: dict, db: Session = Depends(get_db), u=Depends(require_role("admin"))):
+    d = db.query(models.DiscountCode).filter(models.DiscountCode.id == did).first()
+    if not d:
+        raise HTTPException(404, "Not found")
+    for k in ("description", "discount_type"):
+        if k in body:
+            setattr(d, k, str(body[k] or "")[:512])
+    for k in ("discount_value", "min_order_qty", "max_uses"):
+        if k in body:
+            try:
+                setattr(d, k, float(body[k]) if k == "discount_value" else int(body[k]))
+            except (TypeError, ValueError):
+                pass
+    if "is_active" in body:
+        d.is_active = bool(body["is_active"])
+    for k in ("starts_at", "expires_at"):
+        if k in body:
+            try:
+                setattr(d, k, datetime.fromisoformat(str(body[k]).replace("Z", "+00:00")).replace(tzinfo=None)
+                        if body[k] else None)
+            except (ValueError, TypeError):
+                setattr(d, k, None)
+    d.source = "manual"
+    db.commit(); db.refresh(d)
+    return {"id": d.id, "code": d.code, "updated": True}
 
 
 @router.delete("/api/discounts/{did}")

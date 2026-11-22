@@ -21,12 +21,12 @@ export default function BrassHandicraftsPage() {
       description="New Look Impex manufactures and exports hand-hammered brass handicrafts — urlis, diyas, lanterns, vases, décor and festive pieces — from Moradabad, India. Wholesale pricing quoted per order for B2B buyers worldwide."
       h1="Brass Handicrafts — Wholesale Manufacturer & Exporter from Moradabad"
       intro="New Look Impex is a brass and copper products manufacturer based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass handicrafts including urlis, diyas, lanterns, decorative pieces and festive gifting items at wholesale prices quoted per order. Our products are exported to retailers, importers, wholesalers and corporate buyers globally."
-      filterParams={{ material: "Brass", page_size: "24" }}
+      filterParams={{ material: "Brass", page_size: "100" }}
       ctaLabel="Request Brass Handicrafts Wholesale Quote"
       ctaHref="/request-quote"
       relatedLinks={[
-        { label: "Brass Lanterns", href: "/brass-lanterns/" },
-        { label: "Brass Urlis & Diyas", href: "/brass-urli/" },
+        { label: "Brass Lanterns", href: "/brass-lanterns" },
+        { label: "Brass Urlis & Diyas", href: "/brass-urli" },
         { label: "Brass Utensils", href: "/products?material=Brass" },
       ]}
       faqs={[

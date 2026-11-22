@@ -91,6 +91,7 @@ export default function Overview() {
             <Cell label="Catalogue downloads" value={events.catalogue_downloads} />
             <Cell label="Contact clicks" value={events.contact_clicks} />
             <Cell label="WhatsApp clicks" value={events.whatsapp_clicks} />
+            <Cell label="Live chat assistant runs" value={events.assistant_completions} />
           </div>
         </section>
       )}

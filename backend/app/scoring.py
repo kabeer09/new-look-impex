@@ -1,7 +1,7 @@
 """Transparent keyword opportunity scoring. No fabricated volumes/ranks."""
 from __future__ import annotations
 
-TARGET_COUNTRIES = {"australia", "united states", "united kingdom", "united arab emirates", "canada", "india", "usa", "uk", "uae", "us"}
+TARGET_COUNTRIES = {"australia", "united states", "united kingdom", "united arab emirates", "canada", "india", "usa", "uk", "uae", "us", "saudi arabia", "japan", "singapore", "switzerland"}
 B2B_SIGNALS = ["wholesale", "supplier", "manufacturer", "exporter", "importer", "bulk", "distributor", "b2b", "corporate gift", "procurement", "moradabad", "india"]
 PRODUCT_SIGNALS = ["brass", "copper", "urli", "diya", "lantern", "bowl", "décor", "decor", "handicraft", "gift", "home"]
 

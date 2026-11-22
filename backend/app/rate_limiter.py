@@ -61,6 +61,30 @@ def os_getenv(key: str, default: Optional[str] = None) -> Optional[str]:
     return os.environ.get(key, default)
 
 
+def client_ip(request: Request) -> str:
+    """Best-effort client IP for rate limiting and blocked-IP checks.
+
+    Prefers proxy-set headers in order of authority: Cloudflare's
+    `cf-connecting-ip` (overwritten at the edge, so a visitor cannot spoof
+    it through the proxy), then `x-real-ip`, then the first
+    `x-forwarded-for` entry, then the direct peer.
+
+    Why not plain `request.client.host`: behind Cloudflare/Render that is
+    the proxy's own IP, which would put every visitor into a single shared
+    rate-limit bucket (e.g. 10 RFQs/hour for the whole site).
+    """
+    cf = request.headers.get("cf-connecting-ip")
+    if cf:
+        return cf.strip()
+    xri = request.headers.get("x-real-ip")
+    if xri:
+        return xri.strip()
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
 # ---------------------------------------------------------------------------
 # In-memory fallback (single instance only)
 # ---------------------------------------------------------------------------
@@ -153,11 +177,8 @@ def rate_limit_dependency(
 
 
 def _client_ip(request: Request) -> str:
-    # Respect X-Forwarded-When behind Cloudflare / proxy
-    xff = request.headers.get("x-forwarded-for")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    # Delegate to the shared proxy-aware helper (cf-connecting-ip first).
+    return client_ip(request)
 
 
 # ---------------------------------------------------------------------------

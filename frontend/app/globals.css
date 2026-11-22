@@ -28,9 +28,9 @@
 
   /* Buttons */
   .btn { @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none; }
-  .btn-primary { @apply bg-navy text-white hover:bg-navy-dark; }
-  .btn-brass { @apply bg-brass text-white hover:bg-brass-dark; }
-  .btn-clay { @apply bg-clay text-white hover:bg-clay-dark; }
+  .btn-primary { @apply bg-emerald text-ivory hover:bg-emerald-dark; }
+  .btn-brass { @apply bg-gold text-espresso hover:bg-gold-dark; }
+  .btn-clay { @apply bg-emerald text-ivory hover:bg-emerald-dark; }
   .btn-ghost { @apply border border-stone-300 text-charcoal hover:bg-sand bg-white; }
   .btn-outline { @apply border border-navy text-navy hover:bg-navy hover:text-white bg-transparent; }
   .btn-sm { @apply px-3 py-1.5 text-xs; }
@@ -50,7 +50,7 @@
   .help { @apply text-xs text-gray mt-1; }
 
   /* Links */
-  .link { @apply text-brass underline underline-offset-4 hover:decoration-2; }
+  .link { @apply text-brass-dark underline underline-offset-4 hover:decoration-2; }
 
   /* Artisan storefront accents */
   .font-accent { @apply font-serif italic; }
@@ -68,6 +68,11 @@
   /* Public header */
   .header-link { @apply text-sm text-charcoal hover:text-navy transition-colors; }
   .header-link.active { @apply text-navy font-semibold; }
+
+  /* Floating chat + WhatsApp: hide WhatsApp while the chat panel is open so
+     the two buttons never overlap (chat sits mid-right, WhatsApp just below). */
+  .nli-whatsapp { transition: opacity 180ms ease, transform 180ms ease; }
+  html.nli-chat-open .nli-whatsapp { opacity: 0; pointer-events: none; transform: scale(0.8); }
 
   /* Product cards */
   .product-card { @apply bg-white rounded-2xl border border-stone-200/60 shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1; }

@@ -1,15 +1,12 @@
 """Seed data: admin user + seed keywords + sample pages + catalogue seed.
 Sample data is clearly labelled (source=sample analytics; products are real seed
 records the merchant edits — no invented stock/price/capacity claims)."""
-import json
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
 from .auth import hash_pw
 from .config import settings
 from .models import (User, WebsiteProperty, WebsitePage, AnalyticsDaily,
-                       Category, Collection, Product, ProductSpec)
-from .scoring import score_keyword
-from .text import slugify
+                       Category, Collection)
 
 SEED_KEYWORDS = [
     ("Brass handicrafts manufacturer India", "India", "Brass handicrafts"),
@@ -32,19 +29,17 @@ SAMPLE_PAGES = [
     ("https://new-look-impex.vercel.app/brass-diya-wholesale", "Brass Diya Wholesale Supplier India", "Metal diyas for festive & corporate gifting."),
 ]
 
+# Only the six real product families that exist in the live catalogue.
+# The old catch-all buckets (Metal Home Décor, Copper/Brass Handicrafts and the
+# empty Urli/Diya/Lantern/Gifting buckets) were removed from the live site — do
+# not re-create them here.
 SEED_CATEGORIES = [
-    ("Brass Urlis", "brass-urlis", "Handcrafted brass urlis for wholesale and export."),
-    ("Copper Urlis", "copper-urlis", "Copper urlis for decor and gifting."),
-    ("Brass Diyas", "brass-diyas", "Traditional brass diyas for festivals and gifting."),
-    ("Metal Diyas", "metal-diyas", "Metal diyas in various finishes."),
-    ("Brass Lanterns", "brass-lanterns", "Decorative brass lanterns."),
+    ("Copper Bottles", "copper-bottles", "Copper water bottles in hammered, smooth matte and diamond-cut finishes."),
+    ("Copper Jugs & Pitchers", "copper-jugs-pitchers", "Copper jugs, pitchers and drinkware sets for tabletop and gifting."),
+    ("Copper Mugs & Tumblers", "copper-mugs-tumblers", "Copper tumblers, mugs and barware for retail and hospitality."),
+    ("Copper Kitchenware", "copper-kitchenware", "Copper cookware, cutlery, storage and serveware for wholesale buyers."),
+    ("Brass Kitchenware", "brass-kitchenware", "Brass cookware, spice boxes, canisters and dinnerware for wholesale buyers."),
     ("Decorative Bowls", "decorative-bowls", "Copper and brass decorative bowls."),
-    ("Copper Handicrafts", "copper-handicrafts", "Handmade copper handicrafts."),
-    ("Brass Handicrafts", "brass-handicrafts", "Handmade brass handicrafts."),
-    ("Metal Home Décor", "metal-home-decor", "Metal home décor items."),
-    ("Festival Décor", "festival-decor", "Festival decoration products."),
-    ("Corporate Gifting", "corporate-gifting", "Corporate gifting products."),
-    ("Custom Bulk Orders", "custom-bulk-orders", "Custom and bulk-order products."),
 ]
 
 SEED_COLLECTIONS = [
@@ -56,45 +51,9 @@ SEED_COLLECTIONS = [
     ("Corporate & Festival Gifting", "gifting", "Corporate and festival gifting.", True),
 ]
 
-# Sample products (editable by merchant; no invented prices — price_on_request=True)
-SEED_PRODUCTS = [
-    ("Handcrafted Brass Urli", "handcrafted-brass-urli", "Brass", "brass-urlis",
-     "Polished", "Classic handcrafted brass urli for home entrance décor and gifting.",
-     ["brass", "urli", "decor", "wholesale"]),
-    ("Copper Decorative Urli", "copper-decorative-urli", "Copper", "copper-urlis",
-     "Antique finish", "Copper urli with antique finish for premium décor.",
-     ["copper", "urli", "decor"]),
-    ("Brass Diya (Set Style)", "brass-diya-set-style", "Brass", "brass-diyas",
-     "Gold plated", "Traditional brass diya suitable for festivals and gifting.",
-     ["brass", "diya", "festival", "gifting"]),
-    ("Metal Diya", "metal-diya", "Metal", "metal-diyas",
-     "Matte", "Durable metal diya for daily use and events.",
-     ["metal", "diya"]),
-    ("Brass Lantern", "brass-lantern", "Brass", "brass-lanterns",
-     "Engraved", "Decorative engraved brass lantern for home décor.",
-     ["brass", "lantern", "decor"]),
-    ("Copper Decorative Bowl", "copper-decorative-bowl", "Copper", "decorative-bowls",
-     "Polished", "Handmade copper decorative bowl for display.",
-     ["copper", "bowl", "decor"]),
-    ("Brass Decorative Bowl", "brass-decorative-bowl", "Brass", "decorative-bowls",
-     "Brushed", "Brass decorative bowl for home and hospitality décor.",
-     ["brass", "bowl", "decor"]),
-    ("Brass Handicraft Vase", "brass-handicraft-vase", "Brass", "brass-handicrafts",
-     "Engraved", "Handcrafted brass vase for premium gifting.",
-     ["brass", "vase", "handicraft", "gifting"]),
-    ("Copper Handicraft Item", "copper-handicraft-item", "Copper", "copper-handicrafts",
-     "Antique", "Handmade copper handicraft for collectors and décor.",
-     ["copper", "handicraft"]),
-    ("Metal Home Décor Accent", "metal-home-decor-accent", "Metal", "metal-home-decor",
-     "Mixed finish", "Metal home décor accent piece.",
-     ["metal", "home decor", "decor"]),
-    ("Festival Décor Set", "festival-decor-set", "Brass", "festival-decor",
-     "Festive", "Festival décor set for seasonal celebrations.",
-     ["festival", "decor", "gifting"]),
-    ("Corporate Gifting Diya", "corporate-gifting-diya", "Brass", "corporate-gifting",
-     "Premium", "Brass diya suitable for corporate gifting programmes.",
-     ["corporate", "gifting", "diya"]),
-]
+# No seed products: the live catalogue is image-driven and every published
+# product must have at least one photo. Imageless sample products were removed
+# from production; re-adding them here would reintroduce the same problem.
 
 
 def seed(db: Session):
@@ -129,35 +88,6 @@ def seed(db: Session):
                          status="published", featured=featured)
         db.add(c); db.flush()
         coll_id_by_slug[slug] = c.id
-    # products
-    for name, slug, material, cat_slug, finish, desc, tags in SEED_PRODUCTS:
-        existing = db.query(Product).filter(Product.slug == slug).first()
-        if existing:
-            continue
-        p = Product(
-            name=name, slug=slug,
-            short_description=desc, description=desc + " " +
-            "Suitable for wholesale, retail and export enquiries. "
-            "Contact New Look Impex for bulk requirements, customisation "
-            "and a quotation.",
-            category_id=cat_id_by_slug.get(cat_slug),
-            material=material, finish=finish,
-            sku=("NLI-" + slug.upper().replace("-", "")[:14]),
-            tags=json.dumps(tags),
-            price=None, currency="USD", price_on_request=True,
-            status="published",
-            featured=slug in ("handcrafted-brass-urli", "brass-diya-set-style",
-                                "copper-decorative-bowl", "brass-lantern"),
-            seo_title=f"{name} — Wholesale | New Look Impex",
-            seo_description=f"Wholesale {name.lower()} from Moradabad, India. "
-            "Bulk supply for retailers, importers and corporate gifting. "
-            "Enquire for a quotation.")
-        db.add(p); db.flush()
-        # basic specifications
-        db.add(ProductSpec(product_id=p.id, key="Material", value=material))
-        db.add(ProductSpec(product_id=p.id, key="Finish", value=finish))
-        db.add(ProductSpec(product_id=p.id, key="Origin",
-                             value="Moradabad, India"))
     db.commit()
     # sample analytics clearly labelled source=sample (last 28 days totals only)
     if db.query(AnalyticsDaily).count() == 0:

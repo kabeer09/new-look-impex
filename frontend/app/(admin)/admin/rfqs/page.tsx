@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, downloadFile } from "@/lib/api";
 import type { Rfq, RfqItem } from "@/lib/types";
 import { Loading, ErrorBox, EmptyState, StatusBadge } from "@/components/public/States";
+import { AbandonedDrafts } from "@/components/admin/AbandonedDrafts";
 
 const STATUSES = ["new", "contacted", "quoted", "won", "lost"] as const;
 
@@ -151,6 +152,7 @@ export default function AdminRfqs() {
               <div><span className="text-gray">Email:</span> <a className="link" href={`mailto:${detail.business_email}`}>{detail.business_email}</a></div>
               <div><span className="text-gray">Phone:</span> {detail.phone || "—"}</div>
               <div><span className="text-gray">Target price:</span> {detail.target_price || "—"}</div>
+              <div><span className="text-gray">Quote currency:</span> {detail.preferred_currency || "—"}</div>
               <div><span className="text-gray">Delivery timeframe:</span> {detail.delivery_timeframe || "—"}</div>
               <div><span className="text-gray">Submitted:</span> {new Date(detail.created_at).toLocaleString()}</div>
               <div><span className="text-gray">Total quantity:</span> {detail.total_quantity ?? "—"}</div>
@@ -191,6 +193,8 @@ export default function AdminRfqs() {
           </div>
         </div>
       )}
+
+      <AbandonedDrafts />
     </div>
   );
 }

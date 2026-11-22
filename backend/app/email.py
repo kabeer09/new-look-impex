@@ -10,16 +10,42 @@ def email_configured() -> bool:
     return bool(settings.SMTP_HOST and settings.SMTP_USER)
 
 
-def send_email(to: str, subject: str, body: str) -> tuple[bool, str]:
-    """Send via configured SMTP. Never raises — returns success flag + safe detail."""
+def recipients(value) -> list[str]:
+    """Accept a single address, a comma-separated string, or a list."""
+    if isinstance(value, (list, tuple, set)):
+        items = list(value)
+    else:
+        items = str(value or "").split(",")
+    return [a.strip() for a in items if a and a.strip()]
+
+
+def notify_recipients() -> list[str]:
+    """Business notification addresses from ENQUIRY_NOTIFY_EMAIL (comma-separated)."""
+    return recipients(settings.ENQUIRY_NOTIFY_EMAIL)
+
+
+def send_email(to, subject: str, body: str, html: str | None = None) -> tuple[bool, str]:
+    """Send via configured SMTP. `to` may be a string, comma-separated string or
+    list. Never raises — returns success flag + safe detail."""
     if not email_configured():
         return False, "SMTP not configured"
+    to_list = recipients(to)
+    if not to_list:
+        return False, "no recipients"
     try:
         msg = EmailMessage()
         msg["From"] = settings.SMTP_USER
-        msg["To"] = to
+        msg["To"] = ", ".join(to_list)
+        cc_list = recipients(settings.EMAIL_CC)
+        bcc_list = recipients(settings.EMAIL_BCC)
+        if cc_list:
+            msg["Cc"] = ", ".join(cc_list)
+        if bcc_list:
+            msg["Bcc"] = ", ".join(bcc_list)
         msg["Subject"] = subject
         msg.set_content(body)
+        if html:
+            msg.add_alternative(html, subtype="html")
         port = settings.SMTP_PORT or 587
         use_tls = str(settings.SMTP_TLS).lower() in ("1", "true", "yes") if settings.SMTP_TLS else port != 465
         with smtplib.SMTP(settings.SMTP_HOST, port, timeout=30) as s:
@@ -58,21 +84,22 @@ def send_newsletter_welcome(to: str, name: str = "") -> tuple[bool, str]:
               if camp["ends_label"] != "always on" else
               f"{camp['emoji']} {camp['name']} — {camp['percent']}% OFF your first order\n"
               f"Code: {camp['code']} (always on for new buyers)\n")
-    body = (
-        f"Hi {first},\n\n"
-        "Thank you for subscribing to New Look Impex — you're now on the \"First to Know\" list!\n\n"
-        "Here's what you'll receive from us:\n"
-        "  - New copper & brass arrivals, fresh from our Moradabad workshops\n"
-        "  - Seasonal sale campaigns with exclusive discount codes\n"
-        "  - Wholesale, export & gifting offers curated for B2B buyers\n\n"
-        "THIS SEASON AT NEW LOOK IMPEX\n"
-        f"{season}\n"
-        f"Browse the catalogue: {_brand_url()}/products\n\n"
-        "Need a bulk quote or samples? Simply reply to this email — a real person reads every reply.\n"
-        "(You can unsubscribe anytime by replying with the word STOP.)"
-        f"{_BRAND_SIGNOFF}"
+    from .email_brand import send_branded_email
+    return send_branded_email(
+        to,
+        "Welcome to New Look Impex — you're on the First-to-Know list",
+        "Welcome to New Look Impex",
+        [
+            ("You're on the list", "First to Know — new arrivals, campaigns and wholesale offers"),
+            ("This season", season.strip() or "See our current catalogue"),
+            ("Unsubscribe", "Reply with the word STOP at any time"),
+        ],
+        intro=(f"Hi {first}, thank you for subscribing. You'll hear about new copper and brass "
+               "arrivals, seasonal campaigns, and wholesale/export/gifting offers. "
+               "Need a bulk quote or samples? Just reply — a real person reads every reply."),
+        cta_url=f"{_brand_url()}/products",
+        cta_label="Browse the catalogue",
     )
-    return send_email(to, "Welcome to New Look Impex — you're on the First-to-Know list", body)
 
 
 def send_customer_ack(to: str, name: str, reference: str, product_interest: str = "") -> tuple[bool, str]:
@@ -85,22 +112,20 @@ def send_customer_ack(to: str, name: str, reference: str, product_interest: str 
     season = (f"This season: {camp['emoji']} {camp['name']} — {camp['percent']}% OFF storewide "
               f"with code {camp['code']} (valid till {camp['ends_label']}).\n"
               if camp["ends_label"] != "always on" else "")
+    from .email_brand import send_branded_email
     topic = (product_interest or "Wholesale / export enquiry").strip()
-    body = (
-        f"Hi {first},\n\n"
-        "Thank you for contacting New Look Impex — we have received your enquiry.\n\n"
-        f"Reference: {reference}\n"
-        f"Topic: {topic}\n\n"
-        "WHAT HAPPENS NEXT\n"
-        "  1. Our export team reviews your requirements (within one business day)\n"
-        "  2. We reply with pricing, MOQ details, samples and shipping options\n"
-        "  3. Need it faster? WhatsApp us: +91 8218251238\n\n"
-        f"{season}"
-        f"Catalogue: {_brand_url()}/products\n"
-        "A real person reads every reply — just write back to this email."
-        f"{_BRAND_SIGNOFF}"
+    return send_branded_email(
+        to,
+        f"We received your enquiry {reference} — New Look Impex",
+        "Thank you for contacting New Look Impex",
+        [("Reference", reference), ("Topic", topic)],
+        intro=(f"Hi {first}, we have received your enquiry. {season} "
+               "Our export team reviews requirements within one business day, then replies with "
+               "pricing, MOQ details, samples and shipping options. Need it faster? "
+               "WhatsApp us on +91 96900 53913. A real person reads every reply."),
+        cta_url=f"{_brand_url()}/products",
+        cta_label="Browse the catalogue",
     )
-    return send_email(to, f"We received your enquiry {reference} — New Look Impex", body)
 
 
 # ---------------- Campaign announcement emails (Pinterest-style HTML) ----------------
@@ -113,7 +138,11 @@ def campaign_email_html(camp: dict, kind: str = "announcement") -> str:
     """Sale-campaign email, Pinterest-lookbook style: cream canvas, copper & brass
     accents, serif headline, dashed coupon box, pill CTA. Table layout + inline
     styles only (email-client safe)."""
+    from .email_brand import SOCIAL_LINKS
     site = _brand_url()
+    social_html = " &nbsp;&bull;&nbsp; ".join(
+        f"<a href='{u}' style='color:#B87333;text-decoration:none;font-size:11px;'>{n}</a>"
+        for n, u in SOCIAL_LINKS)
     announce = kind == "announcement"
     eyebrow = f"{camp['emoji']} Sale Starts Now" if announce else f"{camp['emoji']} Last Chance"
     headline = (f"The {camp['name']} is Here" if announce
@@ -166,7 +195,8 @@ def campaign_email_html(camp: dict, kind: str = "announcement") -> str:
   <span style="color:#8A8A8A;font-size:11px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
   New Look Impex — Brass &amp; Copper Manufacturer &amp; Exporter, Moradabad, India &middot; GSTIN 09AFKPA4462R1ZW<br/>
   You're receiving this because you subscribed or enquired at our website.
-  Reply <b>STOP</b> to opt out of sale emails.</span>
+  Reply <b>STOP</b> to opt out of sale emails.<br/><br/>
+  {social_html}</span>
 </td></tr>
 </table></td></tr></table></body></html>"""
 
@@ -187,11 +217,13 @@ def campaign_email_text(camp: dict, kind: str = "announcement") -> str:
     )
 
 
-def send_campaign_batch(recipients: list[str], subject: str, html: str, text: str) -> tuple[int, int, str]:
+def send_campaign_batch(to_list: list[str], subject: str, html: str, text: str) -> tuple[int, int, str]:
     """Send one campaign email to many recipients over a single SMTP connection.
     Returns (sent_ok, failed, detail) — honest counts, never raises."""
     if not email_configured():
-        return 0, len(recipients), "SMTP not configured"
+        return 0, len(to_list), "SMTP not configured"
+    cc_list = recipients(settings.EMAIL_CC)
+    bcc_list = recipients(settings.EMAIL_BCC)
     sent = failed = 0
     try:
         port = settings.SMTP_PORT or 587
@@ -201,11 +233,15 @@ def send_campaign_batch(recipients: list[str], subject: str, html: str, text: st
                 s.starttls()
             if settings.SMTP_PASS:
                 s.login(settings.SMTP_USER, settings.SMTP_PASS)
-            for to in recipients:
+            for to in to_list:
                 try:
                     msg = EmailMessage()
                     msg["From"] = settings.SMTP_USER
                     msg["To"] = to
+                    if cc_list:
+                        msg["Cc"] = ", ".join(cc_list)
+                    if bcc_list:
+                        msg["Bcc"] = ", ".join(bcc_list)
                     msg["Subject"] = subject
                     msg.set_content(text)
                     msg.add_alternative(html, subtype="html")

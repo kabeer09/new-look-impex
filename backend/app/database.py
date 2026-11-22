@@ -99,6 +99,7 @@ def ensure_schema() -> None:
                 ("reference", "VARCHAR(64)"),
                 ("phone", "VARCHAR(64) DEFAULT ''"),
                 ("product_id", "INTEGER"),
+                ("preferred_currency", "VARCHAR(8) DEFAULT ''"),
             ):
                 if col not in existing_e:
                     conn.execute(text(f"ALTER TABLE enquiries ADD COLUMN {col} {ddl}"))
@@ -109,3 +110,27 @@ def ensure_schema() -> None:
                         f"CREATE INDEX IF NOT EXISTS {idx} ON enquiries ({col})"))
                 except Exception:
                     pass
+        # rfqs: buyer's requested quotation currency (display metadata only)
+        if "rfqs" in insp.get_table_names():
+            existing_r = {c["name"] for c in insp.get_columns("rfqs")}
+            if "preferred_currency" not in existing_r:
+                conn.execute(text(
+                    "ALTER TABLE rfqs ADD COLUMN preferred_currency VARCHAR(8) DEFAULT ''"))
+        # quotations: buyer question/answer responses for detailed enquiries
+        if "quotations" in insp.get_table_names():
+            existing_q = {c["name"] for c in insp.get_columns("quotations")}
+            if "buyer_qa" not in existing_q:
+                conn.execute(text(
+                    "ALTER TABLE quotations ADD COLUMN buyer_qa TEXT DEFAULT ''"))
+        # banners: optional start/end scheduling
+        if "banners" in insp.get_table_names():
+            existing_b = {c["name"] for c in insp.get_columns("banners")}
+            for col, ddl in (("start_at", "DATETIME"), ("end_at", "DATETIME")):
+                if col not in existing_b:
+                    conn.execute(text(f"ALTER TABLE banners ADD COLUMN {col} {ddl}"))
+        # discount_codes: distinguish admin-managed codes from auto-synced ones
+        if "discount_codes" in insp.get_table_names():
+            existing_d = {c["name"] for c in insp.get_columns("discount_codes")}
+            if "source" not in existing_d:
+                conn.execute(text(
+                    "ALTER TABLE discount_codes ADD COLUMN source VARCHAR(32) DEFAULT 'manual'"))

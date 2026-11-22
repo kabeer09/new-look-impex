@@ -1,5 +1,8 @@
 """Merchant image-catalogue tests: import, image resolution, alt text, slugs,
 sitemap scope, redirects, and no-unsupported-claims scan."""
+import os
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -21,20 +24,32 @@ import pytest
 @pytest.fixture(scope="module", autouse=True)
 def _fresh_catalogue():
     """Self-contained dataset: other test modules wipe the shared dev DB at
-    import time, so (re)build our catalogue right before our tests run."""
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    db.add(models.User(email="admin@test.example", password_hash=hash_pw("Secret123!"), role="admin"))
-    db.commit()
-    db.close()
-    rep = import_catalogue(SessionLocal(), images_dir="images")
-    assert rep["products"] == 14, rep
-    assert rep["categories"] == 5, rep
-    assert rep["collections"] == 2, rep
-    assert rep["banner"] == "created", rep
-    assert rep["errors"] == [], rep["errors"]
-    yield
+    import time, so (re)build our catalogue right before our tests run.
+
+    import_catalogue resolves both images/ and docs/product-seo-map.csv from
+    the cwd, so hold cwd at the repo root for the whole module and restore it
+    afterwards. This makes every test (including the idempotency re-import)
+    independent of where pytest was invoked.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    old_cwd = os.getcwd()
+    os.chdir(repo_root)
+    try:
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        db.add(models.User(email="admin@test.example", password_hash=hash_pw("Secret123!"), role="admin"))
+        db.commit()
+        db.close()
+        rep = import_catalogue(SessionLocal(), images_dir=repo_root / "images")
+        assert rep["products"] == 14, rep
+        assert rep["categories"] == 5, rep
+        assert rep["collections"] == 2, rep
+        assert rep["banner"] == "created", rep
+        assert rep["errors"] == [], rep["errors"]
+        yield
+    finally:
+        os.chdir(old_cwd)
 
 
 c = TestClient(app)

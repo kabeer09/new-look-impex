@@ -129,6 +129,20 @@ export default function AdminBanners() {
                   <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDelete(b.id)}>Delete</button>
                 )}
               </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <label>Starts at
+                  <input type="datetime-local" className="input !py-1 !text-xs mt-1"
+                    value={b.start_at ? b.start_at.slice(0, 16) : ""}
+                    onChange={(e) => void patch(b, { start_at: e.target.value || null } as any)}
+                    aria-label="Banner start date" />
+                </label>
+                <label>Ends at
+                  <input type="datetime-local" className="input !py-1 !text-xs mt-1"
+                    value={b.end_at ? b.end_at.slice(0, 16) : ""}
+                    onChange={(e) => void patch(b, { end_at: e.target.value || null } as any)}
+                    aria-label="Banner end date" />
+                </label>
+              </div>
               {b.cta_link && <p className="text-[11px] text-gray">Link: {b.cta_link}</p>}
             </div>
           ))}

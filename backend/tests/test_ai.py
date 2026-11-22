@@ -27,10 +27,11 @@ H: dict = {}  # auth removed
 
 @pytest.fixture(autouse=True)
 def _clear_rate_limits():
-    from app import auth as auth_mod
-    auth_mod._hits.clear()
+    # Rate-limit buckets live in rate_limiter (auth only re-exports rate_limit).
+    from app.rate_limiter import _memory_hits
+    _memory_hits.clear()
     yield
-    auth_mod._hits.clear()
+    _memory_hits.clear()
 
 
 def tiny_png():

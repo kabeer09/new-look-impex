@@ -76,4 +76,20 @@ def test_search_to_page_prefers_existing():
 
 
 def test_n8n_webhook_auth():
-    assert c.post("/api/n8n/approval-webhook", json={"token": "wrong"}).status_code == 401
+    # No real token configured (shipped default): the webhook must refuse
+    # everything with 503 — the old default token must never authenticate.
+    assert c.post("/api/n8n/approval-webhook", json={"token": "wrong"}).status_code == 503
+    # With a token configured, a wrong token is rejected with 401 ...
+    from app.config import settings
+    old = settings.N8N_WEBHOOK_TOKEN
+    try:
+        settings.N8N_WEBHOOK_TOKEN = "unit-test-token-123"
+        assert c.post("/api/n8n/approval-webhook",
+                      json={"token": "wrong"}).status_code == 401
+        # ... and the correct token passes auth (then hits business validation).
+        r = c.post("/api/n8n/approval-webhook",
+                   json={"token": "unit-test-token-123",
+                         "recommendation_id": 99999999, "action": "approve"})
+        assert r.status_code in (400, 404), r.text
+    finally:
+        settings.N8N_WEBHOOK_TOKEN = old

@@ -6,6 +6,7 @@ import { api, mediaUrl, whatsappLink } from "@/lib/api";
 import type { ProductCard } from "@/lib/types";
 import { Loading, ErrorBox } from "@/components/public/States";
 import { PageHero } from "@/components/public/Shared";
+import { useMarket } from "@/lib/market";
 
 /** Explore section — every href points at a real, live collection slug. */
 const COLLECTION_CARDS: { title: string; copy: string; href: string }[] = [
@@ -62,6 +63,7 @@ const FAQ: { q: string; a: string }[] = [
 export default function NliCollectionsBrandPage() {
   const [products, setProducts] = useState<ProductCard[] | null>(null);
   const [err, setErr] = useState("");
+  const { money, quoteIn } = useMarket();
 
   useEffect(() => {
     setErr("");
@@ -279,15 +281,29 @@ export default function NliCollectionsBrandPage() {
                       {p.material} · {p.finish || "Hand-finished"}
                     </p>
                     <div className="mt-4">
-                      {p.price_on_request || p.price == null ? (
-                        <span className="text-xs font-bold tracking-wide text-clay uppercase">
-                          Price on request
-                        </span>
-                      ) : (
-                        <span className="text-base font-bold text-espresso">
-                          ₹{typeof p.price === "number" ? p.price.toLocaleString() : p.price}
-                        </span>
-                      )}
+                      {(() => {
+                        const m =
+                          p.price_on_request || p.price == null
+                            ? null
+                            : money(p.price, p.currency);
+                        if (!m || !m.ok) {
+                          return (
+                            <span className="text-xs font-bold tracking-wide text-clay uppercase">
+                              {quoteIn}
+                            </span>
+                          );
+                        }
+                        return (
+                          <>
+                            <span className="text-base font-bold text-espresso">{m.text}</span>
+                            {m.converted && m.date && (
+                              <span className="mt-0.5 block text-[10px] text-gray">
+                                Indicative conversion · rate date {m.date}
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </Link>

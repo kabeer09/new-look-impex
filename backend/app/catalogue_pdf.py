@@ -99,7 +99,7 @@ def build_catalogue_pdf(product_ids: list[int] | None = None,
         story.append(Paragraph(
             f"{info.get('location', 'Moradabad, Uttar Pradesh, India')} · "
             f"{info.get('email', 'newlookimpex@gmail.com')} · "
-            f"{info.get('phones', '+91 8218251238 / +91 7500441239')}", meta_st))
+            f"{info.get('phones', '+91 9808588603')}", meta_st))
         story.append(Paragraph(f"Catalogue generated {_now_str()}. "
                                  "Pricing on request — contact for wholesale quotations.",
                                  meta_st))
@@ -209,5 +209,5 @@ def get_business_info(db) -> dict:
         "business_name": get("business_name", "New Look Impex"),
         "location": get("location", "Moradabad, Uttar Pradesh, India"),
         "email": get("business_email", "newlookimpex@gmail.com"),
-        "phones": get("business_phones", "+91 8218251238 / +91 7500441239"),
+        "phones": get("business_phones", "+91 9808588603"),
     }

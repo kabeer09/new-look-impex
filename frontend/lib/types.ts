@@ -160,6 +160,8 @@ export interface RfqInput {
   target_price?: string;
   delivery_timeframe?: string;
   additional_requirements?: string;
+  /** Currency the buyer asked to be quoted in (metadata — never a price). */
+  preferred_currency?: string;
   consent: boolean;
   items: RfqItemInput[];
 }
@@ -191,6 +193,8 @@ export interface Rfq {
   target_price: string | null;
   delivery_timeframe: string | null;
   additional_requirements: string | null;
+  /** Currency the buyer asked to be quoted in (metadata — never a price). */
+  preferred_currency?: string;
   consent: boolean;
   status: string;
   item_count: number;
@@ -272,6 +276,8 @@ export interface EnquiryInput {
   country?: string;
   product_interest?: string;
   message?: string;
+  /** Currency the buyer asked to be quoted in (metadata — never a price). */
+  preferred_currency?: string;
 }
 
 export type EventType =
@@ -280,7 +286,8 @@ export type EventType =
   | "rfq_submit"
   | "catalogue_download"
   | "contact_click"
-  | "whatsapp_click";
+  | "whatsapp_click"
+  | "assistant_complete";
 
 export interface EventInput {
   event_type: EventType;
@@ -304,6 +311,7 @@ export interface EventsSummary {
   catalogue_downloads: number | null;
   contact_clicks: number | null;
   whatsapp_clicks: number | null;
+  assistant_completions?: number | null;
   by_day?: unknown[];
 }
 
@@ -409,6 +417,8 @@ export interface Banner {
   cta_link: string | null;
   sort_order: number | null;
   is_active: boolean;
+  start_at?: string | null;
+  end_at?: string | null;
 }
 
 export interface AdminUser {
@@ -652,4 +662,41 @@ export interface CataloguePreview {
 export interface CatalogueScanResult {
   counts: Record<string, number>;
   scan_dir: string;
+}
+
+/** One recent run of a background automation (GET /api/automation/status). */
+export interface AutomationRun {
+  status: string;
+  detail: string;
+  at: string | null;
+}
+
+/** Honest configured/not-configured surface for every built-in automation. */
+export interface AutomationStatus {
+  email: { configured: boolean; note: string };
+  llm: { configured: boolean; model: string | null; note: string };
+  turnstile: { configured: boolean; note: string };
+  rfq_followup: {
+    interval_hours: number;
+    min_idle_hours: number;
+    max_age_days: number;
+    open_drafts: number;
+    eligible_now: number;
+    followups_sent: number;
+    recent: AutomationRun[];
+    note: string;
+  };
+  campaign_mailer: {
+    interval_hours: number;
+    active_campaign: {
+      code: string;
+      name: string;
+      percent: number;
+      ends_label: string;
+    } | null;
+    recent_announcements: AutomationRun[];
+    recent_reminders: AutomationRun[];
+    note: string;
+  };
+  n8n: { workflows_url: string; guide: string; note: string };
 }

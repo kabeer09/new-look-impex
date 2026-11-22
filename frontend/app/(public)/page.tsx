@@ -32,17 +32,19 @@ export const metadata: Metadata = {
   },
 };
 
-/** FAQPage schema generated from the same copy as the visible accordion —
- *  structured data and on-page content can never drift apart. */
-const FAQ_JSONLD = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: HOME_FAQ.map((f) => ({
-    "@type": "Question",
-    name: f.q,
-    acceptedAnswer: { "@type": "Answer", text: f.a },
-  })),
-};
+/** FAQPage schema generated from the editable FAQ content, so structured data
+ *  and the visible accordion stay in sync when an admin edits answers. */
+function faqJsonld(faqs: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+}
 
 const SITE_URL = "https://www.newlookimpex.store";
 
@@ -90,27 +92,26 @@ const ORG_JSONLD = {
   ],
   address: {
     "@type": "PostalAddress",
-    streetAddress: "New Look Impex, Bartan Bazar, Moradabad",
+    streetAddress: "New Look Impex, Ganga Mandir, Thana Nagphani Road, Kisrol",
     addressLocality: "Moradabad",
     addressRegion: "Uttar Pradesh",
     postalCode: "244001",
     addressCountry: "IN",
   },
-  telephone: "+91-8218251238",
+  telephone: "+91-9808588603",
   contactPoint: [
     {
       "@type": "ContactPoint",
       contactType: "sales",
-      telephone: "+91-8218251238",
+      telephone: "+91-9808588603",
       email: "newlookimpex130@gmail.com",
       availableLanguage: ["English", "Hindi", "Urdu"],
-      contactOption: ["tollFree"],
       areaServed: ["IN", "AU", "AE", "GB", "US", "CA", "EU"],
     },
     {
       "@type": "ContactPoint",
       contactType: "customer support",
-      telephone: "+91-7500441239",
+      telephone: "+91-96900-53913",
       email: "newlookimpex130@gmail.com",
       availableLanguage: ["English", "Hindi"],
       areaServed: ["IN", "AU", "AE", "GB", "US", "CA", "EU"],
@@ -120,6 +121,8 @@ const ORG_JSONLD = {
     "IN", "AU", "AE", "GB", "US", "CA", "EU",
   ],
   sameAs: [
+    "https://www.facebook.com/profile.php?id=100083216147871",
+    "https://www.linkedin.com/in/new-look-impex-b1b473218/",
     "https://www.instagram.com/nli_collections_india",
     "https://youtube.com/@nlicollections",
     "https://www.newlookimpex.store",
@@ -155,11 +158,11 @@ async function fetchHomeData(): Promise<{
 }> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const [cats, feats] = await Promise.allSettled([
-    fetch(`${API_BASE}/api/public/categories`, { next: { revalidate: 3600 } }).then((r) =>
+    fetch(`${API_BASE}/api/public/categories`, { next: { revalidate: 60 } }).then((r) =>
       r.ok ? r.json() : Promise.reject(new Error(String(r.status)))
     ),
     fetch(`${API_BASE}/api/public/products?sort=featured&page_size=24`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 60 },
     }).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
   ]);
   return {
@@ -176,6 +179,16 @@ async function fetchHomeData(): Promise<{
 
 export default async function HomePage() {
   const { categories, featured } = await fetchHomeData();
+  // FAQ copy is editable in Site Control; fall back to the site default.
+  let faqs: { q: string; a: string }[] = HOME_FAQ;
+  try {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const r = await fetch(`${API_BASE}/api/public/site-content`, { next: { revalidate: 60 } });
+    if (r.ok) {
+      const c = await r.json();
+      if (Array.isArray(c?.home_faq) && c.home_faq.length) faqs = c.home_faq;
+    }
+  } catch { /* keep default FAQ */ }
   return (
     <>
       <script
@@ -188,7 +201,7 @@ export default async function HomePage() {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSONLD) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonld(faqs)) }}
       />
       <HomeClient initialCategories={categories} initialFeatured={featured} />
     </>

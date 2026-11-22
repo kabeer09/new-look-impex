@@ -19,12 +19,14 @@ from .auth import (get_current_user, require_role,
                    ensure_bootstrap_admin,
                    ACCESS_TOKEN_EXPIRE_MINUTES,
                    ALGORITHM, SECRET_KEY, is_locked_out,
-                   clear_login_attempts, record_login_attempt, _now)
-from .rate_limiter import rate_limit_check
+                   clear_login_attempts, record_login_attempt, _now,
+                   rate_limit)
+from .rate_limiter import rate_limit_check, client_ip
 from .security_headers import SecurityHeadersMiddleware
 from .turnstile import verify_turnstile_token
 from .schemas import (AuditRunIn, ContentGenIn, EnquiryPublicIn, EnquiryStatusIn, KeywordIn,
                       SearchToPageIn)
+from .currencies import clean_currency as _clean_currency
 from .scoring import score_keyword, classify_intent, business_relevance, commercial_score
 from .audit_engine import audit_url, fetch_and_audit
 from .recommender import add_recommendation, generate_from_keyword
@@ -35,15 +37,24 @@ from .rfq import router as rfq_router
 from .buyers import router as buyers_router
 from .settings_api import router as settings_router
 from .events_api import router as events_router
+from .rates import router as rates_router
 from .ai_import import router as ai_import_router
 from .ai_seo import router as ai_seo_router
+from .seo_health import router as seo_health_router
+from .europe_dashboard import router as europe_dashboard_router
+from .category_match import router as category_match_router
+from .quotations import router as quotations_router
+from .documents import router as documents_router
 from .banners import router as banners_router
+from .site_control import router as site_control_router
 from .seo_pages import router as seo_pages_router
 from .catalogue_api import router as catalogue_router
+from .ai_manager import router as ai_manager_router
 from . import product_scanner
 from .catalogue_pdf import build_catalogue_pdf, get_business_info
 from .media_store import file_path
-from .email import send_email, email_configured, send_customer_ack, send_newsletter_welcome
+from .email import send_email, email_configured, send_customer_ack, send_newsletter_welcome, notify_recipients
+from .email_brand import send_branded_email
 
 # Max request body size: 10 MB (enough for forms, small for API)
 MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024
@@ -60,10 +71,9 @@ Base.metadata.create_all(bind=engine)
 
 
 def _client_ip(request: Request) -> str:
-    xff = request.headers.get("x-forwarded-for")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    # Proxy-aware (Cloudflare cf-connecting-ip first) so rate limits and
+    # blocked-IP checks key on the real visitor, not the proxy's address.
+    return client_ip(request)
 
 
 async def _log_security_event(
@@ -104,6 +114,8 @@ async def lifespan(app: FastAPI):
     product_scanner.start_scanner()  # no-op unless PRODUCT_SCAN_ENABLED=true
     from .campaign_mailer import start_mailer
     start_mailer()  # automated seasonal-sale announcements to subscribers
+    from .rfq_followup import start_followup
+    start_followup()  # one gentle follow-up per abandoned RFQ draft
     yield
 
 
@@ -218,14 +230,22 @@ async def security_middleware(request: Request, call_next):
 # /api/products/imports must win over catalog's /api/products/{pid})
 app.include_router(ai_import_router)
 app.include_router(ai_seo_router)
+app.include_router(seo_health_router)
+app.include_router(europe_dashboard_router)
+app.include_router(category_match_router)
+app.include_router(quotations_router)
+app.include_router(documents_router)
 app.include_router(banners_router)
+app.include_router(site_control_router)
 app.include_router(seo_pages_router)
 app.include_router(catalog_router)
 app.include_router(rfq_router)
 app.include_router(buyers_router)
 app.include_router(settings_router)
 app.include_router(events_router)
+app.include_router(rates_router)
 app.include_router(catalogue_router)
+app.include_router(ai_manager_router)
 
 
 def audit(actor: str, action: str, entity: str = "", entity_id: str = "", detail: str = "", db: Session | None = None):
@@ -420,6 +440,23 @@ def dashboard(db: Session = Depends(get_db), u=Depends(get_current_user)):
         models.AnalyticsEvent.event_type == "rfq_add").scalar() or 0
     product_views = db.query(func.count(models.AnalyticsEvent.id)).filter(
         models.AnalyticsEvent.event_type == "product_view").scalar() or 0
+    # 30-day beacon totals for the Overview "Catalogue events" panel.
+    ev_since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30)
+
+    def _ev30(et: str) -> int:
+        return db.query(func.count(models.AnalyticsEvent.id)).filter(
+            models.AnalyticsEvent.event_type == et,
+            models.AnalyticsEvent.created_at >= ev_since).scalar() or 0
+
+    events_summary = {
+        "product_views": _ev30("product_view"),
+        "rfq_adds": _ev30("rfq_add"),
+        "rfq_submits": _ev30("rfq_submit"),
+        "catalogue_downloads": _ev30("catalogue_download"),
+        "contact_clicks": _ev30("contact_click"),
+        "whatsapp_clicks": _ev30("whatsapp_click"),
+        "assistant_completions": _ev30("assistant_complete"),
+    }
     return {
         "clicks": clicks, "impressions": impr, "ctr": ctr, "avg_position": round(pos, 1) if pos else None,
         "keywords_tracked": db.query(func.count(models.TrackedKeyword.id)).scalar() or 0,
@@ -441,6 +478,7 @@ def dashboard(db: Session = Depends(get_db), u=Depends(get_current_user)):
         "most_requested_products": [{"name": n, "count": c} for n, c in most_requested],
         "catalogue_downloads": catalogue_downloads,
         "rfq_adds": rfq_adds, "product_views": product_views,
+        "events_summary": events_summary,
     }
 
 
@@ -756,7 +794,7 @@ def search_to_page(body: SearchToPageIn, db: Session = Depends(get_db), u=Depend
         "internal_links": [p.url for _, p in scored[:5]],
         "image_alt_suggestions": [f"Handcrafted {kw.lower()} — bulk wholesale", "Moradabad metal handicraft detail"],
         "structured_data": ["Product", "FAQPage", "Organization", "BreadcrumbList"],
-        "cta": "Request wholesale quote — newlookimpex@gmail.com | +91 8218251238",
+        "cta": "Request wholesale quote — newlookimpex@gmail.com | +91 9808588603",
         "evidence": s["explanation"], "assumptions": "Estimates where metrics unavailable; no ranking guarantee.",
         "next_steps": "Improve best page first" if best else "Draft page in Content Studio, require approval before publishing",
     }
@@ -915,7 +953,11 @@ def gsc_sync(payload: dict, db: Session = Depends(get_db), u=Depends(require_rol
 async def add_cache_headers(request, call_next):
     response = await call_next(request)
     path = request.url.path
-    if path.startswith("/api/public/products") or path.startswith("/api/public/categories") or path.startswith("/api/public/collections"):
+    if path in ("/api/public/settings", "/api/public/active-campaign", "/api/public/site-content",
+                "/api/public/banners") or path.startswith("/api/public/site-content"):
+        # Admin-editable content must appear on the live site immediately.
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    elif path.startswith("/api/public/products") or path.startswith("/api/public/categories") or path.startswith("/api/public/collections"):
         response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
     elif path.startswith("/api/media/files"):
         response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=604800"
@@ -948,6 +990,7 @@ def sitemap(db: Session = Depends(get_db)):
         f"{base}/bulk-orders", f"{base}/export", f"{base}/custom-orders",
         f"{base}/buyer-resources", f"{base}/shipping-export",
         f"{base}/privacy", f"{base}/terms", f"{base}/sitemap",
+        f"{base}/shipping-policy", f"{base}/return-policy", f"{base}/payment-policy",
         f"{base}/craft", f"{base}/exhibitions", f"{base}/gifting",
         f"{base}/collections", f"{base}/brass-collection",
         f"{base}/copper-collection", f"{base}/metal-home-decor",
@@ -979,6 +1022,20 @@ def sitemap(db: Session = Depends(get_db)):
     # they are deliberately not advertised in the sitemap.
     for slug in ("au", "uae", "uk", "usa", "canada", "europe"):
         urls.append(f"{base}/{slug}")
+    # Europe Markets — one indexable page per country (unique copy, not doorways)
+    for slug in ("germany", "france", "italy", "netherlands", "spain",
+                 "belgium", "poland", "sweden", "denmark", "austria",
+                 "switzerland"):
+        urls.append(f"{base}/europe/{slug}")
+    # Additional market-specific regional pages
+    for slug in ("saudi-arabia", "japan", "singapore"):
+        urls.append(f"{base}/{slug}")
+    # SEO-only market pages (sitemap + hreflang only, not in main navigation)
+    for slug in ("south-africa", "new-zealand", "south-korea", "turkey",
+                 "mexico", "brazil", "qatar"):
+        urls.append(f"{base}/{slug}")
+    for slug in ("norway", "ireland", "portugal", "greece"):
+        urls.append(f"{base}/europe/{slug}")
     # Normalise every entry to the canonical host (www.newlookimpex.store)
     # with no trailing slash, de-duplicated. Seeded legacy URLs from the old
     # vercel host are re-pointed; dead legacy paths are dropped.
@@ -1204,12 +1261,14 @@ def update_product_image(iid: int, payload: dict, db: Session = Depends(get_db),
 
 
 # ---------- enquiries / CRM ----------
+# Only ISO-style quotation currencies we actually support are persisted
+# (allowlist lives in .currencies so RFQ submissions share the same rules).
 def _score_enquiry(e: EnquiryPublicIn) -> float:
     s = 0.4
     if e.company.strip(): s += 0.2
     if e.quantity.strip(): s += 0.15
     if len(e.message or "") > 80: s += 0.1
-    if (e.country or "").strip().lower() in ("australia", "united states", "united kingdom", "united arab emirates", "canada", "india", "usa", "uk", "uae"):
+    if (e.country or "").strip().lower() in ("australia", "united states", "united kingdom", "united arab emirates", "canada", "india", "usa", "uk", "uae", "saudi arabia", "japan", "singapore", "switzerland"):
         s += 0.1
     if e.product_interest.strip(): s += 0.05
     return round(min(s, 1.0), 2)
@@ -1233,12 +1292,12 @@ def _next_enquiry_reference(db: Session) -> str:
 
 @app.post("/api/public/enquiries", status_code=201)
 def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depends(get_db)):
-    rate_limit(f"enq:{request.client.host if request.client else 'x'}", 10, 3600)
+    ip = _client_ip(request)
+    rate_limit(f"enq:{ip}", 10, 3600)
 
     # Turnstile verification (if configured)
     if settings.TURNSTILE_SECRET_KEY:
         turnstile_token = request.headers.get("x-turnstile-token", "")
-        ip = request.client.host if request.client else "unknown"
         if not verify_turnstile_token(turnstile_token, ip):
             db.add(models.SecurityEvent(
                 event_type="turnstile_fail",
@@ -1259,7 +1318,7 @@ def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depend
     if website_url and str(website_url).strip():
         db.add(models.SecurityEvent(
             event_type="honeypot_triggered",
-            ip_address=request.client.host if request.client else "unknown",
+            ip_address=_client_ip(request),
             path="/api/public/enquiries",
             detail="Honeypot field filled - likely bot",
             severity="medium",
@@ -1290,6 +1349,7 @@ def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depend
                        country=body.country.strip(), product_id=product_id,
                        product_interest=product_interest,
                        quantity=body.quantity.strip(), message=body.message.strip(), consent=body.consent,
+                       preferred_currency=_clean_currency(body.preferred_currency),
                        landing_page=body.landing_page[:1000], referrer=body.referrer[:1000],
                        campaign=body.campaign[:500], score=_score_enquiry(body), status="new")
     db.add(e)
@@ -1300,16 +1360,35 @@ def public_enquiry(body: EnquiryPublicIn, request: Request, db: Session = Depend
     # committed; email failure never rolls it back and never fakes success.
     notified, notify_detail = False, "not attempted"
     if email_configured():
-        ok, detail = send_email(
-            settings.ENQUIRY_NOTIFY_EMAIL,
+        product_photo = ""
+        if product_id:
+            pimg = (db.query(models.ProductImage)
+                    .filter(models.ProductImage.product_id == product_id)
+                    .order_by(models.ProductImage.is_primary.desc(),
+                              models.ProductImage.sort_order).first())
+            product_photo = pimg.url if pimg else ""
+        ok, detail = send_branded_email(
+            notify_recipients(),
             f"New enquiry {e.reference} — {body.company or body.name}",
-            f"Reference: {e.reference}\n"
-            f"Name: {e.name}\nEmail: {e.email}\nPhone: {e.phone or '—'}\n"
-            f"Company: {e.company or '—'}\nCountry: {e.country or '—'}\n"
-            f"Product: {product_interest or '—'}\nQuantity: {e.quantity or '—'}\n"
-            f"Campaign: {e.campaign or '—'}\nSource page: {e.landing_page or '—'}\n\n"
-            f"Message:\n{e.message}\n\n"
-            f"Admin record: {settings.PUBLIC_SITE_URL.rstrip('/')}/admin/enquiries")
+            f"New wholesale enquiry {e.reference}",
+            [
+                ("Reference", e.reference),
+                ("Name", e.name),
+                ("Email", e.email),
+                ("Phone", e.phone or "—"),
+                ("Company", e.company or "—"),
+                ("Country", e.country or "—"),
+                ("Product", product_interest or "—"),
+                ("Quantity", e.quantity or "—"),
+                ("Campaign", e.campaign or "—"),
+                ("Source page", e.landing_page or "—"),
+                ("Message", e.message or "—"),
+            ],
+            intro="A new enquiry was submitted on the website. The full record is saved in admin.",
+            photo=product_photo,
+            cta_url=f"{settings.PUBLIC_SITE_URL.rstrip('/')}/admin/enquiries",
+            cta_label="Open enquiry in admin",
+        )
         notified, notify_detail = ok, detail
     db.add(models.WorkflowExecution(workflow="enquiry_email_notify",
                                     status="success" if notified else "skipped",
@@ -1359,6 +1438,7 @@ def list_enq(db: Session = Depends(get_db), u=Depends(require_role("admin", "edi
          "company": e.company, "phone": e.phone or "", "country": e.country,
          "product_id": e.product_id, "product_interest": e.product_interest,
          "quantity": e.quantity, "message": e.message,
+         "preferred_currency": e.preferred_currency or "",
          "status": e.status, "score": e.score, "landing_page": e.landing_page,
          "notes": e.notes or "", "created_at": e.created_at.isoformat()} for e in items]}
 
@@ -1378,11 +1458,12 @@ def export_enq(db: Session = Depends(get_db), u=Depends(require_role("admin",)),
                          | func.lower(models.Enquiry.email).like(func.lower(like)))
     buf = io2.StringIO(); w = csvm.writer(buf)
     w.writerow(["reference", "id", "name", "email", "company", "phone", "country",
-                "product", "quantity", "status", "score", "source", "campaign",
-                "landing_page", "notes", "created_at"])
+                "product", "quantity", "preferred_currency", "status", "score",
+                "source", "campaign", "landing_page", "notes", "created_at"])
     for e in qry.order_by(models.Enquiry.id.desc()).limit(5000):
         w.writerow([e.reference, e.id, e.name, e.email, e.company, e.phone, e.country,
-                    e.product_interest, e.quantity, e.status, e.score, e.source,
+                    e.product_interest, e.quantity, e.preferred_currency or "",
+                    e.status, e.score, e.source,
                     e.campaign, e.landing_page, (e.notes or "").replace("\n", " "),
                     e.created_at])
     return PlainTextResponse(buf.getvalue(), media_type="text/csv",
@@ -1403,6 +1484,7 @@ def get_enq(eid: int, db: Session = Depends(get_db), u=Depends(require_role("adm
             "product_id": e.product_id, "product": prod,
             "product_interest": e.product_interest, "quantity": e.quantity,
             "message": e.message, "consent": e.consent, "source": e.source,
+            "preferred_currency": e.preferred_currency or "",
             "landing_page": e.landing_page, "referrer": e.referrer,
             "campaign": e.campaign, "status": e.status, "score": e.score,
             "notes": e.notes or "",
@@ -1699,10 +1781,17 @@ def monthly(db: Session = Depends(get_db), u=Depends(get_current_user)):
 def n8n_approval(payload: dict, db: Session = Depends(get_db)):
     """Authenticated approval webhook for n8n Workflow 3."""
     import hmac
+    # Refuse to run on the shipped default token — otherwise anyone who has
+    # read the repo could approve/publish recommendations unauthenticated.
+    if settings.N8N_WEBHOOK_TOKEN in ("", "change-me-n8n-token"):
+        raise HTTPException(503, "Webhook token not configured on this server")
     token = payload.get("token", "")
     if not hmac.compare_digest(str(token), settings.N8N_WEBHOOK_TOKEN):
         raise HTTPException(401, "Invalid webhook token")
-    rid = int(payload.get("recommendation_id", 0))
+    try:
+        rid = int(payload.get("recommendation_id", 0))
+    except (TypeError, ValueError):
+        raise HTTPException(400, "recommendation_id must be an integer")
     action = payload.get("action", "approve")
     r = db.query(models.SeoRecommendation).filter(models.SeoRecommendation.id == rid).first()
     if not r: raise HTTPException(404, "Recommendation not found")
@@ -1720,6 +1809,9 @@ def n8n_approval(payload: dict, db: Session = Depends(get_db)):
 @app.post("/api/n8n/enquiry-webhook", status_code=201)
 def n8n_enquiry(payload: dict, db: Session = Depends(get_db)):
     import hmac
+    # Same guard as the approval webhook: never accept the shipped default.
+    if settings.N8N_WEBHOOK_TOKEN in ("", "change-me-n8n-token"):
+        raise HTTPException(503, "Webhook token not configured on this server")
     if not hmac.compare_digest(str(payload.get("token", "")), settings.N8N_WEBHOOK_TOKEN):
         raise HTTPException(401, "Invalid webhook token")
     try:
@@ -1744,3 +1836,83 @@ def workflows(u=Depends(get_current_user)):
             if f.endswith(".json"):
                 out.append({"file": f, "path": f"n8n-workflows/{f}"})
     return {"workflows": out, "guide": "docs/n8n-setup.md"}
+
+
+@app.get("/api/automation/status")
+def automation_status(db: Session = Depends(get_db), u=Depends(get_current_user)):
+    """Honest status of every built-in automation — configured or not.
+
+    Booleans and counts only; no secrets (keys, passwords, tokens) and no
+    provider payloads are ever returned. "configured" means the env vars
+    are present, NOT that a test email was delivered.
+    """
+    from .campaigns import active_campaign
+    from .rfq_followup import (CHECK_INTERVAL_SECONDS as FOLLOWUP_INTERVAL,
+                               FOLLOWUP_MIN_IDLE_HOURS, FOLLOWUP_MAX_AGE_DAYS)
+    from .campaign_mailer import CHECK_INTERVAL_SECONDS as CAMPAIGN_INTERVAL
+
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    idle_cutoff = now - timedelta(hours=FOLLOWUP_MIN_IDLE_HOURS)
+    oldest = now - timedelta(days=FOLLOWUP_MAX_AGE_DAYS)
+    draft_q = db.query(models.RfqDraft)
+    open_drafts = draft_q.filter(models.RfqDraft.status == "open").count()
+    followup_eligible = (draft_q.filter(models.RfqDraft.status == "open",
+                                        models.RfqDraft.reminded_at.is_(None),
+                                        models.RfqDraft.updated_at <= idle_cutoff,
+                                        models.RfqDraft.updated_at >= oldest).count())
+    followup_sent = draft_q.filter(models.RfqDraft.reminded_at.isnot(None)).count()
+
+    def _recent(workflow: str, limit: int = 5) -> list:
+        rows = (db.query(models.WorkflowExecution)
+                .filter(models.WorkflowExecution.workflow == workflow)
+                .order_by(models.WorkflowExecution.id.desc()).limit(limit).all())
+        return [{"status": r.status, "detail": r.detail,
+                 "at": r.created_at.isoformat() if r.created_at else None}
+                for r in rows]
+
+    from .site_control import resolve_campaign
+    camp, _ = resolve_campaign(db)
+    if not camp:
+        camp = active_campaign()
+    return {
+        "email": {"configured": email_configured(),
+                  "note": "SMTP env (SMTP_HOST + SMTP_USER) present — "
+                          "enquiry acks, campaign blasts and RFQ follow-ups can send"
+                          if email_configured() else
+                          "SMTP not configured — emails are NOT sent; forms and "
+                          "admin flows all still work"},
+        "llm": {"configured": llm_configured(),
+                "model": settings.LLM_MODEL or None,
+                "note": "AI catalogue / SEO drafts use the configured model"
+                        if llm_configured() else
+                        "No LLM configured — rule-based fallback everywhere"},
+        "turnstile": {"configured": bool(settings.TURNSTILE_SECRET_KEY),
+                      "note": "Form spam check active on enquiry/RFQ endpoints"
+                              if settings.TURNSTILE_SECRET_KEY else
+                              "Not configured — rate limiting still applies"},
+        "rfq_followup": {
+            "interval_hours": FOLLOWUP_INTERVAL // 3600,
+            "min_idle_hours": FOLLOWUP_MIN_IDLE_HOURS,
+            "max_age_days": FOLLOWUP_MAX_AGE_DAYS,
+            "open_drafts": open_drafts,
+            "eligible_now": followup_eligible,
+            "followups_sent": followup_sent,
+            "recent": _recent("rfq_draft_followup"),
+            "note": "One gentle email per abandoned draft, at most; drafts are "
+                    "never marked sent or dismissed by this task",
+        },
+        "campaign_mailer": {
+            "interval_hours": CAMPAIGN_INTERVAL // 3600,
+            "active_campaign": {"code": camp.get("code"), "name": camp.get("name"),
+                                "percent": camp.get("percent"),
+                                "ends_label": camp.get("ends_label")} if camp else None,
+            "recent_announcements": _recent("campaign_announcement"),
+            "recent_reminders": _recent("campaign_reminder"),
+            "note": "Seasonal sale emails to consented enquiries only; each "
+                    "campaign stage sends at most once",
+        },
+        "n8n": {"workflows_url": "/api/automation/workflows",
+                "guide": "docs/n8n-setup.md",
+                "note": "External workflows (n8n) are imported manually; the "
+                        "JSON files contain no credentials"},
+    }

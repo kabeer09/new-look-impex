@@ -1,7 +1,7 @@
 """Database models for all modules."""
 from datetime import datetime, timezone
 from sqlalchemy import (Boolean, Column, Date, DateTime, Float, ForeignKey, Integer,
-                        String, Text, UniqueConstraint, Index)
+                        Numeric, String, Text, UniqueConstraint, Index)
 from .database import Base
 
 
@@ -206,6 +206,8 @@ class Enquiry(Base):
     product_id = Column(Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True)
     product_interest = Column(String(255), default="")
     quantity = Column(String(64), default="")
+    # Buyer's preferred quotation currency (Phase 6) — display/quote preference only.
+    preferred_currency = Column(String(8), default="")
     message = Column(Text, default="")
     consent = Column(Boolean, default=False)
     source = Column(String(64), default="website")
@@ -413,7 +415,40 @@ class DiscountCode(Base):
     is_active = Column(Boolean, default=True)
     starts_at = Column(DateTime, nullable=True)
     expires_at = Column(DateTime, nullable=True)
+    source = Column(String(32), default="manual")  # manual | campaign (auto-synced)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============ SITE CONTROL (campaigns + editable homepage content) ============
+class Campaign(Base):
+    """Admin-managed sale campaign with explicit start/end scheduling."""
+    __tablename__ = "campaigns"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(64), unique=True, nullable=False, index=True)
+    name = Column(String(255), default="")
+    short = Column(String(128), default="")
+    emoji = Column(String(32), default="")
+    percent = Column(Integer, default=0)
+    tagline = Column(String(512), default="")
+    blurb = Column(Text, default="")
+    cta = Column(String(255), default="")
+    image_url = Column(String(1024), default="")
+    starts_at = Column(DateTime, nullable=True, index=True)
+    ends_at = Column(DateTime, nullable=True, index=True)
+    is_active = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class SiteContent(Base):
+    """Editable public-site content block. value is JSON (list/object/string)."""
+    __tablename__ = "site_content"
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String(128), unique=True, nullable=False, index=True)
+    label = Column(String(255), default="")
+    value = Column(Text, default="")
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
 
 
 # ================= RFQ =================
@@ -430,6 +465,7 @@ class RFQ(Base):
     target_price = Column(String(128), default="")
     delivery_timeframe = Column(String(128), default="")
     additional_requirements = Column(Text, default="")
+    preferred_currency = Column(String(8), default="")
     consent = Column(Boolean, default=False)
     status = Column(String(32), default="new")  # new | contacted | quoted | won | lost
     notes = Column(Text, default="")
@@ -446,6 +482,34 @@ class RFQItem(Base):
     quantity = Column(String(128), default="")
     unit = Column(String(64), default="")
     notes = Column(Text, default="")
+
+
+class RfqDraft(Base):
+    """Abandoned-RFQ recovery — a quote request the buyer started but never sent.
+
+    The public form autosaves here (keyed by an anonymous per-browser draft key
+    generated in localStorage — no account, no IP stored) so the team can follow
+    up on warm, half-finished enquiries. `status` moves to "sent" automatically
+    when the matching RFQ is submitted, and to "dismissed" from the admin panel.
+    `items_json` is a snapshot of the RFQ cart at last save (context only).
+    """
+    __tablename__ = "rfq_drafts"
+    id = Column(Integer, primary_key=True)
+    draft_key = Column(String(64), nullable=False, unique=True, index=True)
+    full_name = Column(String(255), default="")
+    business_email = Column(String(255), default="", index=True)
+    company_name = Column(String(255), default="")
+    country = Column(String(128), default="")
+    phone = Column(String(64), default="")
+    target_price = Column(String(128), default="")
+    delivery_timeframe = Column(String(128), default="")
+    additional_requirements = Column(Text, default="")
+    preferred_currency = Column(String(8), default="")
+    items_json = Column(Text, default="[]")
+    status = Column(String(32), default="open")  # open | sent | dismissed
+    reminded_at = Column(DateTime, nullable=True)  # one gentle follow-up at most
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
 
 
 # ================= BUYER RESEARCH / CRM =================
@@ -610,6 +674,8 @@ class Banner(Base):
     cta_link = Column(String(512), default="")
     sort_order = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
+    start_at = Column(DateTime, nullable=True)
+    end_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=_now)
 
 
@@ -691,3 +757,280 @@ class TwoFactorSecret(Base):
 
 
 # ================= END SECURITY MODELS =================
+
+
+# ================= QUOTATION MANAGEMENT =================
+class QuotationSetting(Base):
+    """Single-row exporter defaults + default terms for quotations."""
+    __tablename__ = "quotation_settings"
+    id = Column(Integer, primary_key=True)
+    company_name = Column(String(255), default="New Look Impex")
+    address = Column(Text, default="")
+    contact_person = Column(String(255), default="")
+    email = Column(String(255), default="")
+    phone = Column(String(128), default="")
+    whatsapp = Column(String(128), default="")
+    website = Column(String(512), default="https://www.newlookimpex.store")
+    gstin = Column(String(128), default="")
+    iec = Column(String(128), default="")
+    default_currency = Column(String(16), default="USD")
+    default_terms = Column(Text, default="")
+    validity_days = Column(Integer, default=30)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class Quotation(Base):
+    """A B2B quotation prepared by the exporter for one buyer."""
+    __tablename__ = "quotations"
+    id = Column(Integer, primary_key=True, index=True)
+    number = Column(String(64), unique=True, nullable=False, index=True)  # NLI-QTN-YYYY-####
+    status = Column(String(24), default="draft", index=True)  # draft|sent|accepted|rejected|expired
+    # exporter snapshot (editable per quote; prefilled from QuotationSetting)
+    exporter = Column(Text, default="")  # JSON blob of exporter fields
+    # buyer fields
+    buyer_company = Column(String(255), default="")
+    buyer_contact = Column(String(255), default="")
+    buyer_email = Column(String(255), default="")
+    buyer_phone = Column(String(128), default="")
+    buyer_whatsapp = Column(String(128), default="")
+    buyer_country = Column(String(128), default="", index=True)
+    buyer_address = Column(Text, default="")
+    buyer_type = Column(String(128), default="")
+    buyer_notes = Column(Text, default="")
+    # commercial terms
+    currency = Column(String(16), default="USD")
+    shipping_method = Column(String(64), default="")
+    incoterm = Column(String(32), default="")
+    shipping_charges = Column(Numeric(14, 2), default=0)
+    packing_charges = Column(Numeric(14, 2), default=0)
+    sample_charges = Column(Numeric(14, 2), default=0)
+    discount = Column(Numeric(14, 2), default=0)
+    tax = Column(Numeric(14, 2), default=0)
+    port_loading = Column(String(255), default="")
+    port_destination = Column(String(255), default="")
+    delivery_time = Column(String(255), default="")
+    production_lead = Column(String(255), default="")
+    payment_terms = Column(Text, default="")
+    advance_pct = Column(Numeric(6, 2), default=0)
+    balance_terms = Column(Text, default="")
+    quote_date = Column(Date, nullable=True)
+    expiry_date = Column(Date, nullable=True, index=True)
+    terms = Column(Text, default="")
+    buyer_qa = Column(Text, default="")  # buyer questions + your answers (JSON list)
+    subtotal = Column(Numeric(14, 2), default=0)
+    grand_total = Column(Numeric(14, 2), default=0)
+    pdf_filename = Column(String(512), default="")
+    pdf_url = Column(String(1024), default="")
+    created_by = Column(String(255), default="")
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class QuotationItem(Base):
+    """One product line on a quotation."""
+    __tablename__ = "quotation_items"
+    id = Column(Integer, primary_key=True, index=True)
+    quotation_id = Column(Integer, ForeignKey("quotations.id", ondelete="CASCADE"), nullable=False, index=True)
+    product_id = Column(Integer, nullable=True)  # link to catalogue when selected
+    sku = Column(String(128), default="")
+    name = Column(String(512), default="")
+    description = Column(Text, default="")
+    material = Column(String(128), default="")
+    dimensions = Column(String(255), default="")
+    weight = Column(String(128), default="")
+    images = Column(Text, default="")  # JSON array of media URLs
+    quantity = Column(Numeric(14, 3), default=0)
+    unit = Column(String(64), default="pcs")
+    unit_price = Column(Numeric(14, 2), default=0)
+    moq = Column(String(128), default="")
+    packaging = Column(Text, default="")
+    line_total = Column(Numeric(14, 2), default=0)
+    sort_order = Column(Integer, default=0)
+
+
+# ================= DOCUMENT STUDIO (quotations + invoices) =================
+class CompanyProfile(Base):
+    """Single-row company/exporter profile for all documents, incl. bank details."""
+    __tablename__ = "company_profiles"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), default="New Look Impex")
+    logo = Column(String(512), default="")  # media filename
+    contact_person = Column(String(255), default="")
+    address = Column(Text, default="")
+    city = Column(String(128), default="")
+    state = Column(String(128), default="")
+    country = Column(String(128), default="India")
+    postal_code = Column(String(64), default="")
+    email = Column(String(255), default="")
+    phone = Column(String(128), default="")
+    whatsapp = Column(String(128), default="")
+    website = Column(String(512), default="https://www.newlookimpex.store")
+    gstin = Column(String(128), default="")
+    iec = Column(String(128), default="")
+    bank_name = Column(String(255), default="")
+    account_holder = Column(String(255), default="")
+    account_number = Column(String(255), default="")
+    ifsc = Column(String(128), default="")
+    swift = Column(String(128), default="")
+    bank_address = Column(Text, default="")
+    default_currency = Column(String(16), default="USD")
+    validity_days = Column(Integer, default=30)
+    default_quote_terms = Column(Text, default="")
+    default_invoice_terms = Column(Text, default="")
+    prefix_quotation = Column(String(32), default="NLI-QTN")
+    prefix_pi = Column(String(32), default="NLI-PI")
+    prefix_ci = Column(String(32), default="NLI-CI")
+    prefix_invoice = Column(String(32), default="NLI-INV")
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class DocBuyer(Base):
+    """A saved buyer reused across documents (independent of CRM leads)."""
+    __tablename__ = "doc_buyers"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), default="")
+    company = Column(String(255), default="", index=True)
+    contact = Column(String(255), default="")
+    email = Column(String(255), default="")
+    phone = Column(String(128), default="")
+    whatsapp = Column(String(128), default="")
+    country = Column(String(128), default="", index=True)
+    billing_address = Column(Text, default="")
+    shipping_address = Column(Text, default="")
+    city = Column(String(128), default="")
+    state = Column(String(128), default="")
+    postal_code = Column(String(64), default="")
+    tax_id = Column(String(128), default="")
+    reference = Column(String(128), default="")
+    notes = Column(Text, default="")
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class Invoice(Base):
+    """A proforma/commercial/sales invoice prepared manually."""
+    __tablename__ = "invoices"
+    id = Column(Integer, primary_key=True, index=True)
+    number = Column(String(64), unique=True, nullable=False, index=True)
+    doc_type = Column(String(24), default="proforma", index=True)  # proforma|commercial|sales|custom
+    status = Column(String(24), default="draft", index=True)  # draft|sent|paid|partial|overdue
+    exporter = Column(Text, default="")  # JSON snapshot
+    buyer = Column(Text, default="")  # JSON snapshot (works for unsaved buyers)
+    buyer_id = Column(Integer, nullable=True)  # link when saved buyer used
+    currency = Column(String(16), default="USD")
+    invoice_date = Column(Date, nullable=True)
+    due_date = Column(Date, nullable=True, index=True)
+    po_number = Column(String(128), default="")
+    ref_quotation = Column(String(128), default="")
+    order_number = Column(String(128), default="")
+    # charges
+    subtotal = Column(Numeric(14, 2), default=0)
+    discount = Column(Numeric(14, 2), default=0)
+    packing_charges = Column(Numeric(14, 2), default=0)
+    freight_charges = Column(Numeric(14, 2), default=0)
+    insurance = Column(Numeric(14, 2), default=0)
+    other_charges = Column(Numeric(14, 2), default=0)
+    tax = Column(Numeric(14, 2), default=0)
+    grand_total = Column(Numeric(14, 2), default=0)
+    amount_paid = Column(Numeric(14, 2), default=0)
+    balance_due = Column(Numeric(14, 2), default=0)
+    payment_status = Column(String(24), default="unpaid", index=True)  # unpaid|partial|paid|overdue
+    payment_method = Column(String(128), default="")
+    payment_reference = Column(String(128), default="")
+    payment_date = Column(Date, nullable=True)
+    payment_terms = Column(Text, default="")
+    shipping_method = Column(String(64), default="")
+    incoterm = Column(String(32), default="")
+    port_loading = Column(String(255), default="")
+    port_destination = Column(String(255), default="")
+    delivery_time = Column(String(255), default="")
+    packaging = Column(Text, default="")
+    bank_details = Column(Text, default="")  # JSON snapshot
+    show_bank = Column(Boolean, default=True)
+    terms = Column(Text, default="")
+    notes = Column(Text, default="")
+    pdf_filename = Column(String(512), default="")
+    created_by = Column(String(255), default="")
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class InvoiceItem(Base):
+    """One product line on an invoice."""
+    __tablename__ = "invoice_items"
+    id = Column(Integer, primary_key=True, index=True)
+    invoice_id = Column(Integer, ForeignKey("invoices.id", ondelete="CASCADE"), nullable=False, index=True)
+    product_id = Column(Integer, nullable=True)
+    sku = Column(String(128), default="")
+    name = Column(String(512), default="")
+    title = Column(String(512), default="")
+    description = Column(Text, default="")
+    material = Column(String(128), default="")
+    size = Column(String(128), default="")
+    dimensions = Column(String(255), default="")
+    weight = Column(String(128), default="")
+    finish = Column(String(128), default="")
+    images = Column(Text, default="")
+    quantity = Column(Numeric(14, 3), default=0)
+    unit = Column(String(64), default="pcs")
+    unit_price = Column(Numeric(14, 2), default=0)
+    discount_pct = Column(Numeric(6, 2), default=0)
+    tax_pct = Column(Numeric(6, 2), default=0)
+    line_total = Column(Numeric(14, 2), default=0)
+    sort_order = Column(Integer, default=0)
+
+
+
+# ================= AI WEBSITE MANAGER =================
+
+class AiChatSession(Base):
+    """A conversation between an admin and the AI website manager."""
+    __tablename__ = "ai_chat_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), default="New conversation")
+    user_email = Column(String(255), default="", index=True)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class AiChatMessage(Base):
+    """One message in an AI manager conversation."""
+    __tablename__ = "ai_chat_messages"
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey("ai_chat_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    role = Column(String(16), nullable=False)  # user | assistant
+    content = Column(Text, default="")
+    actions_json = Column(Text, default="[]")  # summary of tool actions
+    attachments_json = Column(Text, default="[]")
+    created_at = Column(DateTime, default=_now)
+
+
+class AiActionLog(Base):
+    """Audit trail for every tool the AI attempts to run."""
+    __tablename__ = "ai_action_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, nullable=True, index=True)
+    user_email = Column(String(255), default="", index=True)
+    user_request = Column(Text, default="")
+    tool = Column(String(64), default="", index=True)
+    params_json = Column(Text, default="{}")
+    result_json = Column(Text, default="{}")
+    status = Column(String(24), default="completed", index=True)  # completed|pending|failed|reverted
+    error = Column(Text, default="")
+    created_at = Column(DateTime, default=_now)
+
+
+class WebsiteChangeHistory(Base):
+    """Before/after snapshots for preview, publish and rollback."""
+    __tablename__ = "website_change_history"
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, nullable=True, index=True)
+    user_email = Column(String(255), default="", index=True)
+    entity_type = Column(String(64), default="", index=True)  # product|site_content|banner|seo_page
+    entity_id = Column(String(64), default="", index=True)
+    label = Column(String(255), default="")
+    previous_json = Column(Text, default="{}")
+    proposed_json = Column(Text, default="{}")
+    status = Column(String(24), default="pending", index=True)  # pending|published|reverted|failed
+    created_at = Column(DateTime, default=_now)
+    published_at = Column(DateTime, nullable=True)

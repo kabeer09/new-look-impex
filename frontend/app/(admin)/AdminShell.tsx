@@ -5,6 +5,11 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV: { label: string; href: string; section?: string }[] = [
+  { label: "Site Control", href: "/admin/site-control", section: "Site Control" },
+  { label: "Sales & Campaigns", href: "/admin/site-control/campaigns", section: "Site Control" },
+  { label: "Coupons & Discounts", href: "/admin/site-control/coupons", section: "Site Control" },
+  { label: "Homepage Content", href: "/admin/site-control/content", section: "Site Control" },
+  { label: "AI Website Manager", href: "/admin/ai-manager", section: "Workspace" },
   { label: "Overview", href: "/admin/overview", section: "Workspace" },
   { label: "Products", href: "/admin/products", section: "Catalogue" },
   { label: "Categories", href: "/admin/categories", section: "Catalogue" },
@@ -13,15 +18,27 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "AI Product Import", href: "/admin/ai-import", section: "Catalogue" },
   { label: "AI Catalogue", href: "/admin/ai-catalogue", section: "Catalogue" },
   { label: "CSV Import", href: "/admin/csv-import", section: "Catalogue" },
+  { label: "Category Match", href: "/admin/category-match", section: "Catalogue" },
   { label: "Banners", href: "/admin/banners", section: "Catalogue" },
   { label: "Product Catalogue (public)", href: "/catalogue", section: "Catalogue" },
   { label: "RFQs", href: "/admin/rfqs", section: "Orders" },
   { label: "Enquiries", href: "/admin/enquiries", section: "Orders" },
   { label: "Buyers (CRM)", href: "/admin/buyers", section: "Orders" },
+  { label: "Document Dashboard", href: "/admin/documents", section: "Documents" },
+  { label: "Manual Quotation", href: "/admin/documents/manual-quotation", section: "Documents" },
+  { label: "Buyer Enquiry Quotation", href: "/admin/documents/buyer-enquiry", section: "Documents" },
+  { label: "Create Quotation", href: "/admin/documents/quotation/new", section: "Documents" },
+  { label: "Create Invoice", href: "/admin/documents/invoice/new", section: "Documents" },
+  { label: "Quotation History", href: "/admin/documents/quotations", section: "Documents" },
+  { label: "Invoice History", href: "/admin/documents/invoices", section: "Documents" },
+  { label: "Document Settings", href: "/admin/documents/settings", section: "Documents" },
+  { label: "Company Profile", href: "/admin/documents/company", section: "Documents" },
   { label: "Keywords", href: "/admin/keywords", section: "SEO" },
   { label: "Opportunities", href: "/admin/opportunities", section: "SEO" },
   { label: "Search-to-Page", href: "/admin/search-to-page", section: "SEO" },
   { label: "SEO Audits", href: "/admin/audits", section: "SEO" },
+  { label: "SEO Health", href: "/admin/seo-health", section: "SEO" },
+  { label: "Europe Markets", href: "/admin/europe", section: "SEO" },
   { label: "Recommendations", href: "/admin/recommendations", section: "SEO" },
   { label: "Content Studio", href: "/admin/content", section: "SEO" },
   { label: "SEO Page Metadata", href: "/admin/seo-pages", section: "SEO" },
@@ -31,10 +48,10 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Automation", href: "/admin/automation", section: "SEO" },
   { label: "Users & Access", href: "/admin/users", section: "System" },
   { label: "Settings", href: "/admin/settings", section: "System" },
-  { label: "Security Monitor", href: "/admin/security", section: "System" },
+
 ];
 
-const SECTIONS = ["Workspace", "Catalogue", "Orders", "SEO", "System"];
+const SECTIONS = ["Site Control", "Workspace", "Catalogue", "Orders", "Documents", "SEO", "System"];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();

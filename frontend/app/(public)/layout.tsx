@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { SettingsBootstrap } from "@/components/public/SettingsBootstrap";
+import { MarketProvider } from "@/lib/market";
+import { MarketWelcome } from "@/components/public/MarketControls";
+import { CompareBar } from "@/components/public/CompareBar";
+import { SaleBar, SalePopup } from "@/components/public/SalesPromo";
+import { ChatBot } from "@/components/public/ChatBot";
 
 export const metadata: Metadata = {
   title: {
@@ -25,9 +30,16 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   return (
     <div className="min-h-screen flex flex-col">
       <SettingsBootstrap />
-      <PublicHeader />
-      <main className="flex-1">{children}</main>
-      <PublicFooter />
+      <MarketProvider>
+        <PublicHeader />
+        <MarketWelcome />
+        <main className="flex-1">{children}</main>
+        <PublicFooter />
+        <CompareBar />
+        <SaleBar />
+        <SalePopup />
+        <ChatBot />
+      </MarketProvider>
     </div>
   );
 }

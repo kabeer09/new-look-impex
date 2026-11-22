@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, trackEvent } from "@/lib/api";
+import { useLeadMarket } from "@/lib/market";
 import type { EnquiryInput, PublicSettings } from "@/lib/types";
 
 /** Buyer enquiry form (POST /api/public/enquiries) for the wholesale page sidebar. */
@@ -11,6 +12,14 @@ export function WholesaleEnquiryForm() {
   const [sent, setSent] = useState("");
   const [err, setErr] = useState("");
   const [sending, setSending] = useState(false);
+  const lead = useLeadMarket();
+
+  // Pre-fill the buyer's market when they have not chosen a country yet.
+  useEffect(() => {
+    if (!lead.country) return;
+    setForm((f) => (f.country ? f : { ...f, country: lead.country }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lead.country]);
 
   useEffect(() => {
     api<PublicSettings>("/api/public/settings")
@@ -24,7 +33,10 @@ export function WholesaleEnquiryForm() {
     setSent("");
     setSending(true);
     try {
-      await api("/api/public/enquiries", { method: "POST", body: JSON.stringify(form) });
+      await api("/api/public/enquiries", {
+        method: "POST",
+        body: JSON.stringify({ ...form, preferred_currency: lead.preferred_currency }),
+      });
       trackEvent({ event_type: "contact_click" });
       setSent("Thank you — your enquiry has been received. We will respond by email.");
       setForm({ name: "", email: "", country: "", product_interest: "", message: "" });
