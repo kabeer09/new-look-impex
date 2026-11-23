@@ -7,10 +7,10 @@ module.exports = {
         // Royal premium palette (New Look Impex international identity).
         navy: { DEFAULT: "#24221F", dark: "#141311", light: "#35322D" },
         ivory: "#F8F5EE",
-        brass: { DEFAULT: "#A66A45", dark: "#8A5636", light: "#E8D4C4" },
+        brass: { DEFAULT: "#A66A45", dark: "#7A4A2D", light: "#E8D4C4" },
         gold: { DEFAULT: "#B08D57", dark: "#9A7746", ink: "#87653A", light: "#F0E6D2" },
         petrol: "#24221F",
-        clay: { DEFAULT: "#A66A45", dark: "#8A5636", light: "#E8D4C4" },
+        clay: { DEFAULT: "#A66A45", dark: "#7A4A2D", light: "#E8D4C4" },
         cream: "#F8F5EE",
         espresso: "#211B17",
         olive: "#183D35",
@@ -24,7 +24,7 @@ module.exports = {
           bg: "#F8F5EE", // Royal Ivory
           secondary: "#EAE0D0", // Warm Champagne
           ink: "#24221F", // Deep Charcoal
-          accent: "#8A5636", // Burnished Copper (darkened for AA contrast on ivory)
+          accent: "#7A4A2D", // Burnished Copper (AA contrast on ivory and brass-light chips)
           gold: "#B08D57", // Antique Gold
           dark: "#211B17", // Dark Espresso
           emerald: "#183D35", // Deep Emerald

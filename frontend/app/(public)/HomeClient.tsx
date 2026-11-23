@@ -418,7 +418,6 @@ function GalleryCard({ card, duplicate }: { card: GalleryCardData; duplicate?: b
     <Link
       href={card.href}
       className="group relative block w-[72vw] shrink-0 overflow-hidden rounded-sm bg-editorial-dark sm:w-[46vw] lg:w-[31vw] xl:w-[24vw]"
-      aria-label={`${card.title} — ${card.text}`}
       tabIndex={duplicate ? -1 : undefined}
     >
       <span className="block aspect-[3/4] w-full overflow-hidden">
@@ -906,7 +905,6 @@ export default function HomeClient({
                 key={c.href + c.img}
                 href={c.href}
                 className="group relative block overflow-hidden rounded-sm bg-editorial-dark"
-                aria-label={`${c.category} — ${c.cta}`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -955,7 +953,7 @@ export default function HomeClient({
 
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {giftCards.map((c) => (
-              <Link key={c.href + c.img} href={c.href} className="group block" aria-label={`${c.title} — ${c.cta}`}>
+              <Link key={c.href + c.img} href={c.href} className="group block">
                 <span className="block overflow-hidden rounded-sm bg-sand">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -1224,7 +1222,7 @@ export default function HomeClient({
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {materialTiles.map((m) =>
               m.img ? (
-                <Link key={m.title} href={m.href} className="group block" aria-label={`${m.title} — explore products`}>
+                <Link key={m.title} href={m.href} className="group block">
                   <span className="block overflow-hidden rounded-sm bg-sand">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -1245,7 +1243,6 @@ export default function HomeClient({
                   key={m.title}
                   href={m.href}
                   className="group flex aspect-[4/3] flex-col justify-end rounded-sm bg-editorial-dark p-6 transition-colors hover:bg-editorial-ink md:aspect-auto md:min-h-[19rem]"
-                  aria-label={`${m.title} — explore products`}
                 >
                   <span className="font-inter text-[10px] uppercase tracking-[0.26em] text-editorial-gold">Traditional alloy</span>
                   <h3 className="mt-2 font-cormorant text-3xl text-editorial-bg">{m.title}</h3>
@@ -1293,7 +1290,6 @@ export default function HomeClient({
                 key={m.href}
                 href={m.href}
                 className="group border border-editorial-bg/15 p-5 text-center transition-colors hover:border-editorial-gold hover:bg-editorial-bg/5"
-                aria-label={`${m.label} — buyer guide and wholesale enquiry`}
               >
                 <span className="block font-cormorant text-3xl text-editorial-gold" aria-hidden="true">{m.code}</span>
                 <span className="mt-2 block font-inter text-[11px] uppercase tracking-[0.16em] text-editorial-bg/85">{m.label}</span>
@@ -1378,7 +1374,7 @@ export default function HomeClient({
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {journalCards.map((j) => (
-              <Link key={j.title} href={j.href} className="group block" aria-label={`Journal: ${j.title}`}>
+              <Link key={j.title} href={j.href} className="group block">
                 <span className="block overflow-hidden rounded-sm bg-sand">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

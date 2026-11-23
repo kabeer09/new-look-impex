@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* WCAG AA: low-opacity body text and gold labels on light backgrounds.
+   Dark-background gold is intentionally left bright for contrast there. */
+.bg-editorial-bg .text-editorial-gold,
+.bg-sand .text-editorial-gold,
+.bg-white .text-editorial-gold { color: #87653a; }
+.text-editorial-ink\/55 { color: #4d4944 !important; }
+.text-editorial-ink\/50 { color: #57524c !important; }
+.text-editorial-ink\/45 { color: #635e57 !important; }
+
 /* Rotating offers / slideshow keyframes */
 @keyframes nli-fade-up {
   0% { opacity: 0; transform: translateY(10px); }
