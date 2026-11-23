@@ -294,7 +294,7 @@ export function SalePopup() {
 
         {/* Real product images — a small banner of our brass & copper ranges */}
         <div className="-mx-6 -mt-6 mb-5 flex gap-1.5 overflow-hidden rounded-t-xl md:-mx-7 md:-mt-7">
-          {(popupImages.length ? popupImages : ["/nli-copper-bottle.jpg", "/nli-brass-utensils.jpg", "/nli-gift-set.jpg", "/nli-copper-gift-set.jpg"]).map((src) => (
+          {(popupImages.length ? popupImages : ["/nli-copper-bottle.webp", "/nli-brass-utensils.webp", "/nli-gift-set.webp", "/nli-copper-gift-set.webp"]).map((src) => (
             <div key={src} className="h-28 flex-1 overflow-hidden bg-champagne">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={src} alt="Handcrafted brass and copper products from New Look Impex" className="h-full w-full object-cover" />

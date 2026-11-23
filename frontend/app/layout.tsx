@@ -86,26 +86,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-IN" className={`${jakarta.variable} ${playfair.variable} ${cormorant.variable} ${inter.variable}`}>
       <head>
-        {/* Google Tag Manager */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','GTM-PFWKB7XW');`,
-          }}
-        />
-        {/* Google Tag Manager - GTM-M4GDWFQT */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','GTM-M4GDWFQT');`,
-          }}
-        />
+        {/* Start connections to the API and media host early — cuts critical-path latency. */}
+        <link rel="preconnect" href="https://api.newlookimpex.store" crossOrigin="" />
+        <link rel="preconnect" href="https://luqgcacxkcrmhsdopjyl.supabase.co" crossOrigin="" />
+        {/* GTM containers (GTM-PFWKB7XW / GTM-M4GDWFQT) were removed: both returned 404
+            and loaded ~182 KB of unused JS. GA4 below is the working analytics setup. */}
         {/* Google Analytics 4 — direct gtag.js.
             The previous snippet only defined gtag() and never called
             gtag('config', ...), so no GA4 property received any data. */}
@@ -150,21 +135,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="font-sans">
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-PFWKB7XW"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          ></iframe>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-M4GDWFQT"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          ></iframe>
-        </noscript>
         {turnstileSiteKey && (
           <script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"

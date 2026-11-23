@@ -20,7 +20,7 @@ const MEDIA_BASE = "https://luqgcacxkcrmhsdopjyl.supabase.co/storage/v1/object/p
  *  Every href is an existing, indexed route; no invented URLs. */
 const METALCRAFT_CARDS = [
   {
-    img: "/nli-copper-bottle.jpg",
+    img: "/nli-copper-bottle.webp",
     category: "Copper Bottles · Drinkware",
     title: "Crafted for everyday living",
     cta: "Explore Copper",
@@ -28,7 +28,7 @@ const METALCRAFT_CARDS = [
     alt: "Hand-hammered copper water bottle and tumbler — copper bottle manufacturer and wholesale supplier Moradabad India",
   },
   {
-    img: "/nli-copper-utensils.jpg",
+    img: "/nli-copper-utensils.webp",
     category: "Copper Cookware · Utensils",
     title: "Made for the modern kitchen",
     cta: "Explore Kitchenware",
@@ -36,7 +36,7 @@ const METALCRAFT_CARDS = [
     alt: "Hammered copper handi with brass handles — copper kitchenware manufacturer and exporter Moradabad India",
   },
   {
-    img: "/nli-brass-utensils.jpg",
+    img: "/nli-brass-utensils.webp",
     category: "Brass Cookware · Utensils",
     title: "Rooted in tradition",
     cta: "Explore Brass",
@@ -44,7 +44,7 @@ const METALCRAFT_CARDS = [
     alt: "Hand-hammered brass cooking pot — brass utensils and cookware wholesale from Moradabad India",
   },
   {
-    img: "/nli-brass-masala-box.jpg",
+    img: "/nli-brass-masala-box.webp",
     category: "Brass Masala Boxes · Kitchenware",
     title: "Seasoned with heritage",
     cta: "Explore Brass Kitchenware",
@@ -57,7 +57,7 @@ const METALCRAFT_CARDS = [
  *  Product imagery comes from NLI's own media library and supplied photography. */
 const GIFT_CARDS = [
   {
-    img: "/nli-gift-set.jpg",
+    img: "/nli-gift-set.webp",
     title: "Festive Gifting",
     text: "Diyas, lanterns and decorative brass.",
     cta: "Explore Collection",
@@ -65,7 +65,7 @@ const GIFT_CARDS = [
     alt: "Copper gift set presented in a festive home setting — festive gifting collections New Look Impex Moradabad",
   },
   {
-    img: "/nli-copper-gift-set.jpg",
+    img: "/nli-copper-gift-set.webp",
     title: "Copper Gift Sets",
     text: "Copper bottles and kitchenware.",
     cta: "Explore Collection",
@@ -793,7 +793,7 @@ export default function HomeClient({
             hydration and fades in over it, so slow connections paint fast. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={hero?.poster || "/hero-brass-kitchen.jpg"}
+          src={hero?.poster || "/hero-brass-kitchen.webp"}
           alt=""
           aria-hidden="true"
           className="absolute inset-0 h-full w-full scale-[1.09] object-cover"

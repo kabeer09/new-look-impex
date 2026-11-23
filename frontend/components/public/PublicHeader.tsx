@@ -133,7 +133,7 @@ export function PublicHeader() {
               <span className="block h-11 w-11 overflow-hidden rounded-full bg-editorial-dark ring-1 ring-editorial-gold/40 md:h-12 md:w-12">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logo-nli-collections.jpg"
+                  src="/logo-nli-collections.webp"
                   alt="NLI Collections"
                   className="h-full w-full scale-[1.04] object-cover"
                   width={1600}

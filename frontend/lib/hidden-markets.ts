@@ -50,7 +50,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "premium brass interior decor Norway, copperware supplier Norway, Indian handicrafts exporter Norway, brass decorative bowls wholesale Norway, metal home decor manufacturer Norway",
     hero: "/home/journal-styling.jpg",
-    gallery: ["/home/material-brass.jpg", "/nli-copper-bottle.jpg", "/home/cat-urlis.jpg"],
+    gallery: ["/home/material-brass.jpg", "/nli-copper-bottle.webp", "/home/cat-urlis.jpg"],
     theme: 0, accent: "text-clay",
   },
   {
@@ -76,7 +76,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "decorative metalware supplier South Africa, brass lanterns wholesale South Africa, hospitality tableware exporter India, copper drinkware supplier South Africa, Indian handicrafts exporter South Africa",
     hero: "/home/export-banner.jpg",
-    gallery: ["/gallery-festive-handi.jpg", "/home/cat-cookware.jpg", "/nli-brass-utensils.jpg"],
+    gallery: ["/gallery-festive-handi.jpg", "/home/cat-cookware.jpg", "/nli-brass-utensils.webp"],
     theme: 1, accent: "text-gold",
   },
   {
@@ -102,7 +102,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "handmade copperware New Zealand, copper bottles wholesale New Zealand, brass decor supplier New Zealand, Indian handicrafts exporter New Zealand, metal giftware wholesale New Zealand",
     hero: "/gallery-copper-bottles.webp",
-    gallery: ["/nli-copper-bottle.jpg", "/home/cat-drinkware.jpg", "/home/material-copper.jpg"],
+    gallery: ["/nli-copper-bottle.webp", "/home/cat-drinkware.jpg", "/home/material-copper.jpg"],
     theme: 2, accent: "text-clay",
   },
   {
@@ -128,7 +128,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "modern brass decor South Korea, design accessories supplier South Korea, copperware wholesale South Korea, Indian metal handicrafts exporter South Korea, brass decorative bowls wholesale Korea",
     hero: "/home/cat-urlis.jpg",
-    gallery: ["/home/journal-styling.jpg", "/nli-brass-masala-box.jpg", "/gallery-poster-v1.jpg"],
+    gallery: ["/home/journal-styling.jpg", "/nli-brass-masala-box.webp", "/gallery-poster-v1.jpg"],
     theme: 3, accent: "text-gold",
   },
   {
@@ -154,7 +154,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "decorative metal products Turkey, brass lanterns manufacturer India Turkey, copperware supplier Turkey, Indian handicrafts exporter Turkey, metal home decor wholesale Turkey",
     hero: "/home/cat-diyas-lanterns.jpg",
-    gallery: ["/home/cat-pooja.jpg", "/nli-gift-set.jpg", "/gallery-poster-v2.jpg"],
+    gallery: ["/home/cat-pooja.jpg", "/nli-gift-set.webp", "/gallery-poster-v2.jpg"],
     theme: 0, accent: "text-clay",
   },
   {
@@ -179,8 +179,8 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
       ["How is the minimum order quantity set?", "MOQs vary by product and finish and are listed on each product page; custom and bulk quantities are quoted per enquiry."],
     ],
     keywords: "metal decor wholesale Mexico, brass tableware supplier Mexico, copper drinkware wholesale Mexico, Indian handicrafts exporter Mexico, metal home accessories distributor Mexico",
-    hero: "/nli-brass-utensils.jpg",
-    gallery: ["/home/cat-tableware.jpg", "/nli-copper-utensils.jpg", "/home/cat-kitchenware.jpg"],
+    hero: "/nli-brass-utensils.webp",
+    gallery: ["/home/cat-tableware.jpg", "/nli-copper-utensils.webp", "/home/cat-kitchenware.jpg"],
     theme: 1, accent: "text-gold",
   },
   {
@@ -206,7 +206,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "home decor metalware Brazil, brass decorative items wholesale Brazil, copperware supplier Brazil, Indian handicrafts exporter Brazil, metal gift sets wholesale Brazil",
     hero: "/home/cat-gift-sets.jpg",
-    gallery: ["/gallery-festive-handi.jpg", "/nli-copper-gift-set.jpg", "/home/journal-gifting.jpg"],
+    gallery: ["/gallery-festive-handi.jpg", "/nli-copper-gift-set.webp", "/home/journal-gifting.jpg"],
     theme: 2, accent: "text-clay",
   },
   {
@@ -232,7 +232,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "home accessories wholesale Ireland, brass gifting supplier Ireland, copper drinkware wholesale Ireland, Indian handicrafts exporter Ireland, metal gift sets Ireland",
     hero: "/home/festive-christmas.jpg",
-    gallery: ["/nli-gift-set.jpg", "/home/cat-corporate-gifting.jpg", "/home/journal-gifting.jpg"],
+    gallery: ["/nli-gift-set.webp", "/home/cat-corporate-gifting.jpg", "/home/journal-gifting.jpg"],
     theme: 3, accent: "text-gold",
   },
   {
@@ -258,7 +258,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "decorative metal products Portugal, brass decor supplier Portugal, copperware wholesale Portugal, Indian handicrafts exporter Portugal, engraved brass bowls Portugal",
     hero: "/home/material-brass.jpg",
-    gallery: ["/nli-brass-masala-box.jpg", "/home/cat-masala.jpg", "/gallery-poster-v3.jpg"],
+    gallery: ["/nli-brass-masala-box.webp", "/home/cat-masala.jpg", "/gallery-poster-v3.jpg"],
     theme: 0, accent: "text-clay",
   },
   {
@@ -284,7 +284,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "Mediterranean decor supplier Greece, brass lanterns wholesale Greece, copperware supplier Greece, Indian handicrafts exporter Greece, metal decor wholesale Greece",
     hero: "/gallery-poster-v2.jpg",
-    gallery: ["/home/cat-diyas-lanterns.jpg", "/home/cat-urlis.jpg", "/nli-brass-utensils.jpg"],
+    gallery: ["/home/cat-diyas-lanterns.jpg", "/home/cat-urlis.jpg", "/nli-brass-utensils.webp"],
     theme: 1, accent: "text-gold",
   },
   {
@@ -310,7 +310,7 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     ],
     keywords: "luxury decor supplier Qatar, brass lanterns wholesale Qatar, corporate gifting manufacturer Qatar, copperware supplier Qatar, Indian handicrafts exporter Qatar",
     hero: "/home/festive-ramadan.jpg",
-    gallery: ["/nli-copper-gift-set.jpg", "/gallery-dispenser.webp", "/home/cat-gift-sets.jpg"],
+    gallery: ["/nli-copper-gift-set.webp", "/gallery-dispenser.webp", "/home/cat-gift-sets.jpg"],
     theme: 2, accent: "text-clay",
   },
 ];

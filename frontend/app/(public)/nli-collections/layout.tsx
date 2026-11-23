@@ -29,13 +29,13 @@ export const metadata: Metadata = {
     url: URL,
     siteName: "NLI Collections",
     type: "website",
-    images: [{ url: "/hero-brass-kitchen.jpg", width: 1024, height: 1024, alt: "Handcrafted brass and copper homeware by NLI Collections" }],
+    images: [{ url: "/hero-brass-kitchen.webp", width: 1024, height: 1024, alt: "Handcrafted brass and copper homeware by NLI Collections" }],
   },
   twitter: {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    images: ["/hero-brass-kitchen.jpg"],
+    images: ["/hero-brass-kitchen.webp"],
   },
 };
 

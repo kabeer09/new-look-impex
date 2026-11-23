@@ -156,7 +156,7 @@ export default function NliCollectionsBrandPage() {
             <div className="relative aspect-[4/5] bg-navy overflow-hidden rounded-3xl shadow-2xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/hero-brass-kitchen.jpg"
+                src="/hero-brass-kitchen.webp"
                 alt="NLI Collections — handcrafted brass and copper metalware from Moradabad"
                 className="absolute inset-0 w-full h-full object-cover"
                 loading="eager"
