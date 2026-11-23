@@ -684,6 +684,14 @@ export default function HomeClient({
   const exportMarkets = arr("export_markets", EXPORT_MARKETS);
   const seasonCards = arr("season_cards", SEASON_CARDS);
   const hero = content.hero && typeof content.hero === "object" ? content.hero : null;
+  // Load the hero video only after the page is interactive. The lightweight
+  // poster image is the LCP element, so a 1.5 MB MP4 never blocks first paint.
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  useEffect(() => {
+    const url = hero?.video || "/hero-a.mp4";
+    const id = window.setTimeout(() => setVideoSrc(url), 500);
+    return () => window.clearTimeout(id);
+  }, [hero?.video]);
   const marqueeText = typeof content.marquee?.text === "string" ? content.marquee.text : null;
   const marqueeItems: string[] = marqueeText
     ? marqueeText.split("|").map((s: string) => s.trim()).filter(Boolean)
@@ -782,19 +790,28 @@ export default function HomeClient({
     <>
       {/* Hero — full-bleed video, editorial first fold */}
       <section className="relative isolate overflow-hidden bg-editorial-dark text-editorial-bg">
-        {/* Authentic NLI product video; scaled crop hides the corner badge */}
-        <video
+        {/* Lightweight hero image is the LCP element; the video loads after
+            hydration and fades in over it, so slow connections paint fast. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={hero?.poster || "/hero-brass-kitchen.jpg"}
+          alt=""
+          aria-hidden="true"
           className="absolute inset-0 h-full w-full scale-[1.09] object-cover"
+          fetchPriority="high"
+        />
+        <video
+          className={`absolute inset-0 h-full w-full scale-[1.09] object-cover transition-opacity duration-700 ${videoSrc ? "opacity-100" : "opacity-0"}`}
           autoPlay
           muted
           loop
           playsInline
-          preload="auto"
-          poster={hero?.poster || "/hero-banner.png"}
+          preload="none"
           aria-hidden="true"
           tabIndex={-1}
         >
-          <source src={hero?.video || "/hero-a.mp4"} type="video/mp4" />
+          {videoSrc && <source src={videoSrc} type="video/mp4" />}
+          <track kind="captions" srcLang="en" label="No captions — decorative background video" />
         </video>
         <div className="absolute inset-0 bg-editorial-dark/55" aria-hidden="true" />
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-editorial-dark/70 to-transparent" aria-hidden="true" />
