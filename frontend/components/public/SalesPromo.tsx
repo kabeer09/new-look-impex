@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import { useLeadMarket } from "@/lib/market";
 import { NLI_SALE_POPUP_EVENT, playPopChime } from "@/lib/assistant";
 
@@ -251,6 +252,7 @@ export function SalePopup() {
         }),
       });
       writeDay(CLAIM_KEY);
+      gaEvent("generate_lead", { lead_type: "sale_popup", source: "nli_collections" });
       setState("done");
     } catch (err) {
       const msg = String(err);

@@ -1,4 +1,5 @@
 """Database models for all modules."""
+import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (Boolean, Column, Date, DateTime, Float, ForeignKey, Integer,
                         Numeric, String, Text, UniqueConstraint, Index)
@@ -1034,3 +1035,517 @@ class WebsiteChangeHistory(Base):
     status = Column(String(24), default="pending", index=True)  # pending|published|reverted|failed
     created_at = Column(DateTime, default=_now)
     published_at = Column(DateTime, nullable=True)
+
+
+# ================= AI COMMAND CENTRE / AGENTS =================
+
+def _uid():
+    return str(uuid.uuid4())
+
+
+class AiAgent(Base):
+    """Registered AI agent definition (identity, role, tools, restrictions)."""
+    __tablename__ = "ai_agents"
+    id = Column(String(36), primary_key=True, default=_uid)
+    key = Column(String(64), unique=True, nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    role = Column(Text, default="")
+    instructions = Column(Text, default="")
+    tools_json = Column(Text, default="[]")
+    restrictions = Column(Text, default="")
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class AiTask(Base):
+    """One orchestrator run triggered by an admin instruction."""
+    __tablename__ = "ai_tasks"
+    id = Column(String(36), primary_key=True, default=_uid)
+    session_id = Column(Integer, nullable=True, index=True)
+    user_email = Column(String(255), default="", index=True)
+    request = Column(Text, default="")
+    status = Column(String(24), default="queued", index=True)  # queued|running|waiting_approval|done|failed|cancelled
+    agents_json = Column(Text, default="[]")
+    result_json = Column(Text, default="{}")
+    error = Column(Text, default="")
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class AiTaskStep(Base):
+    """A single agent step inside a task run."""
+    __tablename__ = "ai_task_steps"
+    id = Column(String(36), primary_key=True, default=_uid)
+    task_id = Column(String(36), ForeignKey("ai_tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    agent_key = Column(String(64), default="", index=True)
+    action = Column(String(128), default="")
+    status = Column(String(24), default="pending", index=True)
+    output_json = Column(Text, default="{}")
+    error = Column(Text, default="")
+    created_at = Column(DateTime, default=_now)
+
+
+class AiApproval(Base):
+    """Unified approval request produced by any agent."""
+    __tablename__ = "ai_approvals"
+    id = Column(String(36), primary_key=True, default=_uid)
+    task_id = Column(String(36), nullable=True, index=True)
+    agent_key = Column(String(64), default="", index=True)
+    kind = Column(String(64), default="", index=True)  # website_change|seo_recommendation|catalogue|outreach|document
+    title = Column(String(255), default="")
+    summary = Column(Text, default="")
+    previous_json = Column(Text, default="{}")
+    proposed_json = Column(Text, default="{}")
+    status = Column(String(24), default="pending", index=True)  # pending|approved|rejected|executed|expired
+    requested_by = Column(String(255), default="")
+    decided_by = Column(String(255), default="")
+    decided_at = Column(DateTime, nullable=True)
+    notes = Column(Text, default="")
+    created_at = Column(DateTime, default=_now)
+
+
+class AiExecutionLog(Base):
+    """Structured execution history for agent tasks and approvals."""
+    __tablename__ = "ai_execution_logs"
+    id = Column(String(36), primary_key=True, default=_uid)
+    task_id = Column(String(36), nullable=True, index=True)
+    agent_key = Column(String(64), default="", index=True)
+    event = Column(String(64), default="", index=True)
+    detail_json = Column(Text, default="{}")
+    status = Column(String(24), default="ok", index=True)
+    user_email = Column(String(255), default="")
+    created_at = Column(DateTime, default=_now)
+
+
+class BusinessKnowledge(Base):
+    """Verified business facts available to all agents (never fabricated)."""
+    __tablename__ = "business_knowledge"
+    id = Column(String(36), primary_key=True, default=_uid)
+    category = Column(String(64), default="company", index=True)
+    key = Column(String(128), nullable=False, index=True)
+    value = Column(Text, default="")
+    source = Column(String(512), default="")
+    verified = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+    __table_args__ = (UniqueConstraint("category", "key", name="uq_bk_category_key"),)
+
+
+class AnalyticsSnapshot(Base):
+    """Persisted KPI snapshot for period-over-period reporting."""
+    __tablename__ = "analytics_snapshots"
+    id = Column(String(36), primary_key=True, default=_uid)
+    period = Column(String(32), nullable=False, index=True)
+    metric = Column(String(64), nullable=False, index=True)
+    value = Column(Float, default=0)
+    source = Column(String(64), default="database")
+    created_at = Column(DateTime, default=_now)
+    __table_args__ = (UniqueConstraint("period", "metric", "source", name="uq_snap_period_metric"),)
+
+
+class SalesFollowup(Base):
+    """Scheduled follow-up for an enquiry/lead, with explicit approval."""
+    __tablename__ = "sales_followups"
+    id = Column(String(36), primary_key=True, default=_uid)
+    enquiry_id = Column(Integer, nullable=True, index=True)
+    buyer_id = Column(Integer, nullable=True, index=True)
+    due_at = Column(DateTime, nullable=True, index=True)
+    channel = Column(String(24), default="email")
+    status = Column(String(24), default="suggested", index=True)  # suggested|approved|sent|dismissed
+    subject = Column(String(255), default="")
+    body = Column(Text, default="")
+    created_by = Column(String(64), default="agent")
+    created_at = Column(DateTime, default=_now)
+
+
+class CreativeAsset(Base):
+    """Generated/processed marketing creative with source rights."""
+    __tablename__ = "creative_assets"
+    id = Column(String(36), primary_key=True, default=_uid)
+    title = Column(String(255), default="")
+    kind = Column(String(64), default="banner", index=True)
+    file_url = Column(String(1024), default="")
+    source_images_json = Column(Text, default="[]")
+    rights = Column(String(64), default="own")
+    status = Column(String(24), default="draft", index=True)  # draft|approved|published
+    created_by = Column(String(64), default="agent")
+    created_at = Column(DateTime, default=_now)
+
+
+# ================= AI HELP DESK / MULTI-AGENT COLLABORATION =================
+
+class AgentMessage(Base):
+    """Internal message from one agent to another or to the Help Desk."""
+    __tablename__ = "agent_messages"
+    id = Column(String(36), primary_key=True, default=_uid)
+    conversation_id = Column(String(36), nullable=True, index=True)
+    task_id = Column(String(36), nullable=True, index=True)
+    from_agent = Column(String(64), default="", index=True)
+    to_agent = Column(String(64), default="", index=True)
+    kind = Column(String(32), default="info", index=True)  # info|request|result|blocker|approval|escalation
+    subject = Column(String(255), default="")
+    body = Column(Text, default="")
+    references_json = Column(Text, default="[]")
+    created_at = Column(DateTime, default=_now)
+
+
+class AgentTask(Base):
+    """Unified task with dependencies and explicit status."""
+    __tablename__ = "agent_tasks"
+    id = Column(String(36), primary_key=True, default=_uid)
+    title = Column(String(255), default="")
+    description = Column(Text, default="")
+    assigned_agent = Column(String(64), default="", index=True)
+    requesting_agent = Column(String(64), default="")
+    conversation_id = Column(String(36), nullable=True, index=True)
+    priority = Column(String(16), default="normal", index=True)
+    status = Column(String(28), default="CREATED", index=True)
+    due_at = Column(DateTime, nullable=True)
+    output_json = Column(Text, default="{}")
+    sources_json = Column(Text, default="[]")
+    approval_required = Column(Boolean, default=False)
+    error = Column(Text, default="")
+    retries = Column(Integer, default=0)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class AgentTaskDependency(Base):
+    """Task dependency: task waits for depends_on to reach a done state."""
+    __tablename__ = "agent_task_dependencies"
+    id = Column(String(36), primary_key=True, default=_uid)
+    task_id = Column(String(36), nullable=False, index=True)
+    depends_on = Column(String(36), nullable=False, index=True)
+    created_at = Column(DateTime, default=_now)
+
+
+class AgentCollaboration(Base):
+    """A multi-agent collaboration run coordinated by the Help Desk."""
+    __tablename__ = "agent_collaborations"
+    id = Column(String(36), primary_key=True, default=_uid)
+    topic = Column(String(255), default="")
+    agents_json = Column(Text, default="[]")
+    status = Column(String(24), default="running", index=True)
+    result_json = Column(Text, default="{}")
+    created_at = Column(DateTime, default=_now)
+
+
+class AgentReport(Base):
+    """One agent's submitted report (real output, never fabricated)."""
+    __tablename__ = "agent_reports"
+    id = Column(String(36), primary_key=True, default=_uid)
+    agent_key = Column(String(64), default="", index=True)
+    week = Column(String(16), default="", index=True)
+    title = Column(String(255), default="")
+    content = Column(Text, default="")
+    data_json = Column(Text, default="{}")
+    status = Column(String(24), default="submitted", index=True)  # submitted|incomplete|failed
+    created_at = Column(DateTime, default=_now)
+    __table_args__ = (UniqueConstraint("agent_key", "week", name="uq_agent_report_week"),)
+
+
+class HelpdeskConversation(Base):
+    """Admin Help Desk chat session."""
+    __tablename__ = "helpdesk_conversations"
+    id = Column(String(36), primary_key=True, default=_uid)
+    title = Column(String(255), default="Help Desk")
+    user_email = Column(String(255), default="", index=True)
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class HelpdeskMessage(Base):
+    """A message in a Help Desk conversation."""
+    __tablename__ = "helpdesk_messages"
+    id = Column(String(36), primary_key=True, default=_uid)
+    conversation_id = Column(String(36), nullable=False, index=True)
+    role = Column(String(16), default="user")
+    content = Column(Text, default="")
+    actions_json = Column(Text, default="[]")
+    created_at = Column(DateTime, default=_now)
+
+
+class WeeklyReport(Base):
+    """Consolidated weekly business report from real agent outputs and data."""
+    __tablename__ = "weekly_reports"
+    id = Column(String(36), primary_key=True, default=_uid)
+    week = Column(String(16), nullable=False, index=True)
+    title = Column(String(255), default="")
+    sections_json = Column(Text, default="{}")
+    summary = Column(Text, default="")
+    status = Column(String(24), default="generated", index=True)
+    pdf_filename = Column(String(255), default="")
+    emailed = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=_now)
+    __table_args__ = (UniqueConstraint("week", name="uq_weekly_report_week"),)
+
+
+class WebsiteMonitoring(Base):
+    """Daily website health check result."""
+    __tablename__ = "website_monitoring"
+    id = Column(String(36), primary_key=True, default=_uid)
+    day = Column(String(16), default="", index=True)
+    check = Column(String(64), default="", index=True)
+    result_json = Column(Text, default="{}")
+    status = Column(String(24), default="ok", index=True)
+    created_at = Column(DateTime, default=_now)
+
+
+class NotificationPreference(Base):
+    """Admin notification preferences (per event type)."""
+    __tablename__ = "notification_preferences"
+    id = Column(String(36), primary_key=True, default=_uid)
+    event = Column(String(64), nullable=False, index=True)
+    channel = Column(String(24), default="dashboard")
+    enabled = Column(Boolean, default=True)
+    threshold = Column(String(64), default="")
+    created_at = Column(DateTime, default=_now)
+
+
+class AutomationSchedule(Base):
+    """Configurable automation schedule."""
+    __tablename__ = "automation_schedules"
+    id = Column(String(36), primary_key=True, default=_uid)
+    key = Column(String(64), nullable=False, index=True)
+    cadence = Column(String(24), default="weekly")
+    day = Column(String(16), default="Friday")
+    time = Column(String(8), default="18:00")
+    timezone = Column(String(48), default="Asia/Kolkata")
+    enabled = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=_now)
+
+
+# ================= 24/7 AUTONOMOUS GROWTH SYSTEM =================
+
+class AgentControl(Base):
+    """Pause/resume and live status for one agent (real worker state only)."""
+    __tablename__ = "agent_controls"
+    id = Column(String(36), primary_key=True, default=_uid)
+    agent_key = Column(String(64), nullable=False, index=True, unique=True)
+    paused = Column(Boolean, default=False)
+    status = Column(String(24), default="idle", index=True)
+    last_heartbeat = Column(DateTime, nullable=True)
+    last_error = Column(Text, default="")
+    tasks_completed = Column(Integer, default=0)
+    tasks_failed = Column(Integer, default=0)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class WorkerState(Base):
+    """Global worker state: emergency stop, heartbeat, last successful tick."""
+    __tablename__ = "worker_state"
+    key = Column(String(64), primary_key=True)
+    value = Column(Text, default="")
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class AgentTaskLease(Base):
+    """Exclusive claim on a task so two workers cannot execute it twice."""
+    __tablename__ = "agent_task_leases"
+    id = Column(String(36), primary_key=True, default=_uid)
+    task_id = Column(String(36), nullable=False, index=True, unique=True)
+    worker_id = Column(String(64), default="", index=True)
+    leased_at = Column(DateTime, default=_now)
+    expires_at = Column(DateTime, nullable=True)
+
+
+class AutomationRun(Base):
+    """One scheduled job execution; unique per job+period prevents double runs."""
+    __tablename__ = "automation_runs"
+    id = Column(String(36), primary_key=True, default=_uid)
+    job = Column(String(64), nullable=False, index=True)
+    period = Column(String(32), nullable=False, index=True)
+    worker_id = Column(String(64), default="")
+    status = Column(String(24), default="running", index=True)
+    error = Column(Text, default="")
+    started_at = Column(DateTime, default=_now)
+    finished_at = Column(DateTime, nullable=True)
+    __table_args__ = (UniqueConstraint("job", "period", name="uq_automation_job_period"),)
+
+
+class SeoKeyword(Base):
+    """Keyword record. source=gsc is real Search Console data; source=candidate
+    is a research candidate with no invented volume or position."""
+    __tablename__ = "seo_keywords"
+    id = Column(String(36), primary_key=True, default=_uid)
+    keyword = Column(String(255), nullable=False, index=True)
+    country = Column(String(16), default="global", index=True)
+    intent = Column(String(32), default="informational")
+    source = Column(String(24), default="candidate", index=True)
+    clicks = Column(Integer, default=0)
+    impressions = Column(Integer, default=0)
+    ctr = Column(Text, default="")
+    position = Column(Text, default="")
+    target_url = Column(String(512), default="")
+    priority = Column(String(16), default="normal")
+    status = Column(String(24), default="new", index=True)
+    checked_at = Column(DateTime, default=_now)
+    __table_args__ = (UniqueConstraint("keyword", "country", "source", name="uq_seo_keyword"),)
+
+
+class SeoSnapshot(Base):
+    """Real periodic SEO metrics; unavailable fields are left null."""
+    __tablename__ = "seo_snapshots"
+    id = Column(String(36), primary_key=True, default=_uid)
+    period = Column(String(16), nullable=False, index=True)
+    source = Column(String(32), default="", index=True)
+    clicks = Column(Integer, nullable=True)
+    impressions = Column(Integer, nullable=True)
+    ctr = Column(Text, default="")
+    average_position = Column(Text, default="")
+    indexed_pages = Column(Integer, nullable=True)
+    organic_sessions = Column(Integer, nullable=True)
+    note = Column(Text, default="")
+    created_at = Column(DateTime, default=_now)
+    __table_args__ = (UniqueConstraint("period", "source", name="uq_seo_snapshot"),)
+
+
+class GrowthIssue(Base):
+    """Detected website/SEO issue with real evidence and lifecycle."""
+    __tablename__ = "growth_issues"
+    id = Column(String(36), primary_key=True, default=_uid)
+    kind = Column(String(64), nullable=False, index=True)
+    severity = Column(String(16), default="medium", index=True)
+    subject = Column(String(255), default="")
+    evidence = Column(Text, default="")
+    suggested_agent = Column(String(64), default="")
+    status = Column(String(24), default="open", index=True)
+    task_id = Column(String(36), nullable=True, index=True)
+    detected_at = Column(DateTime, default=_now)
+    resolved_at = Column(DateTime, nullable=True)
+    __table_args__ = (UniqueConstraint("kind", "subject", "status", name="uq_growth_issue"),)
+
+
+class WebsiteChange(Base):
+    """Before/after record for every published change, with rollback data."""
+    __tablename__ = "website_changes"
+    id = Column(String(36), primary_key=True, default=_uid)
+    kind = Column(String(64), default="", index=True)
+    target = Column(String(255), default="")
+    before_json = Column(Text, default="{}")
+    after_json = Column(Text, default="{}")
+    approval_id = Column(String(36), nullable=True, index=True)
+    applied_by = Column(String(128), default="")
+    status = Column(String(24), default="applied", index=True)
+    verification = Column(Text, default="")
+    created_at = Column(DateTime, default=_now)
+    rolled_back_at = Column(DateTime, nullable=True)
+
+
+class GrowthReport(Base):
+    """Consolidated weekly SEO & business growth report from real data."""
+    __tablename__ = "growth_reports"
+    id = Column(String(36), primary_key=True, default=_uid)
+    week = Column(String(16), nullable=False, index=True, unique=True)
+    title = Column(String(255), default="")
+    sections_json = Column(Text, default="{}")
+    summary = Column(Text, default="")
+    pdf_filename = Column(String(255), default="")
+    emailed = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=_now)
+
+
+# ================= SECURE GOOGLE SEARCH CONSOLE INTEGRATION =================
+
+class GscConnection(Base):
+    """One OAuth connection. Tokens are Fernet-encrypted at rest; no Google
+    profile data (name/email/avatar) is stored."""
+    __tablename__ = "gsc_connections"
+    id = Column(String(36), primary_key=True, default=_uid)
+    provider = Column(String(64), default="google_search_console")
+    site_url = Column(String(512), default="", index=True)
+    access_token_enc = Column(Text, default="")
+    refresh_token_enc = Column(Text, default="")
+    scopes = Column(Text, default="")
+    token_expiry = Column(DateTime, nullable=True)
+    status = Column(String(24), default="disconnected", index=True)  # disconnected|connected|expired|error
+    last_error = Column(Text, default="")  # safe, non-secret message only
+    last_sync_at = Column(DateTime, nullable=True)
+    oauth_nonce = Column(String(128), default="")  # single-use CSRF nonce
+    created_at = Column(DateTime, default=_now)
+    updated_at = Column(DateTime, default=_now, onupdate=_now)
+
+
+class GscSyncRun(Base):
+    """History of Search Analytics synchronisations."""
+    __tablename__ = "gsc_sync_runs"
+    id = Column(String(36), primary_key=True, default=_uid)
+    site_url = Column(String(512), default="", index=True)
+    period_start = Column(String(16), default="")
+    period_end = Column(String(16), default="")
+    status = Column(String(24), default="running", index=True)  # running|success|failed
+    rows_saved = Column(Integer, default=0)
+    message = Column(Text, default="")  # safe message, never tokens
+    started_at = Column(DateTime, default=_now)
+    finished_at = Column(DateTime, nullable=True)
+
+
+class GscRow(Base):
+    """One Search Analytics row, dimension-typed so a single table serves
+    queries, pages, countries, devices, search appearances and daily charts."""
+    __tablename__ = "gsc_rows"
+    id = Column(String(36), primary_key=True, default=_uid)
+    run_id = Column(String(36), nullable=True, index=True)
+    site_url = Column(String(512), default="", index=True)
+    date = Column(String(16), nullable=False, index=True)
+    dimension_type = Column(String(24), nullable=False, index=True)  # query|page|country|device|appearance|totals
+    dimension_value = Column(Text, default="")
+    clicks = Column(Integer, default=0)
+    impressions = Column(Integer, default=0)
+    ctr = Column(Float, default=0)
+    position = Column(Float, default=0)
+    created_at = Column(DateTime, default=_now)
+    __table_args__ = (UniqueConstraint("run_id", "date", "dimension_type", "dimension_value",
+                                       name="uq_gsc_row_run_dim"),)
+
+
+class GscUrlInspection(Base):
+    """Result from Google's URL Inspection API (Google's known state, not a
+    live page test)."""
+    __tablename__ = "gsc_url_inspections"
+    id = Column(String(36), primary_key=True, default=_uid)
+    url = Column(String(1024), nullable=False, index=True)
+    site_url = Column(String(512), default="")
+    verdict = Column(String(64), default="")
+    index_status = Column(String(64), default="", index=True)
+    coverage_state = Column(String(128), default="")
+    last_crawl_time = Column(String(64), default="")
+    google_canonical = Column(String(1024), default="")
+    user_canonical = Column(String(1024), default="")
+    robots_state = Column(String(64), default="")
+    mobile_usability = Column(String(64), default="")
+    rich_results = Column(Text, default="[]")
+    detail_json = Column(Text, default="{}")
+    inspected_at = Column(DateTime, default=_now)
+    inspected_by = Column(String(255), default="")
+
+
+class GscSitemapRecord(Base):
+    """Sitemap entries reported by GSC and/or discovered from our sitemap.xml."""
+    __tablename__ = "gsc_sitemaps"
+    id = Column(String(36), primary_key=True, default=_uid)
+    sitemap_url = Column(String(1024), nullable=False, index=True, unique=True)
+    source = Column(String(24), default="local")  # local|gsc
+    status = Column(String(32), default="")
+    last_submitted = Column(String(64), default="")
+    last_downloaded = Column(String(64), default="")
+    errors = Column(Integer, default=0)
+    warnings = Column(Integer, default=0)
+    detail_json = Column(Text, default="{}")
+    checked_at = Column(DateTime, default=_now)
+
+
+class GscRecommendation(Base):
+    """Evidence-backed SEO recommendation. Never auto-published."""
+    __tablename__ = "gsc_recommendations"
+    id = Column(String(36), primary_key=True, default=_uid)
+    url = Column(String(1024), default="", index=True)
+    category = Column(String(48), default="", index=True)
+    evidence_json = Column(Text, default="{}")
+    recommendation = Column(Text, default="")
+    priority = Column(String(16), default="Medium", index=True)  # High|Medium|Low
+    status = Column(String(16), default="Pending", index=True)  # Pending|Approved|Completed
+    decided_by = Column(String(255), default="")
+    created_at = Column(DateTime, default=_now)
+    decided_at = Column(DateTime, nullable=True)

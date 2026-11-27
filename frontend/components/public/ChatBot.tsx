@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api, trackEvent } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import { useWhatsappNumber } from "@/hooks/useWhatsapp";
 import { ASSISTANT_BRIEF_KEY, NLI_CHAT_EVENT, playPopChime } from "@/lib/assistant";
 
@@ -17,12 +18,15 @@ import { ASSISTANT_BRIEF_KEY, NLI_CHAT_EVENT, playPopChime } from "@/lib/assista
  */
 
 type Action = { label: string; href?: string; run?: "rfq" | "claim" };
+type ProductHit = { id: number; name: string; slug: string };
+type LeadFields = Record<"name" | "company" | "email" | "country" | "phone" | "product" | "quantity" | "customisation" | "destination" | "message", string>;
 
 interface Msg {
   id: number;
   from: "bot" | "you";
   text: string;
   actions?: Action[];
+  products?: ProductHit[];
 }
 
 const WELCOME_KEY = "nli_chat_welcomed";
@@ -130,6 +134,9 @@ export function ChatBot() {
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [fields, setFields] = useState<LeadFields>({ name: "", company: "", email: "", country: "", phone: "", product: "", quantity: "", customisation: "", destination: "", message: "" });
+  const [consent, setConsent] = useState(false);
+  const [awaitingConsent, setAwaitingConsent] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const startedRef = useRef(false);
   const whatsapp = useWhatsappNumber();
@@ -234,15 +241,34 @@ export function ChatBot() {
     }
   };
 
-  const send = (e: React.FormEvent) => {
+  const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
-    if (!text) return;
+    if (!text || typing) return;
     push({ id: Date.now(), from: "you", text });
     buyerMsgsRef.current.push(text);
     setInput("");
-    const reply = route(text, whatsapp);
-    botSay(reply.text, reply.actions);
+    setTyping(true);
+    try {
+      const history = msgs.filter(m => m.text !== GREETING.text).slice(-8).map(m => ({ role: m.from === "you" ? "user" : "assistant", content: m.text }));
+      const r = await api<{ reply: string; fields: LeadFields; ready: boolean; products: ProductHit[]; saved?: { reference: string; duplicate?: boolean } }>(
+        "/api/public/assistant/chat",
+        { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, history, fields, consent }) });
+      if (r.fields) setFields(cur => ({ ...cur, ...r.fields }));
+      setTyping(false);
+      push({ id: Date.now(), from: "bot", text: r.reply, products: r.products || [] });
+      if (r.saved) {
+        try { localStorage.setItem(ASSISTANT_BRIEF_KEY, `Chat enquiry ${r.saved.reference}`); } catch { /* storage unavailable */ }
+        trackEvent({ event_type: "assistant_complete" });
+        gaEvent("generate_lead", { lead_type: "chat_assistant", source: "public_chatbot" });
+      }
+      if (!r.saved && !consent) setAwaitingConsent(true);
+    } catch {
+      setTyping(false);
+      const fallback = route(text, whatsapp);
+      botSay(fallback.text, fallback.actions);
+    }
   };
 
   return (
@@ -337,7 +363,17 @@ export function ChatBot() {
                       : "border border-clay/20 bg-white text-charcoal"
                   }`}
                 >
-                  <p>{m.text}</p>
+                  <p className="whitespace-pre-wrap">{m.text}</p>
+                  {m.products && m.products.length > 0 && (
+                    <div className="mt-2.5 space-y-1.5">
+                      {m.products.slice(0, 4).map(p => (
+                        <Link key={p.id} href={`/products/${p.slug}`} onClick={() => setOpen(false)}
+                          className="flex items-center justify-between gap-2 rounded-lg border border-gold/30 bg-ivory px-2.5 py-1.5 text-[11px] text-espresso hover:border-gold">
+                          <span className="truncate">{p.name}</span><span className="text-clay" aria-hidden="true">→</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                   {m.actions && m.actions.length > 0 && (
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
                       {m.actions.map((a) =>
@@ -379,6 +415,12 @@ export function ChatBot() {
             )}
           </div>
 
+          {(awaitingConsent || fields.email) && (
+            <label className="flex items-center gap-2 border-t border-clay/15 bg-ivory px-4 py-2 text-[11px] text-gray sm:px-6">
+              <input type="checkbox" checked={consent} onChange={e => { setConsent(e.target.checked); setAwaitingConsent(false); }} className="h-3.5 w-3.5" />
+              I agree that New Look Impex may use these details to reply to my wholesale enquiry.
+            </label>
+          )}
           <form onSubmit={send} className="flex items-center gap-2 border-t border-clay/20 bg-white px-4 py-3 sm:px-6">
             <input
               type="text"

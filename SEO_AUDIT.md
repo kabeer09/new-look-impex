@@ -78,9 +78,10 @@
    sitemap happens in the owner's GSC UI — **not claimed as done**. Track
    afterwards: impressions, clicks, queries, avg. position, indexed pages,
    country split.
-2. **GA4** — Google Tag Manager is installed in the root layout
-   (`GTM-PFWKB7XW`, `GTM-M4GDWFQT` with dataLayer/gtag stub). The GA4 property
-   attaches inside the owner's GTM container; confirm data receipt there.
+2. **GA4** — the two GTM containers were removed (both returned 404 and loaded
+   ~182 KB of unused JS). The root layout now loads `gtag.js` directly with
+   `G-0DP6C543VP` (override via `NEXT_PUBLIC_GA4_MEASUREMENT_ID`). Confirm
+   real-time data receipt in the GA4 UI; no analytics claim is made here.
 3. **Test suite** — local backend pytest has pre-existing failures unrelated to
    SEO work (`app.auth._hits` removed but referenced by old fixtures; missing
    source images in `tests/` for the image-catalogue fixture). Sitemap/category
@@ -95,3 +96,21 @@
 7. **Post-audit fix** — Organization schema referenced a 404 `/logo.png`;
    corrected to `/logo-newlookimpex.jpg` (200) in `65a7bcf`, along with removal
    of unverified `factory-direct` / `food-safe` claims site-wide.
+
+## 7. Follow-up gap closure (November 26, 2026)
+
+Code audit re-checked the docs against the live source and closed these gaps:
+
+| Gap found | Fix |
+| --- | --- |
+| Homepage keyword H1 existed only in docs — the hero fell back to the brand line | `HomeClient.tsx` fallback now uses the documented manufacturer/exporter H1 (admin edits still win) |
+| Sale bar + discount popup mounted globally on the B2B site | `SalesPromoGate` renders them only on `/nli-collections` and `/collections/*`; unused hard-coded "20% off" banner removed |
+| NLI brand-pin products were client-fetched (no product links in first HTML) | `/nli-collections/page.tsx` now server-fetches 16 pins; product names/images/links are crawlable |
+| Organization JSON-LD duplicated with divergent phone/logo fields | single shared `lib/seo/structured-data.ts` used by root layout + homepage; unverified employee-count claim removed |
+| Root metadata emitted a site-wide hreflang cluster with `x-default` | removed; only the reciprocal market clusters emit hreflang, matching the international strategy |
+| Dedicated leaf landing pages rendered FAQs without FAQPage/BreadcrumbList schema | both schemas generated from the visible copy in `DedicatedCategoryPage.tsx` |
+| `/shop` redirect-only route had no metadata | `noindex, nofollow` added |
+| Agent SEO work had no grounded coverage tool | `seo_coverage_report` added to the SEO agent (real DB counts only, no rankings/traffic estimates) |
+
+Remaining owner-side items are unchanged: GSC property/submission, GA4 data
+confirmation, keyword-volume validation, genuine factory media, backlinks.

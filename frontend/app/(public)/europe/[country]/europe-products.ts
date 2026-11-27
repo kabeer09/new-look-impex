@@ -1,7 +1,7 @@
 import type { ProductCard } from "@/lib/types";
 import { getEuropeCountry } from "./europe-data";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://api.newlookimpex.store" : "http://localhost:8000");
 
 /** Server-side fetch of the products relevant to a Europe-market page so real
  *  product links are present in crawlable HTML. Returns null on failure — the

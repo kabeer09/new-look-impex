@@ -313,6 +313,56 @@ export const HIDDEN_MARKETS: HiddenMarket[] = [
     gallery: ["/nli-copper-gift-set.webp", "/gallery-dispenser.webp", "/home/cat-gift-sets.jpg"],
     theme: 2, accent: "text-clay",
   },
+  {
+    slug: "malaysia", path: "/malaysia", name: "Malaysia", hreflang: "en-my",
+    h1: "Brass & Copper Homeware Manufacturer for Malaysia",
+    focus: "Handcrafted metal homeware",
+    intro: [
+      "New Look Impex supplies handcrafted brass and copper homeware to wholesalers, interior retailers and hospitality buyers in Malaysia. Our Moradabad-made range covers brass bowls and décor, hammered copper drinkware and metal giftware for commercial interiors and resale.",
+      "Every Malaysian enquiry receives an individual written quotation covering specification, finish, quantity, packaging and shipping terms before production. Buyer requirements are confirmed in writing rather than assumed.",
+    ],
+    bullets: [
+      "Brass decorative bowls, trays and lanterns for Malaysian homeware retailers",
+      "Hammered copper bottles, jugs and drinkware for hospitality and gifting",
+      "Custom finishes and private label options quoted per enquiry",
+      "Written quotations with MOQ, lead time and shipping terms confirmed before production",
+    ],
+    faqs: [
+      ["Do you supply brass and copper homeware to Malaysia?", "Yes. We export handcrafted brass and copper products from Moradabad, India to Malaysian wholesale buyers, quoted individually."],
+      ["Can you support hospitality and gift programmes?", "Yes. Serveware, lanterns and gift sets are quoted per project with packaging options confirmed in writing."],
+      ["Do you offer private label?", "Private labelling and custom packaging are quoted like any other wholesale order."],
+      ["How is the minimum order quantity set?", "MOQs vary by product and finish and are listed on each product page; custom and bulk quantities are quoted per enquiry."],
+    ],
+    keywords: "brass homeware supplier Malaysia, copper drinkware wholesale Malaysia, Indian handicrafts exporter Malaysia, brass decor manufacturer Malaysia",
+    hero: "/hero-brass-kitchen.webp",
+    gallery: ["/home/cat-gift-sets.jpg", "/nli-copper-gift-set.webp", "/gallery-dispenser.webp"],
+    theme: 1, accent: "text-clay",
+  },
+  {
+    slug: "indonesia", path: "/indonesia", name: "Indonesia", hreflang: "en-id",
+    h1: "Brass & Copper Handicrafts Supplier for Indonesia",
+    focus: "Metal handicrafts and home décor",
+    intro: [
+      "New Look Impex supplies handcrafted brass and copper metalware to importers, gift companies and hospitality buyers in Indonesia. The range includes brass decorative bowls, trays and lanterns, hammered copper drinkware and metal home accents made in Moradabad, India.",
+      "Each Indonesian enquiry is quoted individually — specification, finish, quantity, packaging and shipping terms are agreed in writing before production begins.",
+    ],
+    bullets: [
+      "Brass bowls, trays, lanterns and decorative accents for Indonesian retailers",
+      "Copper bottles, jugs and serveware for hotels, cafés and gift ranges",
+      "Custom finishes and private label options quoted per enquiry",
+      "Written quotations with MOQ, lead time and shipping terms confirmed before production",
+    ],
+    faqs: [
+      ["Do you export brass and copper handicrafts to Indonesia?", "Yes. We export handcrafted metalware from Moradabad, India to Indonesian wholesale buyers, quoted individually."],
+      ["Can you supply hotel and restaurant tableware?", "Yes. Serveware, bowls and copper drinkware are quoted per project with finish and packaging confirmed."],
+      ["Do you offer custom branding?", "Custom finishes, engraving and packaging are quoted per order."],
+      ["How is the minimum order quantity set?", "MOQs vary by product and finish and are listed on each product page; custom and bulk quantities are quoted per enquiry."],
+    ],
+    keywords: "brass handicrafts supplier Indonesia, copper kitchenware wholesale Indonesia, Indian metalware exporter Indonesia, brass decor manufacturer Indonesia",
+    hero: "/hero-brass-kitchen.webp",
+    gallery: ["/home/cat-gift-sets.jpg", "/gallery-dispenser.webp", "/nli-copper-gift-set.webp"],
+    theme: 3, accent: "text-clay",
+  },
 ];
 
 export const HIDDEN_SLUGS = HIDDEN_MARKETS.map((m) => m.slug);

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, trackEvent } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import { useLeadMarket } from "@/lib/market";
 import type { EnquiryInput, PublicSettings } from "@/lib/types";
 
@@ -38,6 +39,7 @@ export function WholesaleEnquiryForm() {
         body: JSON.stringify({ ...form, preferred_currency: lead.preferred_currency }),
       });
       trackEvent({ event_type: "contact_click" });
+      gaEvent("generate_lead", { lead_type: "wholesale", source: "wholesale_sidebar" });
       setSent("Thank you — your enquiry has been received. We will respond by email.");
       setForm({ name: "", email: "", country: "", product_interest: "", message: "" });
     } catch (e) {

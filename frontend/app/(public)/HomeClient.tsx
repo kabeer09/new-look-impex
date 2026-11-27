@@ -820,7 +820,7 @@ export default function HomeClient({
             The Art of Metalcraft · Moradabad, India
           </p>
           <h1 className="mt-5 max-w-4xl font-cormorant text-4xl font-medium leading-[1.08] text-editorial-bg sm:text-5xl md:text-6xl lg:text-7xl">
-            {hero?.headline || "Crafted in India. Connecting Globally."}
+            {hero?.headline || "Brass & Copper Handicraft Manufacturer and Exporter in Moradabad, India"}
           </h1>
           <p className="mt-5 max-w-xl font-inter text-sm leading-relaxed text-editorial-bg/85 md:text-base">
             {hero?.subline || "Discover timeless copper and brass creations, shaped by India's rich artisan heritage."}

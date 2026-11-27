@@ -12,7 +12,7 @@ services:
       - key: DATABASE_URL
         sync: false # paste Supabase pooled connection string (postgresql+psycopg2://...)
       - key: SECRET_KEY
-        generateValue: true # Render generates a secure random value
+        sync: false # set one strong value and paste the SAME value into the worker
       - key: ADMIN_EMAIL
         value: admin@newlookimpex.example # change to your email in the dashboard
       - key: ADMIN_PASSWORD
@@ -31,3 +31,74 @@ services:
         generateValue: true
       - key: ENQUIRY_NOTIFY_EMAIL
         value: newlookimpex@gmail.com
+      - key: GA4_PROPERTY_ID
+        sync: false # optional; GA4 metrics stay unavailable without this
+      - key: GA4_SERVICE_ACCOUNT_JSON
+        sync: false # optional service-account JSON string
+      # Required for all AI agents / Website Manager / public assistant.
+      # Without these, every AI feature reports "not configured".
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_API_BASE
+        sync: false # e.g. https://api.openai.com/v1
+      - key: LLM_MODEL
+        sync: false # e.g. gpt-4o-mini
+      - key: REVALIDATE_SECRET
+        sync: false # must match the frontend's REVALIDATE_SECRET
+      # Google Search Console (secure integration). Never paste secrets here.
+      - key: GOOGLE_SEARCH_CONSOLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_SEARCH_CONSOLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_SEARCH_CONSOLE_REDIRECT_URI
+        sync: false # https://api.newlookimpex.store/api/seo-console/oauth/callback
+      - key: GOOGLE_SEARCH_CONSOLE_SITE_URL
+        value: https://www.newlookimpex.store/
+      - key: GOOGLE_SEARCH_CONSOLE_SCOPES
+        value: https://www.googleapis.com/auth/webmasters.readonly
+      - key: GOOGLE_SEARCH_CONSOLE_WRITE_ENABLED
+        value: "false" # set true only for sitemap submission
+      - key: GOOGLE_ANALYTICS_PROPERTY_ID
+        value: "563099446" # GA4 Data API, read-only scope shared with GSC token
+
+  # Persistent 24/7 agent worker. Keep DATABASE_URL and SECRET_KEY IDENTICAL
+  # to the web service (paste the same values in the Render dashboard).
+  # Without this worker, jobs only run while the web process is alive.
+  - type: worker
+    name: new-look-impex-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: free
+    command: python -m app.worker
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: API_BASE_URL
+        sync: false
+      - key: PUBLIC_SITE_URL
+        sync: false
+      - key: STORAGE_BACKEND
+        value: local
+      - key: WORKER_POLL_SECONDS
+        value: "5"
+      - key: WORKER_LEASE_SECONDS
+        value: "900"
+      - key: WORKER_TASK_TIMEOUT
+        value: "300"
+      - key: GA4_PROPERTY_ID
+        sync: false
+      - key: GA4_SERVICE_ACCOUNT_JSON
+        sync: false
+      # Same LLM configuration as the web service — tasks call the model here.
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_API_BASE
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: REVALIDATE_SECRET
+        sync: false

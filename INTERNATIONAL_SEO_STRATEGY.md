@@ -45,6 +45,10 @@ Design decisions:
 - Emitted as `<link rel="alternate" hrefLang="…">` in the real `<head>`; HTML
   attribute names are case-insensitive, parsers normalize `hrefLang` → `hreflang`
   (verified: tags sit at positions 2443–2934, inside `<head>`, not in RSC payload).
+- Follow-up: root layout no longer declares a site-wide `languages`/`x-default`
+  cluster (it leaked alternates onto unrelated pages). Extra reciprocal clusters
+  now exist for Japan/Saudi Arabia/Singapore (`regional-meta.ts`) and the
+  SEO-only markets (`hidden-markets.ts`); all remain reciprocal and market-only.
 
 ## 3. Market-specific keyword targets (Phase 5 mapping)
 

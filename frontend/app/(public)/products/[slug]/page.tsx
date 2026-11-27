@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import ProductClient from "./ProductClient";
 import type { ProductDetail } from "@/lib/types";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://api.newlookimpex.store" : "http://localhost:8000");
 const SITE = "https://www.newlookimpex.store";
 
 /** ProductDetail plus the canonical_slug the API returns after 308 slug

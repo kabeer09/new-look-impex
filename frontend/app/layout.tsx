@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { SessionProviderWrapper } from "@/components/providers/SessionProvider";
+import { ORG_JSONLD } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.newlookimpex.store"),
@@ -49,22 +50,10 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
-  alternates: {
-    // No site-wide canonical here: it would cascade onto every page that does
-    // not declare its own canonical (Google then treats them as homepage
-    // duplicates — "Alternate page with proper canonical tag"). Each page
-    // declares its own self-canonical instead.
-    languages: {
-      "en-IN": "https://www.newlookimpex.store/",
-      "en-AU": "https://www.newlookimpex.store/au",
-      "en-AE": "https://www.newlookimpex.store/uae",
-      "en-GB": "https://www.newlookimpex.store/uk",
-      "en-US": "https://www.newlookimpex.store/usa",
-      "en-CA": "https://www.newlookimpex.store/canada",
-      "en-EU": "https://www.newlookimpex.store/europe",
-      "x-default": "https://www.newlookimpex.store/",
-    },
-  },
+  // No site-wide canonical or hreflang: canonicals are declared per page, and
+  // hreflang is emitted only by the reciprocal regional clusters
+  // (regional-meta.ts / europe-meta.ts / hidden-markets.ts). A global cluster
+  // would put incorrect language alternates on unrelated pages.
 };
 
 import { Plus_Jakarta_Sans, Playfair_Display, Cormorant_Garamond, Inter } from "next/font/google";
@@ -103,35 +92,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gtag('config', ${JSON.stringify(ga4Id)}, { send_page_view: true });`,
           }}
         />
-        {/* Organization Schema (JSON-LD) - Validated via Google Rich Results Test */}
+        {/* Organization Schema (JSON-LD) — one shared definition for every page. */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "New Look Impex",
-              "description": "Manufacturer and Exporter of Handcrafted Brass and Copper Products",
-              "url": "https://www.newlookimpex.store",
-              "logo": "https://www.newlookimpex.store/logo-newlookimpex.jpg",
-              "address": {
-                "@type": "PostalAddress",
-                "streetAddress": "Ganga Mandir, Thana Nagphani Road, Kisrol",
-                "addressLocality": "Moradabad",
-                "addressRegion": "Uttar Pradesh",
-                "addressCountry": "India",
-                "postalCode": "244001"
-              },
-              "telephone": "+91 9808588603",
-              "email": "newlookimpex130@gmail.com",
-              "sameAs": [
-                "https://www.facebook.com/profile.php?id=100083216147871",
-                "https://www.linkedin.com/in/new-look-impex-b1b473218/",
-                "https://www.instagram.com/nli_collections_india",
-                "https://www.youtube.com/@nlicollections"
-              ]
-            }, null, 2)
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSONLD) }}
         />
       </head>
       <body className="font-sans">

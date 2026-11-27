@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { PageHero } from "@/components/public/Shared";
 import { api, trackEvent } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import { useLeadMarket } from "@/lib/market";
 import type { EnquiryInput } from "@/lib/types";
 
@@ -30,6 +31,7 @@ export default function CustomisationPage() {
         body: JSON.stringify({ ...form, preferred_currency: lead.preferred_currency }),
       });
       trackEvent({ event_type: "contact_click" });
+      gaEvent("generate_lead", { lead_type: "customisation", source: "customisation_page" });
       setSent("Thank you — your customisation enquiry has been received. We will quote it like a wholesale order.");
       setForm({ name: "", email: "", country: "", product_interest: "Custom / OEM", message: "" });
     } catch (error) {

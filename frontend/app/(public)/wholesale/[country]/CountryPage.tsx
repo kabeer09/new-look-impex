@@ -36,6 +36,9 @@ export function CountryPage({
       trackEvent({ event_type: "product_view", country: cfg.name });
       return;
     }
+    let done = false;
+    // Never leave a visitor (or a crawler snapshot) on a permanent spinner.
+    const timer = setTimeout(() => { if (!done) setProducts([]); }, 8000);
     api<{ items: ProductCard[] }>("/api/public/products?page_size=100&sort=featured")
       .then((d) => {
         const items = (d.items || []).filter(
@@ -44,7 +47,9 @@ export function CountryPage({
         setProducts(items);
         trackEvent({ event_type: "product_view", country: cfg.name });
       })
-      .catch((e) => setErr(String(e)));
+      .catch((e) => setErr(String(e)))
+      .finally(() => { done = true; clearTimeout(timer); });
+    return () => { done = true; clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
@@ -126,10 +131,30 @@ export function CountryPage({
           {!err && products !== null && (
             <ProductGrid
               products={products.slice(0, 12)}
-              emptyHint="No matching products are published yet — browse the full catalogue."
+              emptyHint="No matching products are published yet — browse the relevant ranges below."
             />
           )}
         </div>
+        {/* Always-crawlable route to the actual catalogue, even when the API
+            is cold or no published product currently matches this market. */}
+        <section className="mt-8" aria-labelledby="relevant-ranges">
+          <h3 id="relevant-ranges" className="font-serif font-bold text-espresso text-xl">
+            Relevant product ranges
+          </h3>
+          <ul className="mt-3 flex flex-wrap gap-3">
+            {cfg.categories.map((cat) => (
+              <li key={cat}>
+                <Link
+                  href={`/products?category=${encodeURIComponent(cat)}`}
+                  className="btn btn-outline btn-sm"
+                >
+                  {cat.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                </Link>
+              </li>
+            ))}
+            <li><Link href="/products" className="text-sm text-navy underline underline-offset-2">Full catalogue</Link></li>
+          </ul>
+        </section>
         <h2 className="font-serif font-bold text-espresso text-2xl mt-10">Buyer questions</h2>
         <div className="mt-4 space-y-5">
           {cfg.faqs.map(([q, a]) => (

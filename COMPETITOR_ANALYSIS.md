@@ -84,3 +84,27 @@ Handicraft Manufacturer in Moradabad, India | New Look Impex*).
 - Schema detection is heuristic (`"@type"` occurrences in HTML) — counts
   presence, not validity.
 - Search volumes were not available; all keyword priorities are intent-based.
+
+## 7. Appendix — Moradabad B2C / craft-brand references (owner-supplied research)
+
+These ten sites were supplied in the November 26 research brief. Their URLs and
+high-level observations are recorded here for future reference, but they were
+**not independently re-fetched by this project**, so no ranking, traffic,
+backlink or sales claim is made about them and no text/image/logo was copied.
+
+| Reference | Observed pattern (from the brief) | Relevance to our two-channel plan |
+| --- | --- | --- |
+| pearlcraftland.com | Category navigation, retail shopping, gifting, order tracking | NLI Collections: category taxonomy and consumer discovery |
+| brassglobe.com | Brass/copper/kansa collections, product-level navigation | NLI Collections: dedicated collections, descriptive product copy |
+| coppermaster.in | Copper specialist, workshop storytelling, product care | Both: copper-specific landing pages + honest authenticity content |
+| moradabadiarts.com | Material specs, sample approval, process footage, packing videos | B2B: manufacturing transparency (gate: genuine media from owner) |
+| wbinc.in | Premium design, lookbooks, custom/manufacturing story | NLI visual identity; B2B custom-manufacturing positioning |
+| cometindia.org | OEM, broad category SEO, in-house finishing capabilities | B2B: capability pages and category breadth |
+| florainternational.co | Family of brands, hospitality/corporate gifting | Two-brand architecture and gifting collections |
+| bhiwanienterprises.com | Product-specific pages, published quality information | B2B: product detail depth and verified credentials only |
+| abihandicrafts.in | Large category catalogue, descriptive URLs | Both: category hierarchy; no doorway pages |
+| nxtgenexports.com | Factory processes, finishes, seasonal collections | B2B manufacturing evidence + festive/festival collections |
+
+Separation rule retained: New Look Impex = B2B manufacturer/exporter keywords;
+NLI Collections = consumer homeware keywords. A competitor's pattern is adopted
+only as an architectural idea, never as copied content.

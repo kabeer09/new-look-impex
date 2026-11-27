@@ -1,6 +1,6 @@
 import type { EventInput } from "./types";
 
-export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const API = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://api.newlookimpex.store" : "http://localhost:8000");
 
 // NextAuth JWT token — set via setApiToken() from the NextAuth session provider
 let _apiToken: string | null = null;

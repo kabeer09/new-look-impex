@@ -9,7 +9,12 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Sales & Campaigns", href: "/admin/site-control/campaigns", section: "Site Control" },
   { label: "Coupons & Discounts", href: "/admin/site-control/coupons", section: "Site Control" },
   { label: "Homepage Content", href: "/admin/site-control/content", section: "Site Control" },
-  { label: "AI Website Manager", href: "/admin/ai-manager", section: "Workspace" },
+  { label: "AI Growth Command Centre", href: "/admin/growth", section: "AI" },
+  { label: "AI Help Desk Manager", href: "/admin/helpdesk", section: "AI" },
+  { label: "AI Command Centre", href: "/admin/command-centre", section: "AI" },
+  { label: "AI Agents", href: "/admin/agents", section: "AI" },
+  { label: "Approval Centre", href: "/admin/approvals", section: "AI" },
+  { label: "AI Website Manager", href: "/admin/ai-manager", section: "AI" },
   { label: "Overview", href: "/admin/overview", section: "Workspace" },
   { label: "Products", href: "/admin/products", section: "Catalogue" },
   { label: "Categories", href: "/admin/categories", section: "Catalogue" },
@@ -38,6 +43,7 @@ const NAV: { label: string; href: string; section?: string }[] = [
   { label: "Search-to-Page", href: "/admin/search-to-page", section: "SEO" },
   { label: "SEO Audits", href: "/admin/audits", section: "SEO" },
   { label: "SEO Health", href: "/admin/seo-health", section: "SEO" },
+  { label: "SEO Manager (Search Console)", href: "/admin/seo-manager", section: "SEO" },
   { label: "Europe Markets", href: "/admin/europe", section: "SEO" },
   { label: "Recommendations", href: "/admin/recommendations", section: "SEO" },
   { label: "Content Studio", href: "/admin/content", section: "SEO" },
@@ -51,7 +57,7 @@ const NAV: { label: string; href: string; section?: string }[] = [
 
 ];
 
-const SECTIONS = ["Site Control", "Workspace", "Catalogue", "Orders", "Documents", "SEO", "System"];
+const SECTIONS = ["AI", "Site Control", "Workspace", "Catalogue", "Orders", "Documents", "SEO", "System"];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -167,7 +173,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <main className="md:ml-60 md:mr-60">
-        <div className="container-x !px-4 md:!px-8 py-6 md:py-8 max-w-6xl">{children}</div>
+        <div className="container-x !px-4 md:!px-8 py-6 md:py-8 max-w-[1600px] mx-auto">{children}</div>
       </main>
     </div>
   );

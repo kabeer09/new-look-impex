@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/public/States";
 import CategoryProducts from "./CategoryProducts";
 import { CATEGORY_EDITORIAL } from "./category-editorial";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://api.newlookimpex.store" : "http://localhost:8000");
 
 export const revalidate = 300; // ISR: category data refreshes every 5 minutes
 

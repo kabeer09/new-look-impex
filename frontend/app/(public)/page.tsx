@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { Category, ProductCard as ProductCardType } from "@/lib/types";
 import { HOME_FAQ } from "./home-faq";
 import HomeClient from "./HomeClient";
+import { WEBSITE_JSONLD } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
   // absolute — bypasses the site-wide "| New Look Impex" title template so the
@@ -46,104 +47,6 @@ function faqJsonld(faqs: { q: string; a: string }[]) {
   };
 }
 
-const SITE_URL = "https://www.newlookimpex.store";
-
-const ORG_JSONLD = {
-  "@context": "https://schema.org",
-  "@type": ["Organization", "Manufacturer", "WholesaleStore", "LocalBusiness"],
-  "@id": `${SITE_URL}/#organization`,
-  name: "New Look Impex",
-  alternateName: ["NLI Collections", "New Look Impex NLI Collections"],
-  url: SITE_URL,
-  logo: `${SITE_URL}/logo-newlookimpex.jpg`,
-  image: `${SITE_URL}/hero-brass-kitchen.webp`,
-  description:
-    "New Look Impex (NLI Collections) is a brass and copper products manufacturer, exporter and wholesale B2B supplier based in Moradabad, Uttar Pradesh, India. We supply hand-hammered brass kitchenware & utensils, copper cookware, bottles, jugs, urlis, diyas, lanterns, metal home décor and festive gifting at wholesale prices quoted per order to global retailers, importers, distributors, HORECA buyers and corporate gifting programmes.",
-  disambiguatingDescription:
-    "B2B brass & copper manufacturer, exporter and wholesale supplier. OEM/private label and export orders accepted. GSTIN 09AFKPA4462R1ZW. Based in Moradabad, Uttar Pradesh, India.",
-  foundingDate: "2012",
-  taxID: "09AFKPA4462R1ZW",
-  vatID: "09AFKPA4462R1ZW",
-  employeeCount: {
-    "@type": "QuantitativeValue",
-    value: "11-50",
-  },
-  slogan: "Handcrafted Brass & Copper for Global B2B Buyers",
-  knowsAbout: [
-    "brass manufacturer in Moradabad",
-    "copper manufacturer in India",
-    "brass utensils manufacturer Moradabad",
-    "copper utensils exporter India",
-    "brass kitchenware wholesale supplier",
-    "copper cookware exporter India",
-    "brass handicrafts exporter Moradabad Uttar Pradesh",
-    "B2B metal handicrafts supplier India",
-    "wholesale brass home decor manufacturer",
-    "copper bottle manufacturer India bulk",
-    "brass diya wholesale supplier",
-    "brass urli manufacturer exporter",
-    "brass lantern bulk exporter",
-    "OEM brass products manufacturer India",
-    "private label copper kitchenware",
-    "Indian brass handicrafts for importers",
-    "copper jug pitcher wholesale manufacturer",
-    "brass planter exporter Moradabad",
-    "festive gifting metal products wholesale",
-  ],
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "New Look Impex, Ganga Mandir, Thana Nagphani Road, Kisrol",
-    addressLocality: "Moradabad",
-    addressRegion: "Uttar Pradesh",
-    postalCode: "244001",
-    addressCountry: "IN",
-  },
-  telephone: "+91-9808588603",
-  contactPoint: [
-    {
-      "@type": "ContactPoint",
-      contactType: "sales",
-      telephone: "+91-9808588603",
-      email: "newlookimpex130@gmail.com",
-      availableLanguage: ["English", "Hindi", "Urdu"],
-      areaServed: ["IN", "AU", "AE", "GB", "US", "CA", "EU"],
-    },
-    {
-      "@type": "ContactPoint",
-      contactType: "customer support",
-      telephone: "+91-96900-53913",
-      email: "newlookimpex130@gmail.com",
-      availableLanguage: ["English", "Hindi"],
-      areaServed: ["IN", "AU", "AE", "GB", "US", "CA", "EU"],
-    },
-  ],
-  areaServed: [
-    "IN", "AU", "AE", "GB", "US", "CA", "EU",
-  ],
-  sameAs: [
-    "https://www.facebook.com/profile.php?id=100083216147871",
-    "https://www.linkedin.com/in/new-look-impex-b1b473218/",
-    "https://www.instagram.com/nli_collections_india",
-    "https://youtube.com/@nlicollections",
-    "https://www.newlookimpex.store",
-  ],
-};
-
-// Sitelinks searchbox for brand SERP results
-const WEBSITE_JSONLD = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": `${SITE_URL}/#website`,
-  url: SITE_URL,
-  name: "New Look Impex",
-  publisher: { "@id": `${SITE_URL}/#organization` },
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${SITE_URL}/search?q={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
-};
-
 // Render per request so AI Manager content edits (hero headline/video, FAQ,
 // site content) appear on the live site immediately without a redeploy.
 export const dynamic = "force-dynamic";
@@ -158,7 +61,7 @@ async function fetchHomeData(): Promise<{
   categories: Category[] | null;
   featured: ProductCardType[] | null;
 }> {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://api.newlookimpex.store" : "http://localhost:8000");
   const [cats, feats] = await Promise.allSettled([
     fetch(`${API_BASE}/api/public/categories`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(8000) }).then((r) =>
       r.ok ? r.json() : Promise.reject(new Error(String(r.status)))
@@ -187,7 +90,7 @@ export default async function HomePage() {
   let faqs: { q: string; a: string }[] = HOME_FAQ;
   let initialHero: Record<string, any> | null = null;
   try {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://api.newlookimpex.store" : "http://localhost:8000");
     const r = await fetch(`${API_BASE}/api/public/site-content`, { signal: AbortSignal.timeout(8000) });
     if (r.ok) {
       const c = await r.json();
@@ -197,10 +100,7 @@ export default async function HomePage() {
   } catch { /* keep defaults */ }
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_JSONLD) }}
-      />
+      {/* Organization schema is emitted once by the root layout. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSONLD) }}

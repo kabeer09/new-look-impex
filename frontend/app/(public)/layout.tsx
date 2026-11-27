@@ -5,8 +5,9 @@ import { SettingsBootstrap } from "@/components/public/SettingsBootstrap";
 import { MarketProvider } from "@/lib/market";
 import { MarketWelcome } from "@/components/public/MarketControls";
 import { CompareBar } from "@/components/public/CompareBar";
-import { SaleBar, SalePopup } from "@/components/public/SalesPromo";
+import { SalesPromoGate } from "@/components/public/SalesPromoGate";
 import { ChatBot } from "@/components/public/ChatBot";
+import { Ga4EnquiryTracker } from "@/components/public/Ga4EnquiryTracker";
 
 export const metadata: Metadata = {
   title: {
@@ -36,9 +37,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <main className="flex-1">{children}</main>
         <PublicFooter />
         <CompareBar />
-        <SaleBar />
-        <SalePopup />
+        <SalesPromoGate />
         <ChatBot />
+        <Ga4EnquiryTracker />
       </MarketProvider>
     </div>
   );

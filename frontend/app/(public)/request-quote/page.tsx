@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/public/Shared";
 import { Loading } from "@/components/public/States";
 import { api, trackEvent } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import { useLeadMarket } from "@/lib/market";
 import { useRfqCart } from "@/lib/rfq";
 import { useRfqDraft } from "@/hooks/useRfqDraft";
@@ -191,6 +192,7 @@ export default function RequestQuotePage() {
         }),
       });
       trackEvent({ event_type: "rfq_submit" });
+      gaEvent("generate_lead", { lead_type: "rfq", source: "request_quote_page" });
       const finalText = buildWaText(form, cart.items, res.reference_number);
       setWaLink(`https://wa.me/${waDigits}?text=${encodeURIComponent(finalText)}`);
       setResult(res);

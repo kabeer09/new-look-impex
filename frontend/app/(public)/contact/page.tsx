@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { PageHero } from "@/components/public/Shared";
 import { api, trackEvent, BUSINESS_EMAIL, BUSINESS_PHONES, whatsappUrl, BUSINESS_LOCATION } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import { useLeadMarket } from "@/lib/market";
 import type { EnquiryInput, PublicSettings } from "@/lib/types";
 
@@ -60,6 +61,7 @@ export default function ContactPage() {
         }),
       });
       trackEvent({ event_type: "contact_click" });
+      gaEvent("generate_lead", { lead_type: "contact", source: "contact_page" });
       setSent("Thank you — your enquiry has been received. We will respond by email.");
       setForm({ name: "", email: "", country: "", product_interest: "", message: "" });
       setTurnstileToken("");

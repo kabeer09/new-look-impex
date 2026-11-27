@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { PageHero } from "@/components/public/Shared";
 import { Loading, ErrorBox } from "@/components/public/States";
 import { api, trackEvent, downloadFile } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import type { CatalogueMeta } from "@/lib/types";
 import { WhatsAppLink } from "@/components/public/WhatsAppLink";
 
@@ -24,6 +25,7 @@ export default function CataloguePage() {
     setDlErr("");
     setDownloading(true);
     trackEvent({ event_type: "catalogue_download" });
+    gaEvent("catalogue_download", { source: "catalogue_page", file_extension: "pdf" });
     try {
       await downloadFile("/api/public/catalogue.pdf", "new-look-impex-catalogue.pdf");
     } catch (e) {

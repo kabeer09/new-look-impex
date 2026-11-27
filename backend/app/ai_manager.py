@@ -30,26 +30,39 @@ MUTATING_TOOLS = {
     "create_banner", "update_seo_page",
 }
 TOOL_SPECS = [
-    ("get_website_overview", "No params. Returns product/category/banner/page/enquiry counts and site settings."),
+    ("get_website_overview", "No params. Returns product/category/banner/page/enquiry counts, pending approvals and site settings."),
     ("search_products", "Params: query (string), limit (int, max 20). Finds products by name/SKU/tag."),
-    ("get_analytics", "No params. Returns enquiry/RFQ counts and top countries."),
+    ("get_analytics", "Params: days (int, default 28). Real GSC analytics only; sample rows excluded. Returns clicks, impressions, enquiries by country."),
+    ("list_enquiries", "Params: status (optional), limit. Lists real buyer enquiries with reference, country, product and score."),
+    ("seo_audit", "No params. Rule-based check of published products missing SEO title/description."),
+    ("keyword_ideas", "Params: seed (string), country (string). LLM keyword ideas with honest rule-based fallback."),
     ("update_product", "Params: product_id (int) or product_name (string), plus any of: name, short_description, description, seo_title, seo_description, featured (bool), status (published|draft|archived)."),
     ("create_product", "Params: name (required), category_slug (one of copper-bottles, copper-jugs-pitchers, copper-mugs-tumblers, copper-kitchenware, brass-kitchenware, decorative-bowls), description, short_description, seo_title, seo_description, image_urls (list of URLs from uploaded files), sku, status (draft|published). Never invent specs/prices/certifications."),
-    ("update_site_content", "Params: key (string), value (any JSON). Common keys: hero {headline, subline, video}, home_faq [{q,a}], shop_category_tiles, announcement."),
-    ("create_banner", "Params: title, subtitle, image_url (required), cta_text, cta_link, placement (default home_hero), is_active (bool)."),
-    ("update_seo_page", "Params: path (e.g. /), title, description, canonical."),
+    ("update_site_content", "Params: key (string), value (any JSON). Common keys: hero {headline, subline, video}, home_faq [{q,a}], shop_category_tiles, announcement. Natural params like {page:'home', section:'hero', headline:'...'} are accepted."),
+    ("create_banner", "Params: title, subtitle, image_url (required, from an uploaded file), cta_text, cta_link, placement (default home_hero), is_active (bool)."),
+    ("update_seo_page", "Params: path (e.g. /), title, meta_description, canonical."),
+    ("create_followup", "Params: enquiry_id, subject, body, channel, due_at. Creates an approval for an outbound follow-up — never sends directly."),
+    ("list_media", "Params: limit. Lists uploaded media with rights metadata."),
+    ("list_product_images", "Params: limit. Lists new product photos in the local images/ folder (read-only)."),
+    ("analyse_product_images", "Params: names (optional list), limit (max 6). Vision-analyses new product photos into draft titles, SEO meta, keywords and alt text. Never invents specs; unknowns flagged."),
+    ("snapshot_kpis", "Params: period (e.g. 2026-W48). Persists real KPI values for period comparison."),
 ]
 
-SYSTEM_PROMPT = """You are the AI Website Manager for New Look Impex / NLI Collections, an Indian B2B brass & copper handicraft manufacturer and exporter based in Moradabad. Brand line: 'Crafted in India. Connecting Globally.' Audience: importers, wholesalers, distributors, retailers, interior designers, gift companies and hospitality buyers in USA, UK, Germany, UAE, France, Australia, Canada, Netherlands, Italy, Saudi Arabia, Spain, Belgium and other markets.
+from .agents.definitions import SHARED_CONTEXT
 
-You manage the website by calling ONLY the tools listed below. You never invent product specifications, prices, MOQs, certifications, purity, dimensions or delivery claims. If information is missing, ask the user instead of guessing.
+SYSTEM_PROMPT = SHARED_CONTEXT + """
+You are the AI WEBSITE MANAGER — the 9th agent and the original website assistant.
+You manage the live site through the tools below. Call read-only tools when you
+need context before proposing a change. Every mutation is previewed and goes to
+the unified Approval Centre unless the user explicitly asks to publish and the
+change is small and safe.
 
 TOOLS:
 """ + "\n".join(f"- {n}: {d}" for n, d in TOOL_SPECS) + """
 
 RESPONSE FORMAT — return ONLY valid JSON, no markdown fences:
 {"reply":"short natural reply to the user","actions":[{"tool":"tool_name","params":{...},"publish":false}],"need_info":[]}
-Set "publish":true only for small, safe, explicitly requested changes. For new content, homepage/banner/SEO changes or anything destructive, use false so it can be previewed. Call read-only tools when you need context first.
+Set "publish":true ONLY when the user explicitly says publish now AND the change is small/safe. Never claim a change is live until a tool confirms it. If data is unconfigured, say so.
 """
 
 
@@ -253,100 +266,86 @@ def _apply_change(db: Session, entity_type: str, values: dict, entity_id: str | 
     raise ValueError(f"Unsupported entity type: {entity_type}")
 
 
+def _record_tool_change(db: Session, session_id: int, email: str, name: str,
+                        call_params: dict, result: dict, publish: bool) -> None:
+    """Keep the changes UI and growth rollback store in sync with tool writes."""
+    from types import SimpleNamespace
+    from .growth.rollback import capture_before, record_change
+    meta = {
+        "update_product": ("product", "product_change"),
+        "create_product": ("product", "product_create"),
+        "update_site_content": ("site_content", "site_content"),
+        "create_banner": ("banner", "banner_create"),
+        "update_seo_page": ("seo_page", "seo_page"),
+    }
+    if name not in meta or not result.get("ok"):
+        return
+    entity_type, kind = meta[name]
+    proposed = {k: v for k, v in call_params.items()
+                if k not in ("_publish", "preview", "task_id", "agent_key", "user_email")}
+    probe = dict(proposed)
+    if kind == "site_content":
+        probe["key"] = result.get("key") or probe.get("key") or probe.get("section")
+        proposed_result = result.get("proposed") if isinstance(result.get("proposed"), dict) else {}
+        probe["value"] = proposed_result.get("value", probe.get("value"))
+    elif kind == "seo_page":
+        probe["path"] = result.get("path") or probe.get("path") or "/"
+    elif kind == "product_change":
+        probe["product_id"] = result.get("product_id") or probe.get("product_id")
+    before = capture_before(db, kind, probe, result.get("previous") or {})
+    entity_id = (result.get("entity_id") or result.get("product_id") or result.get("banner_id")
+                 or result.get("key") or result.get("path") or "")
+    history = models.WebsiteChangeHistory(
+        session_id=session_id, user_email=email, entity_type=entity_type,
+        entity_id=str(entity_id)[:64], label=f"{name}: {entity_id or kind}"[:255],
+        previous_json=_dump(before), proposed_json=_dump(proposed),
+        status="published" if publish else "pending",
+        published_at=datetime.now(timezone.utc).replace(tzinfo=None) if publish else None)
+    db.add(history)
+    db.flush()
+    if publish:
+        pseudo = SimpleNamespace(kind=kind, id=str(history.id),
+                                 proposed_json=_dump(probe), decided_by=email)
+        change = record_change(db, pseudo, before, result)
+        if change and kind in ("site_content", "seo_page"):
+            change.verification = "pending live verification"
+
+
 def _run_tool(db: Session, name: str, params: dict, session_id: int, email: str,
               force_publish: bool | None = None) -> dict:
-    """Validate and execute one whitelisted tool. Returns a result summary."""
-    params = params if isinstance(params, dict) else {}
-    if name not in [s[0] for s in TOOL_SPECS]:
-        raise ValueError(f"Unknown tool: {name}")
+    """Validate and execute one whitelisted tool via the SHARED tool registry.
 
-    if name == "get_website_overview":
-        return {"ok": True, "message": "Website overview retrieved.", "data": _overview(db)}
-    if name == "search_products":
-        q = str(params.get("query") or "").strip()
-        limit = min(int(params.get("limit") or 10), 20)
-        rows = (db.query(models.Product)
-                .filter(models.Product.name.ilike(f"%{q}%") | models.Product.sku.ilike(f"%{q}%"))
-                .limit(limit).all()) if q else db.query(models.Product).limit(limit).all()
-        return {"ok": True, "message": f"Found {len(rows)} products.",
-                "data": [{"id": r.id, "name": r.name, "status": r.status, "slug": r.slug} for r in rows]}
-    if name == "get_analytics":
-        return {"ok": True, "message": "Analytics retrieved.", "data": {
-            "enquiries": db.query(models.Enquiry).count(),
-            "rfqs": db.query(models.RFQ).count(),
-            "events": db.query(models.AnalyticsEvent).count(),
-        }}
-
-    if name == "update_product":
-        row = _find_product(db, params)
-        if row is None:
-            raise ValueError("Product not found. Provide product_id or an exact product_name.")
-        proposed = {k: v for k, v in params.items()
-                    if k in PRODUCT_FIELDS and v not in (None, "")}
-        if "category_slug" in params:
-            proposed["category_slug"] = params["category_slug"]
-        if not proposed:
-            raise ValueError("No product fields supplied to update.")
-        previous = {k: _snapshot(row).get(k) for k in proposed}
-        entity, entity_id, label = "product", str(row.id), f"Update product: {row.name}"
-    elif name == "create_product":
-        if not str(params.get("name") or "").strip():
-            raise ValueError("A product name is required.")
-        proposed = {k: v for k, v in params.items() if v not in (None, "")}
-        proposed.setdefault("status", "draft")
-        previous, entity, entity_id, label = {}, "product", None, f"Create product: {proposed['name']}"
-    elif name == "update_site_content":
-        key = str(params.get("key") or "").strip()
-        if not key:
-            raise ValueError("A content key is required.")
-        row = db.query(models.SiteContent).filter(models.SiteContent.key == key).first()
-        proposed = {"key": key, "value": params.get("value"), "label": params.get("label")}
-        previous = {"key": key, "value": _j(row.value) if row else None}
-        # Merge partial object updates (e.g. "replace the hero video") so other
-        # fields such as headline/subline are preserved. Rollback still restores
-        # the original previous value exactly.
-        if isinstance(previous.get("value"), dict) and isinstance(proposed.get("value"), dict):
-            merged = dict(previous["value"])
-            merged.update(proposed["value"])
-            proposed["value"] = merged
-        entity, entity_id, label = "site_content", str(row.id) if row else None, f"Update site content: {key}"
-    elif name == "create_banner":
-        if not str(params.get("image_url") or "").strip():
-            raise ValueError("An image_url is required for a banner. Upload an image in chat first.")
-        proposed = {k: v for k, v in params.items() if v not in (None, "")}
-        proposed.setdefault("placement", "home_hero")
-        previous, entity, entity_id, label = {}, "banner", None, f"Create banner: {proposed.get('title', 'Untitled')}"
-    elif name == "update_seo_page":
-        path = str(params.get("path") or "/").strip()
-        proposed = {"path": path}
-        for k in ("title", "description", "canonical"):
-            if k in params:
-                proposed[k] = params[k]
-        previous, entity, entity_id, label = {"path": path}, "seo_page", path, f"Update SEO: {path}"
-    else:
-        raise ValueError(f"Tool not implemented: {name}")
-
-    publish = force_publish if force_publish is not None else bool(params.get("_publish", False))
-    change = models.WebsiteChangeHistory(
-        session_id=session_id, user_email=email, entity_type=entity,
-        entity_id=entity_id or "", label=label,
-        previous_json=_dump(previous), proposed_json=_dump(proposed),
-        status="published" if publish else "pending",
-    )
-    db.add(change); db.flush()
+    Mutations create an AiApproval (unified queue) by default; `publish` only
+    when the caller explicitly asks for it. Every attempt is audit-logged and
+    every preview/publish is recorded for the changes UI and rollback.
+    """
+    from .agents.tools import TOOLS as SHARED_TOOLS
+    call_params = dict(params or {})
+    params = dict(call_params)
+    if name not in [spec[0] for spec in TOOL_SPECS] or name not in SHARED_TOOLS:
+        raise ValueError(f"Unknown or unauthorised tool: {name}")
+    publish = force_publish if force_publish is not None else bool(params.pop("_publish", False))
+    # Overwrite (never `setdefault`): the model must not choose preview mode.
+    params.update({"preview": not publish, "task_id": None, "agent_key": "website_manager",
+                   "user_email": email})
+    try:
+        result = SHARED_TOOLS[name](db, **params)
+        _record_tool_change(db, session_id, email, name, call_params, result, publish)
+    except Exception as e:
+        db.add(models.AiActionLog(session_id=session_id, user_email=email, tool=name,
+                                  params_json=_dump(params), result_json="{}",
+                                  status="failed", error=str(e)[:500]))
+        db.commit()
+        raise
     db.add(models.AiActionLog(
-        session_id=session_id, user_email=email, tool=name,
-        params_json=_dump(params), result_json=_dump({"change_id": change.id, "published": publish}),
-        status="published" if publish else "pending"))
-    if publish:
-        new_id = _apply_change(db, entity, proposed, entity_id)
-        change.entity_id = new_id
-        change.published_at = datetime.now(timezone.utc).replace(tzinfo=None)
-        _revalidate(_paths_for_change(entity, proposed, new_id))
+        session_id=session_id, user_email=email, tool=name, params_json=_dump(params),
+        result_json=_dump(result),
+        status="completed" if result.get("ok") else "failed",
+        error=str(result.get("error") or "")[:500]))
     db.commit()
-    return {"ok": True, "published": publish, "change_id": change.id,
-            "label": label, "proposed": proposed,
-            "message": ("Applied: " if publish else "Preview ready for: ") + label}
+    if result.get("ok") and publish and name in MUTATING_TOOLS:
+        _revalidate(["/"] if name in ("update_site_content", "create_banner", "update_seo_page") else ["/products"])
+    return result
 
 
 # ---------------- endpoints ----------------

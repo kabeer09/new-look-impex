@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import CollectionClient from "./CollectionClient";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === "production" ? "https://api.newlookimpex.store" : "http://localhost:8000");
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const fallback: Metadata = {

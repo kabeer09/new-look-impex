@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { HiddenMarket } from "@/lib/hidden-markets";
 import { HIDDEN_MARKETS } from "@/lib/hidden-markets";
+import { ProductGrid } from "@/components/public/Shared";
+import { fetchFeaturedProducts } from "@/lib/featured-products";
 
 const SITE = "https://www.newlookimpex.store";
 
@@ -9,7 +11,8 @@ const SITE = "https://www.newlookimpex.store";
  * imagery keep these SEO pages visibly different from one another and from the
  * standard regional pages. These pages are intentionally absent from main nav.
  */
-export function CountryLanding({ cfg }: { cfg: HiddenMarket }) {
+export async function CountryLanding({ cfg }: { cfg: HiddenMarket }) {
+  const products = await fetchFeaturedProducts(12);
   const url = `${SITE}${cfg.path}`;
   // Organization schema is already emitted by the root layout — do not duplicate it.
   const ld = [
@@ -170,6 +173,30 @@ export function CountryLanding({ cfg }: { cfg: HiddenMarket }) {
             </figure>
           ))}
         </div>
+
+        <h2 className="font-serif font-bold text-espresso text-2xl mt-12">Products from our catalogue</h2>
+        {products && products.length > 0 ? (
+          <>
+            <p className="text-sm text-gray mt-2">
+              Real published pieces from the New Look Impex wholesale catalogue — request pricing or a full catalogue for {cfg.name}.
+            </p>
+            <div className="mt-5"><ProductGrid products={products} /></div>
+          </>
+        ) : (
+          <p className="text-sm text-gray mt-2">
+            Product availability is confirmed per enquiry.{" "}
+            <Link href="/products" className="text-navy underline underline-offset-2">Browse the live catalogue</Link>.
+          </p>
+        )}
+        <ul className="mt-4 flex flex-wrap gap-3">
+          {["copper-bottles", "copper-kitchenware", "brass-kitchenware", "decorative-bowls"].map((cat) => (
+            <li key={cat}>
+              <Link href={`/products?category=${cat}`} className="text-sm text-navy underline underline-offset-2">
+                {cat.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+              </Link>
+            </li>
+          ))}
+        </ul>
 
         <h2 className="font-serif font-bold text-espresso text-2xl mt-12">Buyer questions</h2>
         <div className="mt-5 space-y-5">

@@ -27,6 +27,22 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/integrations/google/callback"
     GA4_PROPERTY_ID: str = ""
+    # Optional service-account JSON (string or path) for the GA4 Data API.
+    # Empty => GA4 metrics are reported as unavailable, never estimated.
+    GA4_SERVICE_ACCOUNT_JSON: str = ""
+    GSC_SITE_URL: str = ""
+
+    # Secure Google Search Console integration (separate from the legacy
+    # /api/integrations/google/* stub and from Google Sign-In).
+    GOOGLE_SEARCH_CONSOLE_CLIENT_ID: str = ""
+    GOOGLE_SEARCH_CONSOLE_CLIENT_SECRET: str = ""
+    GOOGLE_SEARCH_CONSOLE_REDIRECT_URI: str = ""  # empty => API_BASE_URL + /api/seo-console/oauth/callback
+    GOOGLE_SEARCH_CONSOLE_SITE_URL: str = "https://www.newlookimpex.store/"
+    GOOGLE_SEARCH_CONSOLE_SCOPES: str = "https://www.googleapis.com/auth/webmasters.readonly"
+    # Sitemap submission requires write scope; keep it off unless explicitly enabled.
+    GOOGLE_SEARCH_CONSOLE_WRITE_ENABLED: bool = False
+    # Google Analytics 4 (Data API v1, read-only). Empty => GA4 section shows setup state.
+    GOOGLE_ANALYTICS_PROPERTY_ID: str = ""
 
     # Google Sign-In for admin dashboard (disabled by default — explicit opt-in)
     GOOGLE_LOGIN_ENABLED: bool = False

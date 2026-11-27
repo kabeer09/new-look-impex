@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { api, mediaUrl } from "@/lib/api";
 import type { ProductCard } from "@/lib/types";
 import { Loading, ErrorBox, EmptyState } from "@/components/public/States";
@@ -25,6 +26,26 @@ export function DedicatedCategoryPage({
   const [total, setTotal] = useState(0);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname() || "/";
+  const canonical = `https://www.newlookimpex.store${pathname}`;
+  // Same source as the visible FAQ/breadcrumb — structured data cannot drift.
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.newlookimpex.store/" },
+      { "@type": "ListItem", position: 2, name: h1, item: canonical },
+    ],
+  };
+  const faqLd = faqs.length ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  } : null;
 
   useEffect(() => {
     setLoading(true);
@@ -41,6 +62,8 @@ export function DedicatedCategoryPage({
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      {faqLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />}
       {/* One H1 only: the hero owns it. The body keeps the fuller intro as a
           lead paragraph — no repeated title or duplicate description. */}
       <PageHero title={h1} subtitle={description} />

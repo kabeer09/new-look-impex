@@ -53,6 +53,15 @@ const nextConfig = {
         destination: "/uae",
         permanent: true,
       },
+      // Requested short market URLs that already exist under /europe/<country>.
+      // Permanent redirects consolidate onto the indexed canonical pages — no
+      // duplicate country pages are created.
+      ...["germany", "france", "netherlands", "italy", "spain", "belgium",
+        "switzerland", "sweden", "denmark", "poland", "austria"].map((country) => ({
+        source: `/${country}`,
+        destination: `/europe/${country}`,
+        permanent: true,
+      })),
     ];
   },
 };

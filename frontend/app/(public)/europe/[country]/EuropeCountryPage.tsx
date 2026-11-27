@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, trackEvent } from "@/lib/api";
+import { gaEvent } from "@/lib/ga4";
 import type { ProductCard } from "@/lib/types";
 import { ProductGrid } from "@/components/public/Shared";
 import { Loading, ErrorBox } from "@/components/public/States";
@@ -98,6 +99,7 @@ export function EuropeCountryPage({
         }),
       });
       trackEvent({ event_type: "rfq_submit", country: cfg.name });
+      gaEvent("generate_lead", { lead_type: "enquiry", source: `europe-${cfg.slug}` });
       setFormState("sent");
     } catch {
       setFormState("error");

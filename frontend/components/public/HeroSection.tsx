@@ -26,14 +26,7 @@ export function HeroSection() {
       {/* Content overlay - left side */}
       <div className="relative z-10 flex flex-col min-w-0">
         <div className="absolute top-6 left-6 md:top-12 md:left-8 flex flex-col">
-          {/* Announcement Bar */}
-          <div className="bg-antiqueGold text-charcoal px-4 py-2 text-sm font-medium tracking-wider">
-            {" "}
-            <span className="font-medium" style={{ color: "#29251F" }}>
-              SEASONAL CAMPAIGN: GET 20% OFF ON ALL COPPER COLLECTION - ENDS SOON
-            </span>
-            {" "}
-          </div>
+          {/* No discount messaging: the main site is a B2B export channel. */}
 
           {/* Main Heading */}
           <h1 className="mt-6 text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-charcoal leading-tight tracking-tight">

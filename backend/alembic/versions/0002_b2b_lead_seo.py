@@ -20,6 +20,13 @@ def _cols_exist(bind, table):
     return {c["name"] for c in insp.get_columns(table)}
 
 
+def _index(bind, table, name, cols, unique=False):
+    """0001's create_all() already made these indexes; don't duplicate them."""
+    if name in {i.get("name") for i in sa.inspect(bind).get_indexes(table)}:
+        return
+    op.create_index(name, table, cols, unique=unique)
+
+
 def upgrade() -> None:
     bind = op.get_bind()
 
@@ -33,7 +40,7 @@ def upgrade() -> None:
             b.add_column(sa.Column("price_visibility", sa.String(32), server_default="on_request"))
         if "stock_status" not in existing_p:
             b.add_column(sa.Column("stock_status", sa.String(32), server_default=""))
-    op.create_index("ix_products_external_product_id", "products", ["external_product_id"], unique=False)
+    _index(bind, "products", "ix_products_external_product_id", ["external_product_id"])
 
     existing_e = _cols_exist(bind, "enquiries")
     with op.batch_alter_table("enquiries") as b:
@@ -43,9 +50,11 @@ def upgrade() -> None:
             b.add_column(sa.Column("phone", sa.String(64), server_default=""))
         if "product_id" not in existing_e:
             b.add_column(sa.Column("product_id", sa.Integer(), nullable=True))
-    op.create_index("ix_enquiries_reference", "enquiries", ["reference"], unique=True)
-    op.create_index("ix_enquiries_product_id", "enquiries", ["product_id"], unique=False)
+    _index(bind, "enquiries", "ix_enquiries_reference", ["reference"], unique=True)
+    _index(bind, "enquiries", "ix_enquiries_product_id", ["product_id"])
 
+    if "seo_pages" in sa.inspect(bind).get_table_names():
+        return  # 0001's create_all() created the full current schema already
     op.create_table(
         "seo_pages",
         sa.Column("id", sa.Integer(), primary_key=True),

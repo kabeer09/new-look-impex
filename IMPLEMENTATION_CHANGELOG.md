@@ -241,8 +241,9 @@ Verified ready (no claims of submission/verification made):
 1. **Google Search Console**: add the property in the GSC UI (HTML verification
    file already serves 200) → submit `sitemap.xml` → track impressions, clicks,
    queries, average position, indexed pages, country split.
-2. **GA4**: confirm the property inside the owner's GTM container
-   (`GTM-PFWKB7XW` / `GTM-M4GDWFQT`) receives data.
+2. **GA4**: GTM containers were removed (404s); `gtag.js` now loads directly
+   with `G-0DP6C543VP` (override via `NEXT_PUBLIC_GA4_MEASUREMENT_ID`).
+   Confirm real-time data receipt in the GA4 UI.
 3. **Keyword volumes**: validate intent-based priorities in Keyword Planner/GSC.
 4. **Factory photographs/video**: genuine assets only — the About page now uses
    the four real registration/industry logos supplied in `public/`; add
@@ -264,3 +265,47 @@ Verified ready (no claims of submission/verification made):
 | `deep_scan.py` | source-level scan: 0 frontend code hits, 0 product-field hits, 0 category/collection hits |
 | `tsc --noEmit` | 0 errors at every step |
 | `npm run build` | success at every step |
+
+---
+
+## Follow-up pass — docs-vs-code gap closure (November 26, 2026)
+
+A fresh audit of the source (not just the reports) found eight places where the
+documentation claimed more than the code delivered. All are now closed:
+
+| Change | Files |
+| --- | --- |
+| Homepage keyword H1 is now the real hero fallback (admin edits still take priority) | `frontend/app/(public)/HomeClient.tsx` |
+| Sale bar/popup moved behind a consumer-only path gate; unused hard-coded "20% off" banner removed | `frontend/components/public/SalesPromoGate.tsx`, `frontend/app/(public)/layout.tsx`, `frontend/components/public/HeroSection.tsx` |
+| `/nli-collections` product pins server-rendered (16 crawlable product links in first HTML) | `frontend/app/(public)/nli-collections/page.tsx`, `NliCollectionsClient.tsx` |
+| Organization JSON-LD consolidated into one shared module; unverified employee-count claim removed | `frontend/lib/seo/structured-data.ts`, `frontend/app/layout.tsx`, `frontend/app/(public)/page.tsx` |
+| Root-level site-wide hreflang/x-default removed — clusters stay market-only | `frontend/app/layout.tsx` |
+| Dedicated leaf category pages now emit FAQPage + BreadcrumbList from visible copy | `frontend/components/public/DedicatedCategoryPage.tsx` |
+| `/shop` redirect marked `noindex, nofollow` | `frontend/app/(public)/shop/page.tsx` |
+| SEO agent gained a grounded `seo_coverage_report` tool (DB counts only) | `backend/app/agents/tools.py`, `definitions.py`, `backend/tests/test_ai_safety_fixes.py` |
+
+Verification: `tsc --noEmit` clean; backend `pytest` clean (157 tests including
+the new coverage-tool test). Still owner-side: GSC submission, GA4 data
+confirmation, keyword volumes, genuine workshop media, backlinks.
+
+---
+
+## 30-country product-led international pass (November 26, 2026)
+
+| Change | Files |
+| --- | --- |
+| Fixed permanent "Loading products…" on country pages: production API base default, retry, 8 s watchdog, guaranteed category links | `frontend/lib/api.ts`, `wholesale/[country]/regional-products.ts`, `CountryPage.tsx`, `europe/[country]/europe-products.ts`, homepage/NLI/product/category/collection SSR fetchers, `lib/featured-products.ts` |
+| SEO-only country pages now show 12 real catalogue products instead of no product section | `components/public/CountryLanding.tsx` |
+| All 30 requested market URLs reachable: 11 short European aliases 308-redirect to existing `/europe/<country>` canonicals; `/australia` → `/au` preserved | `frontend/next.config.js` |
+| Malaysia + Indonesia pages added with original copy, schema, products and sitemap entries | `lib/hidden-markets.ts`, `app/(public)/malaysia`, `app/(public)/indonesia`, `backend/app/main.py` |
+| Batch 1 competitor research: 29 source-linked records across USA/Germany/UK/UAE/France, all unknown fields marked "Not captured"/"Not verified" | `docs/competitor-research/batch1-2026-11-26.csv`, `README.md` |
+| Weekly `weekly_competitor_review` agent job (grounded counts only; `not_configured` without data) | `backend/app/agent_scheduler.py`, `docs/ai-growth-system.md` |
+| Full 30-country route + rendering audit | `docs/country-page-audit.md` |
+
+**Honest scope:** this is a 29-record pilot, not a 300-site study. Batches 2–6
+are unresearched and are not filled with invented records. No first-page ranking,
+traffic, sales or backlink claim is made; results must be measured in GSC/GA4.
+
+Verification: `tsc --noEmit` clean; `npm run build` success; `pytest` 158 passed;
+prerendered `/usa`, `/brazil`, `/malaysia`, `/indonesia` each contain 36 product
+links, 4 category-filter links and no loading placeholder.

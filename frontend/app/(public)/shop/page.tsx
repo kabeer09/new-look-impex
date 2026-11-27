@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+/** Redirect-only legacy route: must not be indexable or appear in the sitemap. */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /** Legacy shop route — redirects to the canonical catalogue, preserving filters. */
 export default function ShopRedirect({ searchParams }: { searchParams: Record<string, string | string[] | undefined> }) {

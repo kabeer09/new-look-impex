@@ -7,7 +7,7 @@ middleware (host/redirect handling) · no CDN-level rewrites beyond Vercel defau
 
 | Item | Finding | Action taken |
 | --- | --- | --- |
-| Essential content in HTML | Homepage grids, category pages and regional product lists were JavaScript-loaded → empty HTML for crawlers | Server-side fetch + pass-as-props: homepage (`8698ea4`), categories (`4ccaf14`), regional (`01f5e48`) |
+| Essential content in HTML | Homepage grids, category pages, regional product lists **and NLI brand pins** were JavaScript-loaded → empty HTML for crawlers | Server-side fetch + pass-as-props: homepage (`8698ea4`), categories (`4ccaf14`), regional (`01f5e48`), `/nli-collections` pins (follow-up pass). Leaf landing-page grids remain client-fetched — known remaining gap. |
 | Soft 404s in sitemap | 3 category URLs 404 at the API but were advertised in sitemap | Shared `HIDDEN_CATEGORIES` constant used by list endpoint, detail endpoint and sitemap (`3e9d850`) — 13-check verification script: ALL PASS |
 | Duplicate regional URLs | `/wholesale/<country>` duplicated `/usa` etc. | Full content + canonical → short URL + `noindex, follow` + removed from sitemap (`33a8b21`) |
 | Empty page | `/au` had no H1/content (slug mismatch `australia` vs `au`) | Fixed (`33a8b21`) |
@@ -30,11 +30,11 @@ middleware (host/redirect handling) · no CDN-level rewrites beyond Vercel defau
 
 | Schema | Where | Notes |
 | --- | --- | --- |
-| Organization | homepage, `/nli-collections`, regional pages | verified business facts only |
-| LocalBusiness / Manufacturer / WholesaleStore | homepage | GSTIN, Moradabad location |
+| Organization | root layout — every page, single shared definition in `lib/seo/structured-data.ts` | verified business facts only; no employee count asserted |
+| LocalBusiness / Manufacturer / WholesaleStore | root layout (shared organization entity) | GSTIN, Moradabad location |
 | WebSite | homepage | |
-| FAQPage | homepage (8), `/nli-collections` (6), categories (3 each), regional (per-market FAQs) | **generated from the same source as visible copy** — can never drift |
-| BreadcrumbList | categories, products, regional, NLI brand, blog articles | visible breadcrumb nav added alongside |
+| FAQPage | homepage (8), `/nli-collections` (6), categories (3 each), regional (per-market FAQs), dedicated leaf landings | **generated from the same source as visible copy** — can never drift |
+| BreadcrumbList | categories, products, regional, NLI brand, blog articles, dedicated leaf landings | visible breadcrumb nav added alongside |
 | Product + Offer | product detail pages | only with genuine price/availability; RFQ products omit price rather than invent it |
 | BlogPosting (Article) | all 11 `/blog/*` articles | headline, description, datePublished/dateModified, Organization author/publisher, logo URL **verified 200** (`65a7bcf` fixed a 404 `/logo.png` reference) |
 | Merchant feed | `/merchant/products.xml` | `e50b408` |
@@ -62,7 +62,7 @@ shipping guarantees — no genuine data exists.
 
 | Page | H1 count | Hierarchy notes |
 | --- | --- | --- |
-| Homepage | 1 | keyword H1; H2s: categories, featured, showcase, process, FAQ |
+| Homepage | 1 | keyword H1 — the admin-editable hero now falls back to "Brass & Copper Handicraft Manufacturer and Exporter in Moradabad, India"; H2s: categories, featured, showcase, process, FAQ |
 | Categories | 1 | hero H1 + editorial H2 + FAQ H2/dl + related H2 |
 | Regional | 1 | hero H1 + products H2 + buyer questions H2 |
 | NLI brand | 1 | hero H1 + 8 H2 sections |
@@ -85,8 +85,10 @@ Duplicate H2s on homepage fixed (`e4efc40`). Superlatives/fake claims removed.
 
 ## 8. Performance / Core Web Vitals
 
-- Homepage first-load JS reduced ~13k chars by removing sale machinery (`8698ea4`).
-- Prerendered homepage HTML (270 KB) contains real content — no client fetch before paint.
+- Sale bar/popup are no longer mounted on the B2B site; `SalesPromoGate` renders
+  them only on `/nli-collections` and `/collections/*` consumer paths.
+- Prerendered homepage HTML contains real content; `/nli-collections` now also
+  ships 16 server-rendered product links. Leaf landing grids are still client-fetched.
 - ISR: homepage 60 s, categories/regional 300 s, category metadata fetch 3600 s.
 - ⚠️ **Measure CWV in PageSpeed Insights/GSC after this deploy** — no numbers claimed here.
 
@@ -104,7 +106,7 @@ Duplicate H2s on homepage fixed (`e4efc40`). Superlatives/fake claims removed.
 | `verify_p2.py` | 28-page uniqueness, brand doubling, noindex slugs, canonicals, sitemap scope, full-sweep uniqueness |
 | `verify_sitemap_change.py` | 13 checks: hidden categories excluded from sitemap/list/detail, visible included, drafts excluded, products/collections still listed |
 | `verify_regional2.py` | 6 regional pages: schema, product links in HTML, FAQ, no debug text; `/wholesale/*` canonical/noindex; homepage B2B integrity |
-| `verify_hreflang.py` | reciprocal hreflang on 6 regional pages; 0 hreflang on B2B/NLI pages |
+| `verify_hreflang.py` | reciprocal hreflang on 6 regional pages; 0 hreflang on B2B/NLI pages. Site-wide `x-default` removed from root metadata so this remains true. |
 | `verify_cats.py` / `verify_cats2.py` | category pages: editorial, FAQ schema, breadcrumbs, crawlable product links, banned-claim scan |
 
 ## 11. Test suite status (honest)

@@ -50,6 +50,10 @@ from .site_control import router as site_control_router
 from .seo_pages import router as seo_pages_router
 from .catalogue_api import router as catalogue_router
 from .ai_manager import router as ai_manager_router
+from .agents.api import router as agents_router
+from .helpdesk.api import router as helpdesk_router
+from .growth.api import router as growth_router
+from .gsc.api import router as gsc_router
 from . import product_scanner
 from .catalogue_pdf import build_catalogue_pdf, get_business_info
 from .media_store import file_path
@@ -112,10 +116,14 @@ async def lifespan(app: FastAPI):
     from .watcher import start_watcher
     start_watcher()  # no-op unless INCOMING_ENABLED=true
     product_scanner.start_scanner()  # no-op unless PRODUCT_SCAN_ENABLED=true
+    from .agent_scheduler import start_scheduler
+    start_scheduler()  # AI manager daily/weekly/monthly snapshots
     from .campaign_mailer import start_mailer
     start_mailer()  # automated seasonal-sale announcements to subscribers
     from .rfq_followup import start_followup
     start_followup()  # one gentle follow-up per abandoned RFQ draft
+    from .worker import start_worker
+    start_worker()  # persistent 24/7 agent task worker (leases + recovery)
     yield
 
 
@@ -246,6 +254,10 @@ app.include_router(events_router)
 app.include_router(rates_router)
 app.include_router(catalogue_router)
 app.include_router(ai_manager_router)
+app.include_router(agents_router)
+app.include_router(helpdesk_router)
+app.include_router(growth_router)
+app.include_router(gsc_router)
 
 
 def audit(actor: str, action: str, entity: str = "", entity_id: str = "", detail: str = "", db: Session | None = None):
@@ -1032,7 +1044,7 @@ def sitemap(db: Session = Depends(get_db)):
         urls.append(f"{base}/{slug}")
     # SEO-only market pages (sitemap + hreflang only, not in main navigation)
     for slug in ("south-africa", "new-zealand", "south-korea", "turkey",
-                 "mexico", "brazil", "qatar"):
+                 "mexico", "brazil", "qatar", "malaysia", "indonesia"):
         urls.append(f"{base}/{slug}")
     for slug in ("norway", "ireland", "portugal", "greece"):
         urls.append(f"{base}/europe/{slug}")
