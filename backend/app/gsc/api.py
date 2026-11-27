@@ -126,7 +126,17 @@ def repair_connection(db: Session = Depends(get_db), u=Depends(require_role("adm
     if not row or not (row.access_token_enc or row.refresh_token_enc):
         raise HTTPException(400, "No stored Google connection to repair.")
     try:
-        props = service.list_properties(db)
+        # Bypass gsc_request's status guard (that guard is what we are repairing).
+        access = service.valid_access_token(db, row)
+        url = "https://www.googleapis.com/webmasters/v3/sites"
+        try:
+            data = oauth.api_request("GET", url, access)
+        except oauth.GscError as e:
+            if e.status != 401:
+                raise
+            access = service.refresh_now(db, row)
+            data = oauth.api_request("GET", url, access)
+        props = data.get("siteEntry", []) or []
     except oauth.GscError as e:
         raise _safe_error(e)
     row.status = "connected"; row.last_error = ""
