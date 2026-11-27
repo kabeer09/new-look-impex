@@ -80,6 +80,13 @@ def reconnect(db: Session = Depends(get_db), u=Depends(require_role("admin",))):
     return {"auth_url": oauth.build_auth_url(state), "callback_url": oauth.redirect_uri()}
 
 
+@router.get("/api/seo-console/oauth/start")
+@router.post("/api/seo-console/oauth/start")
+def oauth_start(db: Session = Depends(get_db), u=Depends(require_role("admin",))):
+    """Alias for the connect step, matching the operations naming convention."""
+    return connect(db, u)
+
+
 @router.get("/api/seo-console/oauth/callback")
 def oauth_callback(request: Request, code: str = "", state: str = "", error: str = "",
                    db: Session = Depends(get_db)):
@@ -321,6 +328,47 @@ def ga4_status(db: Session = Depends(get_db), u=Depends(require_role("admin", "e
         "note": ("GA4 sessions are not Search Console clicks — they are different metrics."
                  if ok else reason),
     }
+
+
+@router.get("/api/seo-console/preflight")
+def preflight(db: Session = Depends(get_db), u=Depends(require_role("admin",))):
+    """Real connectivity diagnostics. No fabricated success: every service
+    result comes from an authenticated Google API call or an exact setup error."""
+    conn = service.connection_status(db)
+    out = {
+        "oauth": {"configured": conn["configured"], "connected": conn["connected"],
+                  "setup_message": conn["setup_message"],
+                  "missing_scopes": conn["missing_scopes"],
+                  "callback_url": conn["callback_url"]},
+        "gsc": {}, "ga4": {},
+    }
+    if conn["connected"]:
+        try:
+            props = service.list_properties(db)
+            target = oauth.site_url().rstrip("/")
+            out["gsc"] = {"ok": True, "properties_count": len(props),
+                          "target_configured": any(str(p.get("siteUrl", "")).rstrip("/") == target
+                                                   for p in props)}
+        except oauth.GscError as e:
+            out["gsc"] = {"ok": False, "error": str(e)}
+    else:
+        out["gsc"] = {"ok": False, "error": "Search Console is not connected."}
+    ok, reason = ga4.available()
+    if not ok:
+        out["ga4"] = {"ok": False, "error": reason}
+    elif not conn["connected"]:
+        out["ga4"] = {"ok": False, "error": "Connect Google OAuth first."}
+    else:
+        try:
+            s, e, _, _ = ga4.date_range("7d")
+            data = ga4.overview(db, s, e)
+            out["ga4"] = {"ok": True, "property_id": ga4.property_id(),
+                          "sessions": data["sessions"], "source": data["source"]}
+        except oauth.GscError as ex:
+            out["ga4"] = {"ok": False, "error": str(ex)}
+        except Exception:
+            out["ga4"] = {"ok": False, "error": "GA4 runReport failed; check API enablement and permissions."}
+    return out
 
 
 @router.get("/api/seo-console/ga4/overview")

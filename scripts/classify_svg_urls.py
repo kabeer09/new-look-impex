@@ -2,6 +2,7 @@
 
 Usage:
   python scripts/classify_svg_urls.py gsc_svg_export.csv > docs/svg-indexing-report.md
+  python scripts/classify_svg_urls.py gsc_svg_export.csv docs/svg-indexing-report.csv
 
 The CSV must contain a column named "URL" (GSC Pages report export). This script
 does NOT invent URLs, and makes no changes to the website, sitemap or robots.txt.
@@ -9,6 +10,7 @@ does NOT invent URLs, and makes no changes to the website, sitemap or robots.txt
 from __future__ import annotations
 
 import csv
+import os
 import sys
 import urllib.parse
 from collections import Counter, defaultdict
@@ -46,7 +48,7 @@ def category(url: str) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in (2, 3):
         raise SystemExit(__doc__)
     urls = load_urls(sys.argv[1])
     sitemap_urls = set()
@@ -84,6 +86,21 @@ def main() -> None:
                   if cat != "Other / needs manual review" else "Inspect manually; do not blanket-block or delete")
         print(f"| {u} | {cat} | {'yes' if u in sitemap_urls else 'no'} | "
               f"{'yes' if 'Allow: /' in robots else 'check'} | {action} |")
+
+    if len(sys.argv) == 3:
+        out = sys.argv[2]
+        os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+        with open(out, "w", newline="", encoding="utf-8") as fh:
+            writer = csv.writer(fh)
+            writer.writerow(["URL", "Category", "In sitemap", "Robots allows", "Recommended action"])
+            for u in urls:
+                cat = category(u)
+                action = ("Keep file; remove from page sitemap only if incorrectly listed"
+                          if cat != "Other / needs manual review"
+                          else "Inspect individually; no blanket block or delete")
+                writer.writerow([u, cat, "yes" if u in sitemap_urls else "no",
+                                 "yes" if "Allow: /" in robots else "check", action])
+        print(f"<!-- CSV written: {out} -->", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -36,6 +36,7 @@ function Table({ items }: { items: Row[] }) {
 export default function SeoManager() {
   const [status, setStatus] = useState<Status | null>(null);
   const [ga4Status, setGa4Status] = useState<any>(null);
+  const [preflight, setPreflight] = useState<any>(null);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Overview");
   const [range, setRange] = useState("28d");
   const [customStart, setCustomStart] = useState("");
@@ -248,6 +249,12 @@ export default function SeoManager() {
       <p><b>Property:</b> {status?.site_url}</p><p><b>Scope:</b> {status?.scope}</p>
       <p className="text-gray">Set GOOGLE_SEARCH_CONSOLE_CLIENT_ID / CLIENT_SECRET / REDIRECT_URI on the backend only. Tokens are encrypted at rest; no secrets are sent to the browser.</p>
       <p className="text-xs text-gray">Full setup: docs/google-search-console-setup.md</p>
+      <button className="btn btn-outline btn-sm" disabled={busy} onClick={async () => {
+        setBusy(true); setMsg("");
+        try { setPreflight(await api<any>("/api/seo-console/preflight")); }
+        catch (e) { setMsg(String(e)); } finally { setBusy(false); }
+      }}>Run connectivity preflight</button>
+      {preflight && <pre className="text-xs bg-ivory p-3 overflow-x-auto">{JSON.stringify(preflight, null, 2)}</pre>}
     </div>}
   </div>;
 }
