@@ -172,11 +172,8 @@ def sync_analytics(db, start: str, end: str) -> dict:
             ("appearance", ["searchAppearance"]),
         ]
         for name, dims in specs:
-            # Query dimension rows must carry their own date, otherwise every
-            # cached row lands on 1970-01-01 and the dashboard reads zero.
-            request_dims = dims if name in ("totals", "date") else dims + ["date"]
             body: dict[str, Any] = {
-                "startDate": start, "endDate": end, "dimensions": request_dims,
+                "startDate": start, "endDate": end, "dimensions": dims,
                 "rowLimit": 5000, "startRow": 0,
             }
             for _page in range(5):  # up to 25,000 rows per dimension
@@ -184,12 +181,11 @@ def sync_analytics(db, start: str, end: str) -> dict:
                 rows = data.get("rows", []) or []
                 for r in rows:
                     keys = r.get("keys", []) or []
-                    if name == "totals":
-                        date_val = end
-                    elif name == "date":
-                        date_val = str(keys[0]) if keys else end
-                    else:
-                        date_val = ""
+                    # Google rejects adding `date` alongside these dimensions,
+                    # and rows have no date member. Stamp the period end so the
+                    # cached rows fall inside the queried range. Daily trends
+                    # come from the dedicated `date` dimension query below.
+                    date_val = str(keys[0]) if name == "date" and keys else end
                     saved += _save_rows(db, run.id, run.site_url, name,
                                         keys, r, date_override=date_val)
                 db.flush()
