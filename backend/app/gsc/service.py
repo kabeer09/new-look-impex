@@ -211,7 +211,9 @@ def sync_analytics(db, start: str, end: str) -> dict:
             run.finished_at = datetime.now(timezone.utc).replace(tzinfo=None)
         row = get_connection(db)
         if row:
-            row.status = "error"; row.last_error = str(e)[:500]
+            # A failed query (e.g. a bad dimension or quota) does not invalidate
+            # the OAuth connection. Keep it connected and record the safe error.
+            row.last_error = str(e)[:500]
         db.add(models.WorkflowExecution(workflow="gsc_sync_v2", status="failed",
                                         detail=str(e)[:500]))
         db.commit()

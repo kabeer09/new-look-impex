@@ -118,6 +118,23 @@ def oauth_callback(request: Request, code: str = "", state: str = "", error: str
         return _redirect("exchange_failed")
 
 
+@router.post("/api/seo-console/repair")
+def repair_connection(db: Session = Depends(get_db), u=Depends(require_role("admin",))):
+    """Re-verify stored tokens with a real Google call and restore a healthy
+    status after a transient API error. No consent or secret handling involved."""
+    row = service.get_connection(db)
+    if not row or not (row.access_token_enc or row.refresh_token_enc):
+        raise HTTPException(400, "No stored Google connection to repair.")
+    try:
+        props = service.list_properties(db)
+    except oauth.GscError as e:
+        raise _safe_error(e)
+    row.status = "connected"; row.last_error = ""
+    db.commit()
+    _admin_audit(db, u.email, "gsc_repaired", f"properties={len(props)}")
+    return {"ok": True, "status": "connected", "properties_count": len(props)}
+
+
 @router.post("/api/seo-console/disconnect")
 def disconnect(db: Session = Depends(get_db), u=Depends(require_role("admin",))):
     service.disconnect(db)

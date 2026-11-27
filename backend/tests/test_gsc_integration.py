@@ -173,6 +173,20 @@ def test_gsc_rows_keep_real_dates():
         db.close()
 
 
+def test_repair_requires_stored_tokens():
+    db = SessionLocal()
+    try:
+        row = db.query(models.GscConnection).first()
+        if row is None:
+            row = models.GscConnection(); db.add(row)
+        row.access_token_enc = ""; row.refresh_token_enc = ""
+        db.commit()
+    finally:
+        db.close()
+    r = c.post("/api/seo-console/repair", headers=H)
+    assert r.status_code == 400
+
+
 def test_disconnect_clears_tokens():
     db = SessionLocal()
     try:
