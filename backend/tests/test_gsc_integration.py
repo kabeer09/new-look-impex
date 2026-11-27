@@ -114,6 +114,25 @@ def test_ga4_uses_property_and_no_future_dates(monkeypatch):
     assert prev_end < start and prev_start < prev_end
 
 
+def test_oauth_start_alias_returns_auth_url(monkeypatch):
+    monkeypatch.setattr(settings, "GOOGLE_SEARCH_CONSOLE_CLIENT_ID", "cid-test")
+    monkeypatch.setattr(settings, "GOOGLE_SEARCH_CONSOLE_CLIENT_SECRET", "secret-test")
+    monkeypatch.setattr(settings, "GOOGLE_ANALYTICS_PROPERTY_ID", "563099446")
+    r = c.post("/api/seo-console/oauth/start", headers=H)
+    assert r.status_code == 200
+    assert "accounts.google.com" in r.json()["auth_url"]
+    assert "analytics.readonly" in r.json()["auth_url"]
+    assert "webmasters.readonly" in r.json()["auth_url"]
+
+
+def test_preflight_reports_not_connected_without_credentials():
+    r = c.get("/api/seo-console/preflight", headers=H)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["gsc"]["ok"] is False
+    assert body["ga4"]["ok"] is False
+
+
 def test_ga4_status_is_honest_without_property(monkeypatch):
     monkeypatch.setattr(settings, "GOOGLE_ANALYTICS_PROPERTY_ID", "")
     r = c.get("/api/seo-console/ga4/status", headers=H)
