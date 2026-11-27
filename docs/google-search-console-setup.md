@@ -84,6 +84,9 @@ used) points the admin UI at the backend.
   nonce, encrypts the tokens and redirects to
   `/admin/seo-manager?gsc=connected`.
 - If authorization expires or is revoked, use **Reconnect** (forces consent).
+- `POST /api/seo-console/oauth/start` (or `POST /api/seo-console/connect`) starts the flow;
+  `GET /api/seo-console/preflight` (admin only) runs real connectivity checks and reports
+  exact Google errors (no fabricated success).
 - **Disconnect** deletes stored tokens. This does not revoke them in Google;
   do that in your Google account permissions page if needed.
 
