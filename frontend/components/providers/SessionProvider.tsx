@@ -4,34 +4,27 @@ import { ReactNode, useEffect } from "react";
 import { setApiToken, setAuthFailureCategory, getAuthFailureCategory } from "@/lib/api";
 
 function SessionAuth({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
+
+  // Set the token during render, not only in useEffect. Child components mount
+  // and run their data-fetching effects AFTER this parent render, so this avoids
+  // the first-request 401 race on admin pages (children previously fired
+  // before the effect copied the NextAuth token into the API module).
+  let token: string | null = null;
+  if (
+    session?.user?.accessToken &&
+    typeof session.user.accessToken === "string" &&
+    session.user.accessToken.length > 0
+  ) {
+    token = session.user.accessToken;
+  }
+  setApiToken(token);
+  setAuthFailureCategory(token ? "none" : "missing_header");
 
   useEffect(() => {
-    // 🔑 Extract token using the PRIMARY method only:
-    // session.user.accessToken set by NextAuth jwt/session callbacks
-    let token: string | null = null;
-
-    // Method 1: Direct accessToken from session.user.accessToken (primary)
-    // This is what NextAuth's jwt callback sets and session callback transfers
-    if (
-      session?.user?.accessToken &&
-      typeof session.user.accessToken === "string" &&
-      session.user.accessToken.length > 0
-    ) {
-      token = session.user.accessToken;
-    }
-
-    // If token is still missing, report diagnostics (but don't generate JWT in browser)
+    // Keep the module token in sync on later session refreshes.
     setApiToken(token);
-
-    // 🔍 Set auth failure category for diagnostics
-    // This helps identify why the token might be missing without exposing secrets
-    if (!token) {
-      setAuthFailureCategory("missing_header");
-    } else {
-      setAuthFailureCategory("none");
-    }
-  }, [session]);
+  }, [session, token]);
 
   return <>{children}</>;
 }

@@ -141,6 +141,38 @@ def test_ga4_status_is_honest_without_property(monkeypatch):
     assert "not configured" in r.json()["setup_message"]
 
 
+def test_gsc_rows_keep_real_dates():
+    """Regression: cached analytics rows must not all be dated 1970-01-01."""
+    from app.gsc import service
+    rid = f"gsc-row-test-{time.time_ns()}"
+    db = SessionLocal()
+    try:
+        db.add(models.GscSyncRun(id=rid, site_url="https://www.newlookimpex.store/",
+                                 period_start="2026-11-01", period_end="2026-11-28",
+                                 status="success"))
+        db.commit()
+        service._save_rows(db, rid, "https://www.newlookimpex.store/", "query",
+                           ["brass bottles", "2026-11-05"],
+                           {"clicks": 3, "impressions": 100, "ctr": 0.03, "position": 8.1})
+        db.flush()
+        row = (db.query(models.GscRow).filter(models.GscRow.run_id == rid,
+                                              models.GscRow.dimension_type == "query").first())
+        assert row is not None
+        assert row.date == "2026-11-05"
+        assert row.dimension_value == "brass bottles"
+        service._save_rows(db, rid, "https://www.newlookimpex.store/", "totals", [],
+                           {"clicks": 3, "impressions": 100}, date_override="2026-11-28")
+        db.flush()
+        totals = (db.query(models.GscRow).filter(models.GscRow.run_id == rid,
+                                                 models.GscRow.dimension_type == "totals").first())
+        assert totals.date == "2026-11-28"
+    finally:
+        db.query(models.GscRow).filter(models.GscRow.run_id == rid).delete()
+        db.query(models.GscSyncRun).filter(models.GscSyncRun.id == rid).delete()
+        db.commit()
+        db.close()
+
+
 def test_disconnect_clears_tokens():
     db = SessionLocal()
     try:

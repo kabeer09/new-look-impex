@@ -130,15 +130,19 @@ def list_properties(db) -> list[dict]:
 
 
 def _save_rows(db, run_id: str, site: str, dimension_type: str,
-               keys: list, row: dict) -> int:
+               keys: list, row: dict, date_override: str = "") -> int:
     value = str(keys[0]) if keys else ""
+    # Search Analytics only returns a `date` member when `date` is a requested
+    # dimension. For every other dimension we request `date` explicitly and read
+    # it from keys[1]; totals get the period end so they fall inside the range.
+    row_date = date_override or str(row.get("date") or "") or (str(keys[1]) if len(keys) > 1 else "1970-01-01")
     existing = (db.query(models.GscRow)
                 .filter(models.GscRow.run_id == run_id,
-                        models.GscRow.date == str(row.get("date") or "1970-01-01"),
+                        models.GscRow.date == row_date,
                         models.GscRow.dimension_type == dimension_type,
                         models.GscRow.dimension_value == value).first())
     vals = dict(run_id=run_id, site_url=site,
-                date=str(row.get("date") or "1970-01-01"),
+                date=row_date,
                 dimension_type=dimension_type, dimension_value=value[:1000],
                 clicks=int(row.get("clicks") or 0), impressions=int(row.get("impressions") or 0),
                 ctr=float(row.get("ctr") or 0), position=float(row.get("position") or 0))
@@ -168,16 +172,26 @@ def sync_analytics(db, start: str, end: str) -> dict:
             ("appearance", ["searchAppearance"]),
         ]
         for name, dims in specs:
+            # Query dimension rows must carry their own date, otherwise every
+            # cached row lands on 1970-01-01 and the dashboard reads zero.
+            request_dims = dims if name in ("totals", "date") else dims + ["date"]
             body: dict[str, Any] = {
-                "startDate": start, "endDate": end, "dimensions": dims,
+                "startDate": start, "endDate": end, "dimensions": request_dims,
                 "rowLimit": 5000, "startRow": 0,
             }
             for _page in range(5):  # up to 25,000 rows per dimension
                 data = gsc_request(db, "POST", base, body)
                 rows = data.get("rows", []) or []
                 for r in rows:
+                    keys = r.get("keys", []) or []
+                    if name == "totals":
+                        date_val = end
+                    elif name == "date":
+                        date_val = str(keys[0]) if keys else end
+                    else:
+                        date_val = ""
                     saved += _save_rows(db, run.id, run.site_url, name,
-                                        r.get("keys", []) or [], r)
+                                        keys, r, date_override=date_val)
                 db.flush()
                 if len(rows) < 5000:
                     break
