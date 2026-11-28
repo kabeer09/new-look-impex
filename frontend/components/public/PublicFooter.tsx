@@ -34,6 +34,7 @@ const GUIDE_LINKS: [string, string][] = [
   ["Buyer Resources", "/buyer-resources"],
   ["Wholesale & RFQ Guide", "/wholesale"],
   ["Shipping & Export", "/shipping-export"],
+  ["Export & Global Markets", "/export"],
   ["Catalogue (PDF)", "/catalogue"],
   ["Request a Quote", "/request-quote"],
 ];

@@ -10,7 +10,7 @@ type Status = { configured: boolean; connected: boolean; status: string; setup_m
 
 const TABS = ["Overview", "GA4 Overview", "Organic Traffic", "GA4 Countries", "Landing Pages",
   "Enquiry Tracking", "Search Queries", "Top Pages", "Countries", "Devices", "Search Appearance",
-  "Country Pages", "URL Inspection", "Sitemap Manager", "Indexing Issues", "Recommendations",
+  "Country Pages", "URL Inspection", "Sitemap Manager", "Indexing Issues", "Indexing Audit", "Recommendations",
   "Connection Settings"] as const;
 
 const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
@@ -48,6 +48,7 @@ export default function SeoManager() {
   const [inspections, setInspections] = useState<any[]>([]);
   const [sitemaps, setSitemaps] = useState<any>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [auditData, setAuditData] = useState<any>(null);
   const [inspectUrl, setInspectUrl] = useState("https://www.newlookimpex.store/");
   const [inspectResult, setInspectResult] = useState<any>(null);
   const [msg, setMsg] = useState("");
@@ -97,6 +98,13 @@ export default function SeoManager() {
       if (tab === "Recommendations") {
         const d = await api<{ items: any[] }>("/api/seo-console/recommendations?limit=100");
         setRecommendations(d.items || []);
+      }
+      if (tab === "Indexing Audit") {
+        const [ov, issues] = await Promise.all([
+          api<any>("/api/seo-console/audit/overview"),
+          api<{ items: any[] }>("/api/seo-console/audit/issues?status=all&limit=100"),
+        ]);
+        setAuditData({ overview: ov, issues: issues.items || [] });
       }
     } catch (e) { setMsg(String(e)); }
   }, [tab, range, customStart, customEnd]);
@@ -233,6 +241,23 @@ export default function SeoManager() {
       <ul className="text-sm space-y-2">{inspections.map((i) => <li key={i.id} className="border-b border-sand py-2">
         <span className="font-semibold break-all">{i.url}</span> — {i.index_status || i.verdict || "Unknown"} · {i.coverage_state || ""}</li>)}</ul>
       {!inspections.length && <p className="text-sm text-gray">No inspection issues recorded yet. Inspect a URL first.</p>}</div>}
+
+    {tab === "Indexing Audit" && <div className="card space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <button className="btn btn-outline btn-sm" disabled={busy} onClick={() => act("/api/seo-console/audit/run", { limit: 10 })}>Run HTTP audit</button>
+        <button className="btn btn-outline btn-sm" disabled={busy} onClick={() => act("/api/seo-console/audit/inspect-queue", { limit: 5 })}>Inspect queued URLs</button>
+      </div>
+      <p className="text-xs text-gray">
+        Total issues: {auditData?.overview?.total_issues ?? 0} · Last inspection: {auditData?.overview?.last_inspection || "never"}.
+        URL Inspection reports Google's known state; it does not request indexing.
+      </p>
+      <div className="overflow-x-auto"><table className="data"><thead><tr><th>URL</th><th>Issue</th><th>Severity</th><th>Class</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>{(auditData?.issues || []).map((i: any) => <tr key={i.id}>
+          <td className="text-xs break-all">{i.url}</td><td>{i.issue_type}</td><td>{i.severity}</td>
+          <td>{i.classification}</td><td>{i.status}</td><td className="text-xs">{i.recommended_action}</td>
+        </tr>)}</tbody></table></div>
+      {!auditData?.issues?.length && <p className="text-sm text-gray">No audit issues recorded yet. Run the HTTP audit first.</p>}
+    </div>}
 
     {tab === "Recommendations" && <div className="card space-y-3">
       <button className="btn btn-outline btn-sm" disabled={busy} onClick={() => act("/api/seo-console/recommendations/generate", { range })}>Generate from real data</button>

@@ -1549,3 +1549,36 @@ class GscRecommendation(Base):
     decided_by = Column(String(255), default="")
     created_at = Column(DateTime, default=_now)
     decided_at = Column(DateTime, nullable=True)
+
+
+class GscAuditIssue(Base):
+    """An indexing issue recorded by the read-only audit. Never auto-published."""
+    __tablename__ = "gsc_audit_issues"
+    id = Column(String(36), primary_key=True, default=_uid)
+    url = Column(String(1024), nullable=False, index=True)
+    issue_type = Column(String(48), nullable=False, index=True)
+    severity = Column(String(16), default="Medium", index=True)
+    classification = Column(String(16), default="approval", index=True)  # auto|approval|none
+    evidence_json = Column(Text, default="{}")
+    recommended_action = Column(Text, default="")
+    status = Column(String(16), default="Pending", index=True)  # Pending|Approved|Completed|Ignored
+    decided_by = Column(String(255), default="")
+    created_at = Column(DateTime, default=_now)
+    verified_at = Column(DateTime, nullable=True)
+    decided_at = Column(DateTime, nullable=True)
+    __table_args__ = (UniqueConstraint("url", "issue_type", "status", name="uq_gsc_issue_open"),)
+
+
+class GscCrawlQueue(Base):
+    """Monitored URLs with priority and previous/current inspection state."""
+    __tablename__ = "gsc_crawl_queue"
+    id = Column(String(36), primary_key=True, default=_uid)
+    url = Column(String(1024), nullable=False, unique=True, index=True)
+    priority = Column(String(16), default="normal", index=True)
+    last_inspected_at = Column(DateTime, nullable=True)
+    last_verdict = Column(String(64), default="")
+    last_index_status = Column(String(64), default="")
+    last_google_canonical = Column(String(1024), default="")
+    last_user_canonical = Column(String(1024), default="")
+    previous_verdict = Column(String(64), default="")
+    created_at = Column(DateTime, default=_now)

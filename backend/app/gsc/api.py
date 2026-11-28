@@ -7,6 +7,7 @@ message — never sample or invented data.
 from __future__ import annotations
 
 import hmac
+import json
 import logging
 from datetime import datetime, timezone
 
@@ -18,7 +19,7 @@ from .. import models
 from ..auth import require_role
 from ..config import settings
 from ..database import get_db
-from . import ga4, oauth, service
+from . import audit, ga4, oauth, service
 
 log = logging.getLogger("gsc.api")
 router = APIRouter()
@@ -336,6 +337,147 @@ def decide_recommendation(rid: str, payload: dict, db: Session = Depends(get_db)
     db.commit()
     _admin_audit(db, u.email, "gsc_recommendation_decision", f"{rid}:{decision}")
     return {"ok": True, "id": rid, "status": decision}
+
+
+# ---------------- read-only indexing audit & recrawl queue ----------------
+
+@router.get("/api/seo-console/audit/overview")
+def audit_overview(db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    rows = db.query(models.GscAuditIssue).all()
+    counts: dict[str, int] = {}
+    for r in rows:
+        counts[r.issue_type] = counts.get(r.issue_type, 0) + 1
+    by_status = {}
+    for r in rows:
+        by_status[r.status] = by_status.get(r.status, 0) + 1
+    last = db.query(models.GscCrawlQueue).filter(models.GscCrawlQueue.last_inspected_at.isnot(None)) \
+        .order_by(models.GscCrawlQueue.last_inspected_at.desc()).first()
+    return {
+        "total_issues": len(rows), "by_type": counts, "by_status": by_status,
+        "queued_urls": db.query(models.GscCrawlQueue).count(),
+        "last_inspection": last.last_inspected_at.isoformat() if last else None,
+        "note": "URL Inspection reports Google's known state; it does not request indexing.",
+    }
+
+
+@router.get("/api/seo-console/audit/issues")
+def audit_issues(status: str = Query("Pending"), limit: int = Query(100, ge=1, le=200),
+                 db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    q = db.query(models.GscAuditIssue)
+    if status and status != "all":
+        q = q.filter(models.GscAuditIssue.status == status)
+    rows = q.order_by(models.GscAuditIssue.created_at.desc()).limit(limit).all()
+    return {"items": [{"id": r.id, "url": r.url, "issue_type": r.issue_type,
+                       "severity": r.severity, "classification": r.classification,
+                       "recommended_action": r.recommended_action, "status": r.status,
+                       "evidence": json.loads(r.evidence_json or "{}"),
+                       "verified_at": r.verified_at.isoformat() if r.verified_at else None}
+                      for r in rows]}
+
+
+@router.get("/api/seo-console/audit/queue")
+def audit_queue(db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    rows = db.query(models.GscCrawlQueue).order_by(models.GscCrawlQueue.priority,
+                                                  models.GscCrawlQueue.url).all()
+    return {"items": [{"id": r.id, "url": r.url, "priority": r.priority,
+                       "last_inspected_at": r.last_inspected_at.isoformat() if r.last_inspected_at else None,
+                       "last_verdict": r.last_verdict, "last_index_status": r.last_index_status,
+                       "last_google_canonical": r.last_google_canonical,
+                       "last_user_canonical": r.last_user_canonical,
+                       "previous_verdict": r.previous_verdict} for r in rows]}
+
+
+@router.post("/api/seo-console/audit/queue")
+def audit_queue_add(payload: dict, db: Session = Depends(get_db), u=Depends(require_role("admin",))):
+    url = str(payload.get("url") or "").strip()
+    priority = str(payload.get("priority") or "normal").lower()
+    if not url.startswith("https://www.newlookimpex.store/"):
+        raise HTTPException(400, "Provide a full https://www.newlookimpex.store/... URL.")
+    if priority not in ("high", "normal", "low"):
+        raise HTTPException(400, "priority must be high, normal or low")
+    if db.query(models.GscCrawlQueue).filter(models.GscCrawlQueue.url == url).first():
+        return {"ok": True, "duplicate": True}
+    db.add(models.GscCrawlQueue(url=url[:1024], priority=priority))
+    db.commit()
+    return {"ok": True, "duplicate": False}
+
+
+@router.post("/api/seo-console/audit/run")
+def audit_run(payload: dict, db: Session = Depends(get_db), u=Depends(require_role("admin",))):
+    """HTTP-only crawl of queued URLs. No Google request, no content change."""
+    seeded = audit.seed_queue(db)
+    limit = min(int(payload.get("limit") or 10), 20)
+    sitemap = set(service.local_sitemap_urls())
+    checked, created = [], 0
+    rows = (db.query(models.GscCrawlQueue)
+            .order_by(models.GscCrawlQueue.priority, models.GscCrawlQueue.url).limit(limit).all())
+    for row in rows:
+        result = audit.check_url(row.url)
+        issue = audit.classify(row.url, result["http_status"], result["robots_meta"],
+                               result["x_robots"], result["canonical"],
+                               row.url in sitemap, result["h1_count"])
+        if audit.record_issue(db, row.url, issue):
+            created += 1
+        checked.append({"url": row.url, "issue": issue["issue_type"],
+                        "http_status": result["http_status"],
+                        "redirect_chain": result["redirect_chain"],
+                        "h1_count": result["h1_count"], "canonical": result["canonical"]})
+    _admin_audit(db, u.email, "gsc_audit_run", f"checked={len(checked)} seeded={seeded}")
+    return {"checked": checked, "issues_created": created, "seeded": seeded,
+            "note": "HTTP crawl only — no indexing request was made."}
+
+
+@router.post("/api/seo-console/audit/inspect-queue")
+def audit_inspect_queue(payload: dict, db: Session = Depends(get_db), u=Depends(require_role("admin",))):
+    """Real URL Inspection for queued URLs, with previous/current comparison."""
+    audit.seed_queue(db)
+    limit = min(int(payload.get("limit") or 5), 10)
+    rows = (db.query(models.GscCrawlQueue)
+            .order_by(models.GscCrawlQueue.priority, models.GscCrawlQueue.url).limit(limit).all())
+    results = []
+    for row in rows:
+        verdict_before = {"last_verdict": row.last_verdict,
+                          "last_index_status": row.last_index_status,
+                          "last_google_canonical": row.last_google_canonical,
+                          "last_user_canonical": row.last_user_canonical}
+        try:
+            data = service.inspect_url(db, row.url, u.email)
+        except oauth.GscError as e:
+            results.append({"url": row.url, "error": str(e)})
+            continue
+        current = {"last_verdict": data.get("verdict", ""),
+                   "last_index_status": data.get("index_status", ""),
+                   "last_google_canonical": data.get("google_canonical", ""),
+                   "last_user_canonical": data.get("user_canonical", "")}
+        row.previous_verdict = row.last_verdict
+        for k, v in current.items():
+            setattr(row, k, v)
+        row.last_inspected_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        db.commit()
+        issue = audit.classify(row.url, gsc_verdict=data.get("coverage_state", "") or current["last_index_status"])
+        audit.record_issue(db, row.url, issue)
+        results.append({"url": row.url, "verdict": current["last_index_status"],
+                        "coverage": data.get("coverage_state", ""),
+                        "comparison": audit.compare_inspection(verdict_before, current)["changed"]})
+    return {"items": results,
+            "note": "Google URL Inspection only. No page was submitted for indexing."}
+
+
+@router.post("/api/seo-console/audit/issues/{iid}/decision")
+def audit_issue_decision(iid: str, payload: dict, db: Session = Depends(get_db),
+                         u=Depends(require_role("admin",))):
+    status = str(payload.get("status") or "")
+    if status not in ("Approved", "Completed", "Ignored", "Pending"):
+        raise HTTPException(400, "status must be Pending, Approved, Completed or Ignored")
+    row = db.query(models.GscAuditIssue).filter(models.GscAuditIssue.id == iid).first()
+    if not row:
+        raise HTTPException(404, "Issue not found")
+    row.status = status
+    row.decided_by = u.email
+    row.decided_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    db.commit()
+    _admin_audit(db, u.email, "gsc_audit_issue_decision", f"{iid}:{status}")
+    return {"ok": True, "id": iid, "status": status}
 
 
 # ---------------- Google Analytics 4 (real Data API v1) ----------------

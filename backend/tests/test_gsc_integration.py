@@ -187,6 +187,46 @@ def test_repair_requires_stored_tokens():
     assert r.status_code == 400
 
 
+def test_audit_classification_rules():
+    from app.gsc import audit
+    u = "https://www.newlookimpex.store/"
+    assert audit.classify(u, robots_meta="noindex, follow", canonical=u)["issue_type"] == "accidental_noindex"
+    dup = audit.classify("https://www.newlookimpex.store/wholesale/uk",
+                         robots_meta="noindex, follow", canonical="https://www.newlookimpex.store/uk")
+    assert dup["issue_type"] == "intentional_noindex" and dup["classification"] == "none"
+    alt = audit.classify("https://www.newlookimpex.store/products?material=Brass",
+                         canonical="https://www.newlookimpex.store/products")
+    assert alt["issue_type"] == "alternate_canonical" and alt["classification"] == "none"
+    assert audit.classify(u, h1_count=0)["issue_type"] == "missing_h1"
+    assert audit.classify(u, http_status=404)["issue_type"] == "broken_url"
+    found = audit.classify(u, gsc_verdict="Discovered - currently not indexed")
+    assert found["issue_type"] == "discovered_not_indexed" and found["classification"] == "approval"
+
+
+def test_audit_sitemap_validation_and_comparison():
+    from app.gsc import audit
+    issues = audit.validate_sitemap([
+        "https://www.newlookimpex.store/products",
+        "https://www.newlookimpex.store/products",
+        "https://www.newlookimpex.store/products?material=Brass",
+        "https://www.newlookimpex.store/wholesale/uk",
+    ])
+    types = {i["issue_type"] for i in issues}
+    assert {"duplicate_sitemap_url", "query_param_in_sitemap", "noindex_in_sitemap"} <= types
+    old = {"last_verdict": "PASS", "last_index_status": "PASS"}
+    new = {"last_verdict": "NEUTRAL", "last_index_status": "NEUTRAL"}
+    assert audit.compare_inspection(old, new)["changed"] is True
+    assert audit.compare_inspection(old, old)["changed"] is False
+
+
+def test_audit_endpoints_are_admin_only():
+    unauth = TestClient(app)
+    assert unauth.get("/api/seo-console/audit/overview").status_code in (401, 403)
+    r = c.get("/api/seo-console/audit/overview", headers=H)
+    assert r.status_code == 200
+    assert "total_issues" in r.json()
+
+
 def test_disconnect_clears_tokens():
     db = SessionLocal()
     try:
