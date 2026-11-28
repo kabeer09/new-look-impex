@@ -17,6 +17,8 @@ JOBS = {
     "weekly_collaboration": ("Weekly", "SEO-led multi-agent growth collaboration"),
     "monthly_audit": ("Monthly", "international SEO audit, market and growth strategy"),
     "weekly_report": ("Weekly", "consolidated SEO and business growth report"),
+    "lead_recovery_check": ("Daily", "enquiry forms, email/WhatsApp/phone paths, GA4 lead events"),
+    "pagespeed_baseline": ("Daily", "mobile/desktop Core Web Vitals sampling (needs PAGESPEED_API_KEY)"),
 }
 
 
@@ -32,6 +34,8 @@ def _period(job: str, now: datetime) -> str:
         return now.strftime("%Y-%m-%d")
     if job in ("weekly_keywords", "weekly_collaboration", "weekly_report"):
         return current_week()
+    if job in ("lead_recovery_check", "pagespeed_baseline"):
+        return now.strftime("%Y-%m-%d")
     return now.strftime("%Y-%m")
 
 
@@ -87,6 +91,10 @@ def run_job(db: Session, job: str, force: bool = False, user: str = "scheduler")
             result = _weekly_collaboration(db)
         elif job == "monthly_audit":
             result = _monthly(db)
+        elif job == "lead_recovery_check":
+            result = _lead_recovery_check(db)
+        elif job == "pagespeed_baseline":
+            result = _pagespeed_baseline(db)
         else:
             result = generate_growth_report(db, force=force)
         run.status = "completed" if result.get("ok") else "failed"
@@ -116,6 +124,38 @@ def _continuous(db: Session) -> dict:
     db.commit()
     return {"ok": True, "checks": checks, "failed_tasks": failed, "new_enquiries": new_enq,
             "emergency_stop": emergency_stop()}
+
+
+def _lead_recovery_check(db: Session) -> dict:
+    """Create one deduped, owned task for the enquiry funnel audit. No email is sent."""
+    from . import controller
+    new_enq = db.query(models.Enquiry).filter(models.Enquiry.status == "new").count()
+    rfqs = db.query(models.RFQ).count()
+    failed = db.query(models.WorkflowExecution).filter(models.WorkflowExecution.status == "failed").count()
+    task = controller.create_task(
+        db,
+        "Lead recovery: verify enquiry delivery, WhatsApp/phone/email links and GA4 events",
+        "enquiries", "enquiries_broken",
+        {"new_enquiries": new_enq, "rfqs": rfqs, "failed_workflows": failed,
+         "note": "Counts only; no email delivery claim without provider evidence."},
+        agent="sales", approval_required=True)
+    return {"ok": True, "task": task, "new_enquiries": new_enq,
+            "note": "No test enquiry was sent and no production data was changed."}
+
+
+def _pagespeed_baseline(db: Session) -> dict:
+    """PageSpeed API key is optional; without it the job is explicitly not configured."""
+    from ..config import settings
+    from . import controller
+    if not getattr(settings, "PAGESPEED_API_KEY", ""):
+        return {"ok": True, "status": "not_configured",
+                "note": "Set PAGESPEED_API_KEY to collect real LCP/INP/CLS; no scores invented."}
+    task = controller.create_task(
+        db, "PageSpeed: collect mobile/desktop LCP, INP and CLS baselines",
+        "pagespeed", "performance_critical",
+        {"targets": {"lcp_s": 2.5, "inp_ms": 200, "cls": 0.1}},
+        agent="website", approval_required=False)
+    return {"ok": True, "task": task, "status": "queued"}
 
 
 def _daily_seo(db: Session) -> dict:

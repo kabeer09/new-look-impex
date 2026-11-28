@@ -10,7 +10,7 @@ type Status = { configured: boolean; connected: boolean; status: string; setup_m
 
 const TABS = ["Overview", "GA4 Overview", "Organic Traffic", "GA4 Countries", "Landing Pages",
   "Enquiry Tracking", "Search Queries", "Top Pages", "Countries", "Devices", "Search Appearance",
-  "Country Pages", "URL Inspection", "Sitemap Manager", "Indexing Issues", "Indexing Audit", "Recommendations",
+  "Country Pages", "URL Inspection", "Sitemap Manager", "Indexing Issues", "Indexing Audit", "Growth Controller", "Recommendations",
   "Connection Settings"] as const;
 
 const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
@@ -49,6 +49,7 @@ export default function SeoManager() {
   const [sitemaps, setSitemaps] = useState<any>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [auditData, setAuditData] = useState<any>(null);
+  const [controllerData, setControllerData] = useState<any>(null);
   const [inspectUrl, setInspectUrl] = useState("https://www.newlookimpex.store/");
   const [inspectResult, setInspectResult] = useState<any>(null);
   const [msg, setMsg] = useState("");
@@ -98,6 +99,14 @@ export default function SeoManager() {
       if (tab === "Recommendations") {
         const d = await api<{ items: any[] }>("/api/seo-console/recommendations?limit=100");
         setRecommendations(d.items || []);
+      }
+      if (tab === "Growth Controller") {
+        const [c, t, gs] = await Promise.all([
+          api<any>("/api/growth/controller/status"),
+          api<{ items: any[] }>("/api/growth/controller/tasks?limit=20"),
+          api<any>("/api/growth/status"),
+        ]);
+        setControllerData({ controller: c, tasks: t.items || [], growth: gs });
       }
       if (tab === "Indexing Audit") {
         const [ov, issues] = await Promise.all([
@@ -257,6 +266,23 @@ export default function SeoManager() {
           <td>{i.classification}</td><td>{i.status}</td><td className="text-xs">{i.recommended_action}</td>
         </tr>)}</tbody></table></div>
       {!auditData?.issues?.length && <p className="text-sm text-gray">No audit issues recorded yet. Run the HTTP audit first.</p>}
+    </div>}
+
+    {tab === "Growth Controller" && <div className="card space-y-3">
+      <h2 className="font-semibold">Growth Controller — one coordinated queue</h2>
+      <p className="text-xs text-gray">
+        Tasks: {controllerData?.controller?.total_tasks ?? 0} ·
+        Conflicts: {controllerData?.controller?.conflicts?.length ?? 0} ·
+        Worker running: {String(controllerData?.growth?.running ?? false)} ·
+        Next scheduled run: continuous (5 min) · daily lead recovery + PageSpeed sampling.
+        PageSpeed: {controllerData?.growth?.gsc_configured ? "GSC configured" : "GSC not configured"}.
+      </p>
+      <div className="overflow-x-auto"><table className="data"><thead><tr><th>Priority</th><th>Task</th><th>Agent</th><th>Component</th><th>Approval</th></tr></thead>
+        <tbody>{(controllerData?.tasks || []).map((t: any) => <tr key={t.id}>
+          <td>{t.priority}</td><td className="text-xs">{t.title}</td><td>{t.agent}</td>
+          <td>{t.component}</td><td>{t.approval_required ? "required" : "auto"}</td></tr>)}</tbody></table></div>
+      {!controllerData?.tasks?.length && <p className="text-sm text-gray">No queued tasks.</p>}
+      <p className="text-xs text-gray">No deployment, production migration or live content change is made by this dashboard.</p>
     </div>}
 
     {tab === "Recommendations" && <div className="card space-y-3">

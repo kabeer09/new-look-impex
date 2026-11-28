@@ -1207,6 +1207,8 @@ class AgentTask(Base):
     approval_required = Column(Boolean, default=False)
     error = Column(Text, default="")
     retries = Column(Integer, default=0)
+    component = Column(String(128), default="", index=True)  # ownership lock for the Growth Controller
+    evidence_json = Column(Text, default="{}")
     created_at = Column(DateTime, default=_now)
     updated_at = Column(DateTime, default=_now, onupdate=_now)
 

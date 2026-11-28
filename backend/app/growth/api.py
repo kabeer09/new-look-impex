@@ -9,13 +9,60 @@ from ..database import get_db
 from ..auth import require_role
 from ..config import settings
 from ..media_store import MEDIA_DIR
-from . import seo, service, rollback
+from . import controller, seo, service, rollback
 from ..helpdesk import service as H
 from ..worker import worker_status, set_emergency_stop, set_agent_paused
 from ..agents.definitions import AGENTS
 
 router = APIRouter()
 J = lambda v, d=None: __import__("json").loads(v) if isinstance(v, str) and v.strip() else (d if d is not None else v)
+
+
+@router.get("/api/growth/controller/status")
+def controller_status(db: Session = Depends(get_db), u=Depends(require_role("admin", "editor"))):
+    return controller.status(db)
+
+
+@router.get("/api/growth/controller/tasks")
+def controller_tasks(limit: int = 20, db: Session = Depends(get_db),
+                     u=Depends(require_role("admin", "editor"))):
+    return {"items": controller.next_tasks(db, min(limit, 100))}
+
+
+@router.post("/api/growth/controller/tasks")
+def controller_create_task(payload: dict, db: Session = Depends(get_db),
+                           u=Depends(require_role("admin",))):
+    return controller.create_task(
+        db, str(payload.get("title") or ""), str(payload.get("component") or ""),
+        str(payload.get("kind") or ""), payload.get("evidence") or {},
+        str(payload.get("agent") or ""), bool(payload.get("approval_required")),
+        u.email)
+
+
+@router.post("/api/growth/controller/tasks/{tid}/approve")
+def controller_approve_task(tid: str, db: Session = Depends(get_db),
+                            u=Depends(require_role("admin",))):
+    result = controller.approve_task(db, tid, u.email)
+    if not result.get("ok"):
+        raise HTTPException(400, result.get("error", "Approval failed"))
+    return result
+
+
+@router.post("/api/growth/controller/tasks/{tid}/report")
+def controller_report_task(tid: str, payload: dict, db: Session = Depends(get_db),
+                           u=Depends(require_role("admin", "editor"))):
+    result = controller.report_result(db, tid, payload.get("evidence") or {},
+                                      bool(payload.get("ok")), u.email)
+    if not result.get("ok"):
+        raise HTTPException(404, result.get("error", "Task not found"))
+    return result
+
+
+@router.post("/api/growth/controller/regression")
+def controller_regression(payload: dict, db: Session = Depends(get_db),
+                          u=Depends(require_role("admin",))):
+    return controller.reopen_on_regression(db, str(payload.get("component") or ""),
+                                           payload.get("evidence") or {})
 
 
 @router.get("/api/growth/status")

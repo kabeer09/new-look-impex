@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     GOOGLE_SEARCH_CONSOLE_WRITE_ENABLED: bool = False
     # Google Analytics 4 (Data API v1, read-only). Empty => GA4 section shows setup state.
     GOOGLE_ANALYTICS_PROPERTY_ID: str = ""
+    # Optional PageSpeed Insights API key. Empty => no synthetic scores are claimed.
+    PAGESPEED_API_KEY: str = ""
 
     # Google Sign-In for admin dashboard (disabled by default — explicit opt-in)
     GOOGLE_LOGIN_ENABLED: bool = False

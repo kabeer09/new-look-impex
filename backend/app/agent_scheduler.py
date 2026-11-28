@@ -24,6 +24,8 @@ SCHEDULES = {
     "weekly_export": ("Weekly", "export market research (needs web search API)"),
     "weekly_buyers": ("Weekly", "buyer discovery (needs public business data source)"),
     "weekly_competitor_review": ("Weekly", "competitor coverage + real GSC keyword review"),
+    "lead_recovery_check": ("Daily", "enquiry funnel, email/WhatsApp/phone and lead events"),
+    "pagespeed_baseline": ("Daily", "Core Web Vitals baselines (needs PAGESPEED_API_KEY)"),
     "monthly_report": ("Monthly", "business performance snapshot"),
 }
 
@@ -138,6 +140,8 @@ def start_scheduler():
                 if now.day == 1 and enabled("monthly_report"):
                     log.info("monthly_report: %s", run_schedule("monthly_report"))
                 _growth_job("daily_seo")
+                _growth_job("lead_recovery_check")
+                _growth_job("pagespeed_baseline")
                 if now.weekday() == 0:
                     _growth_job("weekly_keywords")
                     _growth_job("weekly_collaboration")
