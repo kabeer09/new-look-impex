@@ -60,6 +60,8 @@ services:
         value: "false" # set true only for sitemap submission
       - key: GOOGLE_ANALYTICS_PROPERTY_ID
         value: "563099446" # GA4 Data API, read-only scope shared with GSC token
+      - key: PAGESPEED_API_KEY
+        sync: false # optional; without it the PageSpeed job reports not_configured
 
   # Persistent 24/7 agent worker. Keep DATABASE_URL and SECRET_KEY IDENTICAL
   # to the web service (paste the same values in the Render dashboard).
