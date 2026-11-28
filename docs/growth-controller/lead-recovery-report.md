@@ -11,16 +11,16 @@ sent and no inbox was accessed.
 | Email notification config | `ENQUIRY_NOTIFY_EMAIL` and `EMAIL_BCC` declared; values not printed |
 | Admin allowlist | `newlookimpex130@gmail.com` (admin sign-in) |
 | Marketing/sales address | `newlookimpex@gmail.com` used in PDFs, footer, about, shipping/catalogue pages |
-| Site/structured data address | `newlookimpex130@gmail.com` used in schema and `BUSINESS_EMAIL` |
+| Site/structured data address | `newlookimpex@gmail.com` — standardised across schema, `BUSINESS_EMAIL`, footer, PDFs and notifications |
 | GA4 events in code | `generate_lead`, `whatsapp_click`, `contact_click`, `catalogue_download` via `lib/ga4.ts` |
 | Live GA4 event snapshot | `form_submit` 2, `click` 5, `page_view` 403 (28d); custom event names not yet observed |
 
 ## Email inconsistency
 
-Both addresses are documented in `SEO_AUDIT.md`: `newlookimpex130@gmail.com`
-(site/admin) and `newlookimpex@gmail.com` (sales). This may be intentional
-role separation, not a bug. **Owner verification is required** before changing
-any displayed address, footer, schema or notification recipient. No change made.
+Owner confirmed `newlookimpex@gmail.com` as the official public/sales address.
+Public-facing metadata, schema, footer, templates and notification defaults were
+standardised locally. `newlookimpex130@gmail.com` remains **only** the internal
+admin login/allowlist and is intentionally preserved.
 
 ## Funnel verdict
 

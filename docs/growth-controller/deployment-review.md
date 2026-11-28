@@ -75,7 +75,7 @@ TypeScript clean, production build success, compileall clean, secret scan clean.
 
 ## 7. Owner confirmations before deployment
 
-1. Confirm the correct sales email (`newlookimpex130@gmail.com` vs `newlookimpex@gmail.com`) — no change made.
+1. Sales email confirmed by owner: `newlookimpex@gmail.com`; public references standardised locally, admin login retained.
 2. Confirm whether mid-November enquiries stopped due to traffic loss or delivery failure.
 3. Supply the 173 SVG URL export if classification is required now.
 4. Explicitly approve push, Render/Vercel deployment and migration `0007/0008`.

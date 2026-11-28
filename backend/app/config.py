@@ -88,7 +88,7 @@ class Settings(BaseSettings):
     TOTP_ISSUER: str = "New Look Impex"
 
     N8N_WEBHOOK_TOKEN: str = "change-me-n8n-token"
-    ENQUIRY_NOTIFY_EMAIL: str = "newlookimpex130@gmail.com"
+    ENQUIRY_NOTIFY_EMAIL: str = "newlookimpex@gmail.com"
     # Optional hidden/visible copies of every outgoing email (comma-separated).
     EMAIL_CC: str = ""
     EMAIL_BCC: str = ""

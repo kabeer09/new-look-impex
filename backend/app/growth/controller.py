@@ -9,6 +9,8 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 
+from sqlalchemy import inspect
+
 from .. import models
 
 OPEN = ("CREATED", "ASSIGNED", "IN_PROGRESS", "WAITING_FOR_AGENT", "WAITING_APPROVAL")
@@ -24,6 +26,19 @@ DEFAULT_AGENT = {
     "country_pages": "export_intelligence", "pagespeed": "website", "frontend": "website",
     "api": "website", "database": "website", "security": "helpdesk",
 }
+
+
+def schema_ready(db) -> dict:
+    """Controller needs additive columns from migration 0008. Return an explicit
+    state instead of a 500 if production has not been migrated yet."""
+    try:
+        cols = {c["name"] for c in inspect(db.bind).get_columns("agent_tasks")}
+    except Exception:
+        return {"ready": False, "missing": ["agent_tasks"],
+                "note": "Run additive migration 0008 before using the Growth Controller."}
+    missing = sorted({"component", "evidence_json"} - cols)
+    return {"ready": not missing, "missing": missing,
+            "note": "Run additive migration 0008 before using the Growth Controller." if missing else ""}
 
 
 def _dump(value) -> str:

@@ -13,6 +13,13 @@ def _cleanup(db, ids):
     db.commit()
 
 
+def test_schema_ready_reports_missing_columns():
+    db = SessionLocal()
+    state = controller.schema_ready(db)
+    assert "ready" in state and isinstance(state["missing"], list)
+    db.close()
+
+
 def test_priority_and_owner_mapping():
     assert controller.priority_for("outage") == "P0"
     assert controller.priority_for("indexing_error") == "P1"

@@ -349,7 +349,7 @@ def draft_followup_email(row: models.RfqDraft) -> tuple[str, str]:
         "Warm regards,\n"
         "Team New Look Impex\n"
         "Brass & Copper Manufacturer & Exporter — Moradabad, India\n"
-        "newlookimpex130@gmail.com"
+        f"{settings.ENQUIRY_NOTIFY_EMAIL}"
     )
     return subject, body
 

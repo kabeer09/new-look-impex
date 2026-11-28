@@ -95,7 +95,7 @@ def brand_email_html(title: str, rows: list[tuple[str, str]], intro: str = "",
   Brass &amp; Copper Manufacturer &amp; Exporter<br/>
   Ganga Mandir, Thana Nagphani Road, Kisrol, Moradabad – 244001, Uttar Pradesh, India<br/>
   Phone: +91 9808588603 &nbsp;&bull;&nbsp; WhatsApp: +91 96900 53913<br/>
-  Email: newlookimpex130@gmail.com &nbsp;&bull;&nbsp; Web: {site}<br/>
+  Email: newlookimpex@gmail.com &nbsp;&bull;&nbsp; Web: {site}<br/>
   GSTIN: 09AFKPA4462R1ZW<br/><br/>
   {_SOCIAL_HTML}</div>
 </td></tr>
@@ -116,7 +116,7 @@ def brand_email_text(title: str, rows: list[tuple[str, str]], intro: str = "",
         "NEW LOOK IMPEX — Brass & Copper Manufacturer & Exporter",
         "Ganga Mandir, Thana Nagphani Road, Kisrol, Moradabad – 244001, Uttar Pradesh, India",
         "Phone: +91 9808588603 | WhatsApp: +91 96900 53913",
-        "Email: newlookimpex130@gmail.com",
+        "Email: newlookimpex@gmail.com",
         f"Web: {_site()} | GSTIN: 09AFKPA4462R1ZW",
         f"Follow us: {_SOCIAL_TEXT}",
     ]

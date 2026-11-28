@@ -699,7 +699,7 @@ export default function HomeClient({
   const splitList = (v: any, fallback: string[]): string[] => Array.isArray(v) ? v.map(String) : (v ? String(v).split("|").map((s) => s.trim()).filter(Boolean) : fallback);
   const cAddress = cContact?.address || "New Look Impex, Ganga Mandir, Thana Nagphani Road, Kisrol, Moradabad – 244001, Uttar Pradesh, India";
   const cPhones = splitList(cContact?.phones, ["+91 9808588603"]);
-  const cEmails = splitList(cContact?.emails, ["newlookimpex130@gmail.com", "newlookimpex@gmail.com"]);
+  const cEmails = splitList(cContact?.emails, ["newlookimpex@gmail.com"]);
   const cWhatsapp = cContact?.whatsapp || "+91 96900 53913";
   const cGstin = cContact?.gstin || "09AFKPA4462R1ZW";
 
@@ -726,7 +726,7 @@ export default function HomeClient({
       })
       .catch((err) => {
         const msg = String(err);
-        setSubStatus({ ok: msg.includes("409"), text: msg.includes("409") ? "You're already subscribed — thank you!" : "Could not subscribe. Please email newlookimpex130@gmail.com." });
+        setSubStatus({ ok: msg.includes("409"), text: msg.includes("409") ? "You're already subscribed — thank you!" : "Could not subscribe. Please email newlookimpex@gmail.com." });
       })
       .finally(() => setSubscribing(false));
   };

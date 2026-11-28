@@ -13,7 +13,7 @@
 | GSTIN | 09AFKPA4462R1ZW |
 | Model | RFQ only — no checkout, no listed prices (B2B) |
 | Catalogue | 133 published products, 14 public categories |
-| Contact | newlookimpex130@gmail.com (site), newlookimpex@gmail.com (sales), WhatsApp +91 96900 53913, phones +91 9808588603 |
+| Contact | newlookimpex@gmail.com (official public/sales email; newlookimpex130@gmail.com remains the internal admin login only), WhatsApp +91 96900 53913, phones +91 9808588603 |
 | Stack | Next.js 14 (Vercel) + FastAPI/PostgreSQL (Render) |
 
 ## 2. Critical issues found (all fixed)

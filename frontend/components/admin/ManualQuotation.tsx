@@ -9,7 +9,7 @@ const EXPORTER_DEFAULTS = {
   company_name: "New Look Impex",
   address: "Ganga Mandir, Thana Nagphani Road, Kisrol, Moradabad - 244001, Uttar Pradesh, India",
   city: "Moradabad", state: "Uttar Pradesh", postal_code: "244001", country: "India",
-  email: "newlookimpex130@gmail.com", phone: "+91 9808588603", whatsapp: "+91 96900 53913",
+  email: "newlookimpex@gmail.com", phone: "+91 9808588603", whatsapp: "+91 96900 53913",
   website: "https://www.newlookimpex.store", gstin: "", iec: "",
 };
 
